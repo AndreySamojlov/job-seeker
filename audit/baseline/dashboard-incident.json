@@ -1,0 +1,21 @@
+{
+  "at": "2026-10-15T11:12:26.543212+00:00",
+  "live_reads": [
+    {
+      "status": 200,
+      "seconds": 7.52
+    },
+    {
+      "status": 200,
+      "seconds": 6.78
+    },
+    {
+      "status": 200,
+      "seconds": 7.56
+    }
+  ],
+  "production_mutations": false,
+  "incident_root_cause": "unknown; prior 503 lacked exception logging",
+  "old_process_survived_turn": true,
+  "old_process_started_before_ssh_stdin_fix": true
+}

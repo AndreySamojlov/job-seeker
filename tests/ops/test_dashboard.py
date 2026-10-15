@@ -26,3 +26,21 @@ def test_failure_is_visible_not_empty_funnel():
         def data(self, *args, **kwargs): raise RuntimeError('remote unavailable')
     with TestClient(create_app(Unavailable())) as client:
         assert client.get('/').status_code == 503
+
+def test_failure_logs_stage_without_credentials_and_next_request_recovers(caplog):
+    from job_machine.ops.dashboard import create_app
+    class Flaky:
+        failed = False
+        def data(self, view, **kwargs):
+            if view == 'blockers' and not self.failed:
+                self.failed = True
+                raise RuntimeError('SSH failure password=private-value')
+            return []
+        def status(self): return []
+    with TestClient(create_app(Flaky())) as client:
+        response = client.get('/')
+        assert response.status_code == 503
+        assert 'blockers' in caplog.text
+        assert 'SSH failure' in caplog.text
+        assert 'private-value' not in caplog.text + response.text
+        assert client.get('/').status_code == 200

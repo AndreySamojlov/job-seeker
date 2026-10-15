@@ -25,3 +25,7 @@ Pre-flight T1→T2: T1 supplies fixed source and dependencies; T2 adds local che
 - Finishing ruling: initial repository has no parent/base history or configured remote. Deliver a local commit on codex/job-machine-recovery, preserve requested workspace; no merge/push or unrelated worktree cleanup. Initial plan's per-task commits are consolidated after verification.
 
 E1.S1/T1/T2 and slice A acceptance are complete. Full recovery remains open: E2 integration/schema/DB/browser/E2E and E3 historical reconciliation/backup-restore. Service mutations have fake-transport coverage, not live restart validation. Full operational replacement is not claimed.
+
+## Post-delivery correction
+
+User reported dashboard unavailability. Original process survived the previous turn; one access-log 503 was observed. Exact old exception unavailable. Local process predated the SSH stdin fix and was restarted with current code; production untouched. Added sanitized stage/error logging and regression; 38 smoke passed. Prior E1/T2 closure is revoked pending operational re-acceptance, while verified import remains done. Current backlog owner: docs/decomposition-map.md. No claim of background monitoring or fully resolved historical cause.

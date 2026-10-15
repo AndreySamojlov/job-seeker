@@ -1,11 +1,14 @@
 """Local read-only dashboard backed by the existing lab-do runtime over SSH."""
 from datetime import datetime, timezone
 import html
+import logging
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from job_machine.dashboard.render import render_dashboard
-from job_machine.ops.client import RuntimeClient
+from job_machine.ops.client import RuntimeClient, redact
+
+logger = logging.getLogger(__name__)
 
 def create_app(client=None):
     runtime = client if client is not None else RuntimeClient()
@@ -18,17 +21,23 @@ def create_app(client=None):
 
     @app.get('/', response_class=HTMLResponse)
     def dashboard():
+        stage = 'summary'
         try:
             summary = runtime.data('summary')
             funnel = {}
             for row in summary:
                 funnel.setdefault(row['entity'], {})[row['state']] = row['count']
+            stage = 'blockers'
             blockers = runtime.data('blockers')
+            stage = 'ready'
             ready = runtime.data('ready', limit=50)
+            stage = 'status'
             services = runtime.status()
-        except (RuntimeError, ValueError):
+        except (RuntimeError, ValueError) as exc:
+            logger.warning('Dashboard runtime read failed at %s: %s', stage, redact(str(exc)))
             return HTMLResponse('<h1>Job Machine — lab-do недоступен</h1><p>Данные не получены. '
-                                'Проверьте SSH и состояние сервисов через ops status.</p>', status_code=503)
+                                'Ошибка получения данных записана в журнал для диагностики агентом. '
+                                'Следующее открытие страницы повторит чтение.</p>', status_code=503)
         page = render_dashboard(funnel, blockers, ready, generated_at=datetime.now(timezone.utc))
         rows = ''.join('<tr>' + ''.join('<td>' + html.escape(str(value)) + '</td>' for value in
                        (s['Name'],s['ImageTag'],s['State']['Status'],s['State']['Health'])) + '</tr>' for s in services)
