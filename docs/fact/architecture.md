@@ -29,3 +29,5 @@ HTTP200 допускает partial/stale;503 означает отсутстви
 Тесты используют отдельные конфигурацию, temporary schemas, synthetic forms и локальный cluster25439. Границы допуска описывает [Test Strategy](test-strategy.md). Проверенного общего backup/restore и автоматического production rollback пока нет (E3).
 
 Применение OBS.S1: 15.10.2026 по отдельному поручению пользователя локальный процесс18766 обновлён на код dbf1e01. Реальный URL проверен200/live; workers и их image/container identity сохранены. Это доставка панели на ноутбуке, без redeploy конвейера. [Evidence](../../audit/observer-s1-deploy.json).
+
+OBS.S2 доставлена на тот же локальный18766 кодом34256d8. Pure renderer ops/progress.py использует существующий summary, без новых запросов/зависимостей/сервисов. Методы read-only и TTL S1 сохранены, а source details компактно свёрнуты. [Evidence доставки/сверки чисел](../../audit/observer-s2-deploy.json). Production workers и их image/container identity не менялись.

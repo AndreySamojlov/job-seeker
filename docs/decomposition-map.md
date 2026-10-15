@@ -192,3 +192,7 @@ Heart Statement: фактическая отправка соответству�
 T1/T2 и S1 выполнены в локальной сборке:1177 unit/77 smoke, synthetic Chromium, независимый review и TTL fix red→green, read-only lab-do и HTTP acceptance. Подробности — [evidence](../audit/observer-s1.md). Все506 provenance imports совпадают; ops изменения — собственные файлы проекта. Процесс18766 не заменён, production workers не менялись. Следующий центральный маршрут OBS → S3 (проектирование перед Task); S2/S4 свёрнуты. Весь OBS не завершён, E2.S3/E3 не закрыты.
 
 Доставка OBS.S1: 15.10.2026 пользователь отдельно поручил deploy. Локальная панель18766 обновлена и проверена200/live;8 worker health200 и неизменные identities. [Evidence](../audit/observer-s1-deploy.json). Ограничение неприменённого процесса из локального закрытия снято. S2–S4 и E2.S3/E3 остаются открытыми.
+
+## Закрытие и доставка OBS.S2 — 2026-10-15
+
+S2.T1/S2 выполнены:1187unit/87smoke, независимый review без блокирующих findings, synthetic и real Chromium. На18766 применён34256d8:3 диаграммы/17 видимых столбцов,0 прежних stage cards; totals совпали с полным стабильным read-only summary.8 worker identities неизменны,8 health200. [Evidence](../audit/observer-s2.md). Следующий центральный маршрут OBS→S3; S4 свёрнута. Полный Observer открыт; S1/S2 не объявляются готовностью всех сценариев эпика.

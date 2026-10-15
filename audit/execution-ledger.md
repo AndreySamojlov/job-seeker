@@ -57,3 +57,7 @@ User explicitly requested careful exit upon problems/stalling in AI application 
 ## OBS.S1 delivery — 2026-10-15
 
 User requested deploy. Applied dbf1e01 to existing local dashboard127.0.0.1:18766 after validating listener42480/launcher41132 and command lines. Restarted only this local dashboard, hidden launcher35852/server38784. Two real GETs200/live6.36s/6.83s confirmed Observer event/result/timezone/unknown-processing markers and no-store. All8 worker container/image identities unchanged;8 health200. No production worker mutations, migrations, data writes, tunnel/config changes or submissions. Evidence: audit/observer-s1-deploy.json. Local process left running, no reboot persistence/monitor added.
+
+## OBS.S2 correction and delivery — 2026-10-15
+
+User reported missing charts and nearly unchanged page after S1 deploy. Root cause confirmed on URL:8 old stage cards/0 charts. Implemented accepted S2:three independent current-state bar distributions, no new metrics/queries/dependencies. RED10/77→GREEN87smoke,1187unit/457 deselected; fresh independent review no blockers; synthetic Chromium geometry/first-screen/mobile/four outcomes passed. Applied34256d8 to local18766 only, launcher36076. Actual browser twice200/live,3 charts/17 bars/0 cards, totals174032/807/142 matched stable read-only summary before/after each request.8 worker identities unchanged,8 health200. Evidence audit/observer-s2.md and deploy.json; cropped chart screenshot excludes personal rows. S3/S4 remain open.

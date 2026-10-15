@@ -1,0 +1,73 @@
+{
+  "at": "2026-10-15T15:07:44.923813+00:00",
+  "code_revision": "34256d8",
+  "production_mutations": false,
+  "scope": "actual URL18766",
+  "requests": [
+    {
+      "http": 200,
+      "outcome": "live",
+      "charts": 3,
+      "bars": 17,
+      "totals": {
+        "vacancy": 174032,
+        "application": 807,
+        "attempt": 142
+      },
+      "source_totals_before": {
+        "vacancy": 174032,
+        "application": 807,
+        "attempt": 142
+      },
+      "source_totals_after": {
+        "vacancy": 174032,
+        "application": 807,
+        "attempt": 142
+      },
+      "stable_source": true,
+      "parity": true,
+      "positive_bars_visible": 17,
+      "first_bar_on_screen": true,
+      "old_cards": 0
+    },
+    {
+      "http": 200,
+      "outcome": "live",
+      "charts": 3,
+      "bars": 17,
+      "totals": {
+        "vacancy": 174032,
+        "application": 807,
+        "attempt": 142
+      },
+      "source_totals_before": {
+        "vacancy": 174032,
+        "application": 807,
+        "attempt": 142
+      },
+      "source_totals_after": {
+        "vacancy": 174032,
+        "application": 807,
+        "attempt": 142
+      },
+      "stable_source": true,
+      "parity": true,
+      "positive_bars_visible": 17,
+      "first_bar_on_screen": true,
+      "old_cards": 0
+    }
+  ],
+  "mobile_no_overflow": true,
+  "worker_identities_unchanged": true,
+  "health": {
+    "browser": 200,
+    "discovery": 200,
+    "triage": 200,
+    "resume": 200,
+    "package": 200,
+    "fill": 200,
+    "submit": 200,
+    "mail": 200
+  },
+  "launcher_pid": 36076
+}
