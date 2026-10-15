@@ -1,0 +1,35 @@
+{
+  "base_revision": "6dae622",
+  "status": "rejected candidate; not applied to working source",
+  "patch": "audit\\experiments\\2026-10-15-submit-integrity-candidate.patch",
+  "sha256": "98fbcd7b440b5c51a23f547e82e5fa5521f525e1f891b019f6751637609e9e81",
+  "reason": "Early package/hash rejection precedes retained-session try/finally; submit_blocked is not in timeout sweep allowlist; cleanup can be orphaned.",
+  "user_instruction": "Exit carefully upon problems or stalling in AI application work.",
+  "red": {
+    "canonical_binding_and_prebrowser": 20,
+    "late_resume_drift": 2
+  },
+  "targeted_green": 24,
+  "submit_suite_before_final_drift_fix": 90,
+  "unit_candidate_passed": 1172,
+  "db_candidate": {
+    "passed": 343,
+    "failed": 1,
+    "deselected": 1285,
+    "failed_test": "tests/mcp/test_integration_loop.py::test_full_loop_list_approve_submit"
+  },
+  "limitations": [
+    "DOM/attached-file/consent binding not implemented",
+    "No live submit/deploy/migration"
+  ],
+  "next": "E2.S3.T1 remains open; future attempt must include lifecycle of early retained-session rejection before T2",
+  "restore": {
+    "revision": "6dae622",
+    "source_matches_git": true,
+    "new_candidate_source_files_removed": [
+      "src/job_machine/package/integrity.py",
+      "tests/package/test_integrity.py",
+      "tests/submit/test_package_integrity.py"
+    ]
+  }
+}

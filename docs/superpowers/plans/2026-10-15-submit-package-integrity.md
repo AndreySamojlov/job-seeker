@@ -28,3 +28,9 @@ Interface: validate_manifest_binding(manifest, *, application_id: str, payload_h
 - [ ] Implement verifier and wire it into submit before browser, reuse in agent context. Preserve existing pre-click/unknown lifecycle.
 - [ ] Adapt synthetic fixtures to valid canonical hashes, not bypass verifier; run targeted package/context/submit tests and full isolated unit/DB suites.
 - [ ] Independent review; record evidence/provenance/FACT, commit. T2/T3 remain next work and need actual page evidence design.
+
+## Остановка кандидата по указанию пользователя
+
+T1 был начат, но не принят. Canonical tamper regressions:20 RED, после реализации24 targeted GREEN; новый полный unit1172passed сам по себе не доказал lifecycle. Независимый review обнаружил побочный эффект: ранний отказ до try/finally оставляет retained session в submit_blocked, исключённом из sweep. Полный DB-прогон также показал отказ; итог сохраняется в audit/experiments.
+
+Пользователь отдельно потребовал аккуратный выход при проблемах/буксовке ИИ-подачи. Решение: сохранить кандидат как patch/evidence, вернуть product source и адаптированные fixtures к6dae622, не расширять работу до DOM/agent submit. T1/T2/T3 остаются открыты. Следующая попытка требует включить cleanup раннего отказа в сам контракт T1; наличие patch не является готовой реализацией. Production не менялся.

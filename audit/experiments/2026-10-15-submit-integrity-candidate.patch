@@ -1,0 +1,385 @@
+diff --git a/src/job_machine/fill/service.py b/src/job_machine/fill/service.py
+index 9fe1b18..bf1db07 100644
+--- a/src/job_machine/fill/service.py
++++ b/src/job_machine/fill/service.py
+@@ -24,7 +24,7 @@ from job_machine.package.artifacts import hash_file, write_rebound_artifacts
+ from job_machine.package.builder import rebind_destination
+ from job_machine.package.summary import render_summary
+ from job_machine.package.models import PackageManifest
+-from job_machine.package import hashing
++from job_machine.package.integrity import validate_manifest_binding
+ from job_machine.consent import looks_like_consent
+ 
+ log = logging.getLogger(__name__)
+@@ -44,14 +44,13 @@ def agent_fill_context(conn, application_id: str, session_id: str) -> dict:
+         if hashlib.sha256(data).hexdigest() != row['content_hash']:
+             raise ValueError('hash mismatch')
+         manifest = PackageManifest.model_validate_json(data)
+-        payload = hashing.payload_hash(manifest.destination_url, manifest.resume.content_hash,
+-                                       manifest.answers, manifest.consents)
+-        if (manifest.application_id != str(application_id) or
+-                payload != row['payload_hash'] or payload != manifest.payload_hash):
++        if not validate_manifest_binding(manifest, application_id=application_id,
++                                         payload_hash=row['payload_hash'],
++                                         resume_hash=manifest.resume.content_hash):
+             raise ValueError('binding mismatch')
+     except (OSError, ValueError, TypeError):
+         return {'ok': False, 'error': 'package_unverified'}
+-    return {'ok': True, 'payload_hash': payload,
++    return {'ok': True, 'payload_hash': manifest.payload_hash,
+             'answers': [a.model_dump() for a in manifest.answers if not looks_like_consent(a.field)]}
+ 
+ 
+diff --git a/src/job_machine/submit/service.py b/src/job_machine/submit/service.py
+index 7de8330..e41a8ae 100644
+--- a/src/job_machine/submit/service.py
++++ b/src/job_machine/submit/service.py
+@@ -17,6 +17,7 @@ from job_machine.browser.schema import SubmitResult
+ from job_machine.fill.adapter import map_fields
+ from job_machine.fill.store import load_manifest
+ from job_machine.package.artifacts import hash_file
++from job_machine.package.integrity import validate_manifest_binding
+ from job_machine.submit import gate, store
+ from job_machine.submit.models import SubmitRunSummary
+ 
+@@ -130,6 +131,20 @@ def _submit_claim(conn, browser, row, summary) -> None:
+                       "db_payload_hash": row["payload_hash"]})
+         return
+ 
++    actual_hash = hash_file(resume["path"])
++    g = gate.check_resume_hash_gate(
++        resume_artifact={"content_hash": actual_hash},
++        disclosed_resume_hash=resume.get("content_hash"))
++    if g is not None:
++        _block_claim(conn, row, summary, g.guard_name, {"guard": g.guard_name})
++        return
++    if not validate_manifest_binding(manifest, application_id=aid,
++                                     payload_hash=row["payload_hash"],
++                                     resume_hash=resume.get("content_hash")):
++        _block_claim(conn, row, summary, "manifest_integrity_mismatch",
++                     {"reason": "canonical package or application/resume binding mismatch"})
++        return
++
+     agent_sid = row.get("agent_fill_session_id")
+     sid = agent_sid or browser.create_session()
+     try:
+@@ -156,9 +171,10 @@ def _submit_claim(conn, browser, row, summary) -> None:
+                          {"unmatched": mapping.unmatched_required})
+             return
+ 
+-        actual_hash = hash_file(resume["path"])
++        # Inspection can take time: retain the original final file check as
++        # well as the early package check. Browser-attached bytes are T2.
+         g = gate.check_resume_hash_gate(
+-            resume_artifact={"content_hash": actual_hash},
++            resume_artifact={"content_hash": hash_file(resume["path"])},
+             disclosed_resume_hash=resume.get("content_hash"))
+         if g is not None:
+             _block_claim(conn, row, summary, g.guard_name, {"guard": g.guard_name})
+diff --git a/tests/submit/test_service.py b/tests/submit/test_service.py
+index 6bcf1b3..74e76af 100644
+--- a/tests/submit/test_service.py
++++ b/tests/submit/test_service.py
+@@ -1,5 +1,9 @@
+ import tempfile
+ import uuid
++from types import SimpleNamespace
++from job_machine.package import hashing
++
++CANONICAL_HASH = hashing.payload_hash("https://boards.greenhouse.io/acme/jobs/1", "resumehash", [], [])
+ from datetime import datetime, timedelta, timezone
+ 
+ import pytest
+@@ -15,7 +19,7 @@ def _apply(conn):
+         migrate.apply_migration(conn, m)
+ 
+ 
+-def _seed_app(conn, payload_hash="ph1", resume_content_hash="resumehash",
++def _seed_app(conn, payload_hash=CANONICAL_HASH, resume_content_hash="resumehash",
+              state="approved"):
+     """[Task 10] state по умолчанию 'approved' — жизненный цикл клеймит заявку из
+     этого состояния (claim_next/claim_application), а не из 'pre_submit_ready'
+@@ -48,7 +52,7 @@ def _seed_app(conn, payload_hash="ph1", resume_content_hash="resumehash",
+         return str(aid)
+ 
+ 
+-def _seed_approval(conn, application_id, payload_hash="ph1", hours_offset=24):
++def _seed_approval(conn, application_id, payload_hash=CANONICAL_HASH, hours_offset=24):
+     expires = datetime.now(tz=timezone.utc) + timedelta(hours=hours_offset)
+     with conn.cursor() as cur:
+         cur.execute(
+@@ -67,7 +71,13 @@ class _ManifestStub:
+     answers = []
+     consents = []
+     ats_family = "greenhouse"
+-    payload_hash = "ph1"  # совпадает с application.payload_hash сида (_seed_app)
++    payload_hash = CANONICAL_HASH
++    answers_hash = hashing.answers_hash([])
++    consents_hash = hashing.consents_hash([])
++    resume = SimpleNamespace(content_hash="resumehash")
++
++    def __init__(self, application_id):
++        self.application_id = application_id
+ 
+ 
+ class _InspectOk:
+@@ -141,7 +151,7 @@ def test_run_submit_submits_and_records(tmp_path, db_schema, monkeypatch):
+     conn.commit()
+ 
+     import job_machine.submit.service as svc_mod
+-    monkeypatch.setattr(svc_mod, "_load_manifest", lambda path: _ManifestStub())
++    monkeypatch.setattr(svc_mod, "_load_manifest", lambda path: _ManifestStub(aid))
+     monkeypatch.setattr(svc_mod, "hash_file", lambda path: "resumehash")
+ 
+     browser = _StubBrowser()
+@@ -174,7 +184,7 @@ def test_run_submit_blocks_when_browser_reports_not_submitted(tmp_path, db_schem
+     _seed_approval(conn, aid)
+     conn.commit()
+     import job_machine.submit.service as svc_mod
+-    monkeypatch.setattr(svc_mod, "_load_manifest", lambda path: _ManifestStub())
++    monkeypatch.setattr(svc_mod, "_load_manifest", lambda path: _ManifestStub(aid))
+     monkeypatch.setattr(svc_mod, "hash_file", lambda path: "resumehash")
+ 
+     class _NotSubmitted(_SubmitOk):
+@@ -214,7 +224,7 @@ def test_run_submit_blocks_on_resume_hash_mismatch(tmp_path, db_schema, monkeypa
+     conn.commit()
+ 
+     import job_machine.submit.service as svc_mod
+-    monkeypatch.setattr(svc_mod, "_load_manifest", lambda path: _ManifestStub())
++    monkeypatch.setattr(svc_mod, "_load_manifest", lambda path: _ManifestStub(aid))
+     monkeypatch.setattr(svc_mod, "hash_file", lambda path: "tampered_hash")
+ 
+     browser = _StubBrowser()
+@@ -257,7 +267,7 @@ def test_run_submit_isolates_browser_exception(tmp_path, db_schema, monkeypatch)
+ 
+     import job_machine.submit.service as svc_mod
+     monkeypatch.setattr(svc_mod, "_load_manifest",
+-                        lambda path: _ManifestStub())
++                        lambda path: _ManifestStub(aid))
+ 
+     class _BrokenBrowser(_StubBrowser):
+         def submit(self, sid, fields, resume_path=None):
+@@ -286,7 +296,7 @@ def test_submit_blocks_on_manifest_payload_hash_mismatch(tmp_path, db_schema, mo
+     class _StaleManifest(_ManifestStub):
+         payload_hash = "STALE_PH"
+ 
+-    monkeypatch.setattr(svc_mod, "_load_manifest", lambda path: _StaleManifest())
++    monkeypatch.setattr(svc_mod, "_load_manifest", lambda path: _StaleManifest(aid))
+     monkeypatch.setattr(svc_mod, "hash_file", lambda path: "resumehash")
+     browser = _StubBrowser()
+     summary = service.run_submit(conn, browser, limit=10)
+@@ -338,7 +348,7 @@ def test_submit_blocks_when_no_resume_bound(db_schema, monkeypatch):
+         cur.execute(
+             "insert into application (vacancy_id, candidate_id, verdict, package_status, "
+             "state, payload_hash) values (%s,'andrey-s','apply','none','approved',"
+-            "'ph1') returning application_id", (vid,))
++            "%s) returning application_id", (vid, CANONICAL_HASH))
+         aid = str(cur.fetchone()[0])
+         cur.execute(
+             "insert into artifact (application_id, artifact_type, path_or_uri) "
+@@ -347,7 +357,7 @@ def test_submit_blocks_when_no_resume_bound(db_schema, monkeypatch):
+     _seed_approval(conn, aid)
+     conn.commit()
+     import job_machine.submit.service as svc_mod
+-    monkeypatch.setattr(svc_mod, "_load_manifest", lambda path: _ManifestStub())
++    monkeypatch.setattr(svc_mod, "_load_manifest", lambda path: _ManifestStub(aid))
+     browser = _StubBrowser()
+     summary = service.run_submit(conn, browser, limit=10)
+     assert summary.blocked == 1
+@@ -367,7 +377,7 @@ def test_submit_blocks_when_redirected_to_other_post(tmp_path, db_schema, monkey
+     _seed_approval(conn, aid)
+     conn.commit()
+     import job_machine.submit.service as svc_mod
+-    monkeypatch.setattr(svc_mod, "_load_manifest", lambda path: _ManifestStub())
++    monkeypatch.setattr(svc_mod, "_load_manifest", lambda path: _ManifestStub(aid))
+     monkeypatch.setattr(svc_mod, "hash_file", lambda path: "resumehash")
+ 
+     class _InspectRedirect(_InspectOk):
+@@ -400,7 +410,7 @@ def test_post_submit_confirmation_mismatch_alerts(tmp_path, db_schema, monkeypat
+     _seed_approval(conn, aid)
+     conn.commit()
+     import job_machine.submit.service as svc_mod
+-    monkeypatch.setattr(svc_mod, "_load_manifest", lambda path: _ManifestStub())
++    monkeypatch.setattr(svc_mod, "_load_manifest", lambda path: _ManifestStub(aid))
+     monkeypatch.setattr(svc_mod, "hash_file", lambda path: "resumehash")
+ 
+     class _MismatchSubmit(_SubmitOk):
+@@ -434,7 +444,7 @@ def test_post_submit_generic_thanks_url_no_false_alert(tmp_path, db_schema, monk
+     _seed_approval(conn, aid)
+     conn.commit()
+     import job_machine.submit.service as svc_mod
+-    monkeypatch.setattr(svc_mod, "_load_manifest", lambda path: _ManifestStub())
++    monkeypatch.setattr(svc_mod, "_load_manifest", lambda path: _ManifestStub(aid))
+     monkeypatch.setattr(svc_mod, "hash_file", lambda path: "resumehash")
+ 
+     class _ThanksSubmit(_SubmitOk):
+@@ -461,7 +471,7 @@ def test_post_submit_none_confirmation_skips_check(tmp_path, db_schema, monkeypa
+     _seed_approval(conn, aid)
+     conn.commit()
+     import job_machine.submit.service as svc_mod
+-    monkeypatch.setattr(svc_mod, "_load_manifest", lambda path: _ManifestStub())
++    monkeypatch.setattr(svc_mod, "_load_manifest", lambda path: _ManifestStub(aid))
+     monkeypatch.setattr(svc_mod, "hash_file", lambda path: "resumehash")
+ 
+     class _NoneSubmit(_SubmitOk):
+diff --git a/tests/submit/test_service_lifecycle.py b/tests/submit/test_service_lifecycle.py
+index 6beb52d..11a4f95 100644
+--- a/tests/submit/test_service_lifecycle.py
++++ b/tests/submit/test_service_lifecycle.py
+@@ -1,4 +1,6 @@
+ import pytest
++from types import SimpleNamespace
++from job_machine.package import hashing
+ 
+ from job_machine.browser.schema import FormSchema, InspectResult, SubmitResult
+ from job_machine.submit import service, store
+@@ -54,11 +56,18 @@ def prepared(db_schema, tmp_path, monkeypatch):
+     conn.commit()
+ 
+     class FakeManifest:
+-        payload_hash = "ph1"
++        payload_hash = hashing.payload_hash("https://boards.example/jobs/1", "rh", [], [])
++        application_id = aid
++        resume = SimpleNamespace(content_hash="rh")
++        answers_hash = hashing.answers_hash([])
++        consents_hash = hashing.consents_hash([])
+         destination_url = "https://boards.example/jobs/1"
+         answers: dict = {}
+         consents: dict = {}
+ 
++    conn.execute("update application set payload_hash=%s where application_id=%s", (FakeManifest.payload_hash, aid))
++    conn.execute("update approval set payload_hash=%s where application_id=%s", (FakeManifest.payload_hash, aid))
++    conn.commit()
+     monkeypatch.setattr(service, "_load_manifest", lambda path: FakeManifest())
+     monkeypatch.setattr(service, "map_fields",
+                         lambda *a, **k: type("M", (), {
+diff --git a/src/job_machine/package/integrity.py b/src/job_machine/package/integrity.py
+new file mode 100644
+--- /dev/null
++++ b/src/job_machine/package/integrity.py
+@@ -0,0 +1,24 @@
++"""Verify the canonical package contract from actual members, without I/O.
++
++This binds a package to an application and resume hash. It does not inspect a
++browser page, establish approval, or prove that an attached file is the resume.
++"""
++from job_machine.package import hashing
++
++
++def validate_manifest_binding(manifest, *, application_id: str,
++                              payload_hash: str, resume_hash: str) -> bool:
++    if not application_id or not payload_hash or not resume_hash:
++        return False
++    try:
++        return (
++            manifest.application_id == str(application_id)
++            and manifest.resume.content_hash == resume_hash
++            and manifest.answers_hash == hashing.answers_hash(manifest.answers)
++            and manifest.consents_hash == hashing.consents_hash(manifest.consents)
++            and manifest.payload_hash == payload_hash
++            and hashing.payload_hash(manifest.destination_url, resume_hash,
++                                     manifest.answers, manifest.consents) == payload_hash
++        )
++    except (AttributeError, TypeError, ValueError):
++        return False
+diff --git a/tests/package/test_integrity.py b/tests/package/test_integrity.py
+new file mode 100644
+--- /dev/null
++++ b/tests/package/test_integrity.py
+@@ -0,0 +1,38 @@
++import pytest
++
++from job_machine.package.builder import build_package
++from job_machine.package.models import AnswerRecord, PackageInput, ResumeArtifact
++
++
++def bound_manifest():
++    return build_package(
++        PackageInput(application_id='app1', company='Synthetic', role='Tester',
++                     destination_url='https://example.test/jobs/1'),
++        [AnswerRecord(field='Email', value='synthetic@example.test', state='locked'),
++         AnswerRecord(field='Privacy', value='decline', state='optional-policy')],
++        ResumeArtifact(filename='resume.pdf', path='/synthetic/resume.pdf', content_hash='resumehash'))
++
++
++@pytest.mark.parametrize('change', ['none','answer','consent','destination','identity',
++                                   'resume','answers_hash','consents_hash','payload_hash'])
++def test_binding_uses_actual_values_not_declared_hash(change):
++    from job_machine.package.integrity import validate_manifest_binding
++    manifest = bound_manifest()
++    approved_hash = manifest.payload_hash
++    if change == 'answer': manifest.answers[0].value = 'changed@example.test'
++    if change == 'consent': manifest.consents[0].decision = 'accept'
++    if change == 'destination': manifest.destination_url = 'https://example.test/jobs/2'
++    if change == 'identity': manifest.application_id = 'different-app'
++    if change == 'resume': manifest.resume.content_hash = 'different-resume'
++    if change == 'answers_hash': manifest.answers_hash = 'forged'
++    if change == 'consents_hash': manifest.consents_hash = 'forged'
++    if change == 'payload_hash': manifest.payload_hash = 'forged'
++    result = validate_manifest_binding(manifest, application_id='app1',
++                                      payload_hash=approved_hash, resume_hash='resumehash')
++    assert result is (change == 'none')
++
++
++@pytest.mark.parametrize('manifest', [None, object(), {'payload_hash':'forged'}])
++def test_incomplete_binding_fails_closed(manifest):
++    from job_machine.package.integrity import validate_manifest_binding
++    assert validate_manifest_binding(manifest, application_id='app1', payload_hash='ph', resume_hash='rh') is False
+diff --git a/tests/submit/test_package_integrity.py b/tests/submit/test_package_integrity.py
+new file mode 100644
+--- /dev/null
++++ b/tests/submit/test_package_integrity.py
+@@ -0,0 +1,53 @@
++from types import SimpleNamespace
++
++import pytest
++
++from job_machine.submit import service
++from tests.package.test_integrity import bound_manifest
++
++
++@pytest.mark.parametrize('agent_sid', [None, 'retained-session'])
++@pytest.mark.parametrize('change', ['answer','consent','identity','resume'])
++def test_tampered_package_stops_before_browser_or_click(monkeypatch, agent_sid, change):
++    manifest = bound_manifest()
++    row = {'application_id':'app1','payload_hash':manifest.payload_hash,
++           'resume':{'path':'/synthetic/resume.pdf','content_hash':'resumehash'},
++           'manifest_path':'/synthetic/manifest.json','agent_fill_session_id':agent_sid}
++    if change == 'answer': manifest.answers[0].value = 'changed@example.test'
++    if change == 'consent': manifest.consents[0].decision = 'accept'
++    if change == 'identity': manifest.application_id = 'another-app'
++    if change == 'resume': manifest.resume.content_hash = 'another-resume'
++    blocks = []
++    monkeypatch.setattr(service, '_load_manifest', lambda path: manifest)
++    monkeypatch.setattr(service, 'hash_file', lambda path:'resumehash')
++    monkeypatch.setattr(service.gate, 'check_submit_gate', lambda *a:None)
++    monkeypatch.setattr(service, '_block_claim', lambda c,r,s,b,d:blocks.append(b))
++    def forbidden(*a,**kw):
++        pytest.fail('Unverified package reached browser or click boundary')
++    monkeypatch.setattr(service.store, 'mark_clicking', forbidden)
++    browser = SimpleNamespace(create_session=forbidden, inspect=forbidden,
++        inspect_current=forbidden, submit=forbidden, dispose=lambda *a:None, release=lambda *a:None)
++    service._submit_claim(None, browser, row, None)
++    assert blocks == ['manifest_integrity_mismatch']
++
++
++@pytest.mark.parametrize('agent_sid', [None, 'retained-session'])
++def test_resume_changed_during_inspection_is_rechecked_before_click(monkeypatch, agent_sid):
++    from job_machine.browser.schema import FormSchema, InspectResult
++    manifest = bound_manifest()
++    row = {'application_id':'app1','attempt_id':'attempt1','payload_hash':manifest.payload_hash,
++           'resume':{'path':'/synthetic/resume.pdf','content_hash':'resumehash'},
++           'manifest_path':'/synthetic/manifest.json','agent_fill_session_id':agent_sid}
++    monkeypatch.setattr(service, '_load_manifest', lambda path:manifest)
++    monkeypatch.setattr(service.gate, 'check_submit_gate', lambda *a:None)
++    hashes = iter(['resumehash','changed-during-inspect'])
++    monkeypatch.setattr(service, 'hash_file', lambda path:next(hashes))
++    blocks = []
++    monkeypatch.setattr(service, '_block_claim', lambda c,r,s,b,d:blocks.append(b))
++    def forbidden(*a,**kw): pytest.fail('Changed resume reached click boundary')
++    monkeypatch.setattr(service.store, 'mark_clicking', forbidden)
++    def inspect(*a): return InspectResult(form_schema=FormSchema(url=manifest.destination_url))
++    browser = SimpleNamespace(create_session=lambda:'new',inspect=inspect,inspect_current=inspect,
++                              dispose=lambda *a:None,release=lambda *a:None)
++    service._submit_claim(None,browser,row,None)
++    assert blocks == ['NoResumeUploadWithoutHashMatch']
