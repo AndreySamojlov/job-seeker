@@ -1,0 +1,43 @@
+{
+  "at": "2026-10-15T14:47:19.984483+00:00",
+  "code_revision": "dbf1e01",
+  "scope": "local dashboard18766",
+  "production_mutations": false,
+  "requests": [
+    {
+      "http": 200,
+      "data": "live",
+      "no_store": true,
+      "new_title": true,
+      "events_visible": true,
+      "results_visible": true,
+      "timezone": true,
+      "processing_unknown": true,
+      "seconds": 6.36
+    },
+    {
+      "http": 200,
+      "data": "live",
+      "no_store": true,
+      "new_title": true,
+      "events_visible": true,
+      "results_visible": true,
+      "timezone": true,
+      "processing_unknown": true,
+      "seconds": 6.83
+    }
+  ],
+  "worker_identities_unchanged": true,
+  "workers_running": 8,
+  "worker_health": {
+    "browser": 200,
+    "discovery": 200,
+    "triage": 200,
+    "resume": 200,
+    "package": 200,
+    "fill": 200,
+    "submit": 200,
+    "mail": 200
+  },
+  "launcher_pid": 35852
+}

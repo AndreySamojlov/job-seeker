@@ -27,3 +27,5 @@ OBS.S1 (локальные изменения поверх указанной с
 HTTP200 допускает partial/stale;503 означает отсутствие пригодных предметных блоков, даже при доступных контейнерах. Страница сохраняет диагностику и доступный status. observations — фиксированный SELECT метаданных event и whitelist полезных результатов, без payload. Это восстановление отображения, не supervisor или фоновый мониторинг. Изменение проверяется локально и read-only на lab-do; действующий процесс18766 автоматически не заменяется. Evidence — [Observer S1](../../audit/observer-s1.md).
 
 Тесты используют отдельные конфигурацию, temporary schemas, synthetic forms и локальный cluster25439. Границы допуска описывает [Test Strategy](test-strategy.md). Проверенного общего backup/restore и автоматического production rollback пока нет (E3).
+
+Применение OBS.S1: 15.10.2026 по отдельному поручению пользователя локальный процесс18766 обновлён на код dbf1e01. Реальный URL проверен200/live; workers и их image/container identity сохранены. Это доставка панели на ноутбуке, без redeploy конвейера. [Evidence](../../audit/observer-s1-deploy.json).
