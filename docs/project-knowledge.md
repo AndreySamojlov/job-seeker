@@ -2,6 +2,8 @@
 
 ## BOARD.S1 — 15.10.2026
 
+Incident после initial integration: пользователь сообщил о радикальном несоответствии native дизайну и таблицам. Статическое расследование подтвердило второй shell/flat-table внутри portable0.2.0a1. Исправлено в общем engine0.2.0a2, подключён новом wheel; добавлены real DOM seam tests, native tblDispose. Исходная численная/HTTP-приёмка была недостаточна для UI. Trust визуальной части не повышается до разрешённой реальной browser acceptance. [Исправление и доказательства](../audit/board-native-ui.md).
+
 Decisions: пользователь выбрал локальный S1 на wheel0.2.0a1, сохранив полный board Intent/S2/S3. Consumer владеет предметным отчётом, движок — UI. Текстовый candidate_id взят из действующей схемы вместо UUID в handoff. Read-only работа существующего daemon остаётся способом доступа; runtime credentials не копировались.
 
 Observations: independent review обнаружил смешение рубрик в scatter; red→green тест и отдельные подписанные серии устранили дефект. Live parity подтверждена на45 382 вакансий для двух кандидатов, identities/images workers и registry неизменны. Observer18766 уже не принимал соединения до S1; не изменялся. DB-suite впервые показала существующий timing-sensitive throttle test failure, адресный и повторный полный прогоныPASS; discovery не менялась.

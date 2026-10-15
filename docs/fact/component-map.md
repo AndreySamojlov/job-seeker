@@ -16,7 +16,7 @@
 | mcp, pipeline | Координация и предметные инструменты; локальный MCP делегирует чтение /data worker | Worker HTTP/DB |
 | dashboard | Общий HTML renderer и исходный dashboard | Словари/данные; renderer без DB |
 | ops | Управление существующим lab-do: CLI/MCP, read-only dashboard, ограниченные views/logs/lifecycle | SSH/Docker, daemon tunnel для dashboard |
-| board | Read-only Greenhouse snapshot, кандидатские расчёты и конфигурация общего UI; отдельный локальный процесс | Cockpit Engine0.2.0a1, PostgreSQL через разрешённый daemon tunnel; browser acceptance открыта |
+| board | Read-only Greenhouse snapshot, кандидатские расчёты и конфигурация общего UI; отдельный локальный процесс | Cockpit Engine0.2.0a2 с native shell/table, PostgreSQL через разрешённый daemon tunnel; browser acceptance открыта |
 | db / db/migrations | Миграции, соединения, ограничения хранения | PostgreSQL; единая схема0001–0035 |
 
 Worker API каждой стадии расположен в `src/job_machine/<stage>/app.py`; browser — `browser/app.py`. Запуски ops и проверки — [README](../../README.md). Существующие восемь сервисов lab-do продолжают работать на прежних образах. Новые agent context/readiness API проверены локально, а не на production.

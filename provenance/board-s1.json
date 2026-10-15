@@ -2,8 +2,11 @@
   "archive": "job-seeker-handoff-0.2.0a1.zip",
   "archive_sha256": "f4b37b86c1f3cd3016151735268f84019e020f9c5172c70a55bbb39c356b7fe1",
   "wheel": {
-    "path": "vendor/cockpit_engine-0.2.0a1-py3-none-any.whl",
-    "sha256": "73de9d3e18962982f22106debf48b44ee558e05c06638776a4cbb41999712c44"
+    "path": "vendor/cockpit_engine-0.2.0a2-py3-none-any.whl",
+    "sha256": "e07945f6c5f35fdc83190e08be010329bc1d3d7f2e75454b79cef6d5b7be5bbd",
+    "source_commit": "f87e31b163c190e22d3ae8c70d9a7a0bb8be0f47",
+    "source_branch": "codex/portable-board-s1",
+    "adaptation": "Native shell/table correction built from isolated engine source; no consumer asset copies."
   },
   "documents": [
     {
@@ -33,6 +36,12 @@
       "source_sha256": "29f644ff2975704a22b9ef41dfb4f6c6ef9fdd6fc029d2efbf042527550651f1",
       "target_sha256": "eba47fd5ce095657787605a388ef05f667ed55bd658d87150046d7c733b4d442",
       "adaptation": "Relocate spec/evidence links and annotate actual text candidate ID plus S1 authorization; no feature scope change."
+    }
+  ],
+  "previous_wheels": [
+    {
+      "path": "vendor/cockpit_engine-0.2.0a1-py3-none-any.whl",
+      "sha256": "73de9d3e18962982f22106debf48b44ee558e05c06638776a4cbb41999712c44"
     }
   ]
 }

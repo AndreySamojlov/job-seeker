@@ -1,0 +1,27 @@
+{
+  "engine_version": "0.2.0a2",
+  "ports": {
+    "18767": {
+      "health": 200,
+      "native_shell_html": true,
+      "served_assets_equal_installed": {
+        "board-runtime.js": "6f1a32848d92722b2d4f424e19c276d79213a77ef53f6bba5cc4aa868f69ea06",
+        "board-table.js": "0c10c4d22073f7623a9b822a202b5683ec4805fe6d8c6e2c6414d566b85dde16",
+        "table-engine.js": "791de4a40d29744ce21ed51a591e217aded0cfdef7aff898b989d1aa8fa98383",
+        "board-shell.css": "e684dfe5970c607d1101954c4bd93cc27f23a0ce78a54ac1cbef2db097333547"
+      }
+    },
+    "18768": {
+      "health": 200,
+      "native_shell_html": true,
+      "served_assets_equal_installed": {
+        "board-runtime.js": "6f1a32848d92722b2d4f424e19c276d79213a77ef53f6bba5cc4aa868f69ea06",
+        "board-table.js": "0c10c4d22073f7623a9b822a202b5683ec4805fe6d8c6e2c6414d566b85dde16",
+        "table-engine.js": "791de4a40d29744ce21ed51a591e217aded0cfdef7aff898b989d1aa8fa98383",
+        "board-shell.css": "e684dfe5970c607d1101954c4bd93cc27f23a0ce78a54ac1cbef2db097333547"
+      }
+    }
+  },
+  "browser_visual_acceptance": false,
+  "synthetic_total_rows": 201
+}

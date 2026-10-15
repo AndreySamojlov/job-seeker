@@ -1,0 +1,11 @@
+{
+  "engine_version": "0.2.0a2",
+  "wheel_sha256": "e07945f6c5f35fdc83190e08be010329bc1d3d7f2e75454b79cef6d5b7be5bbd",
+  "installed_files_equal": 117,
+  "native_dom_tests": 4,
+  "source_python_tests": 200,
+  "existing_js_tests": 10,
+  "browser_visual_acceptance": false,
+  "reason": "Browser reports saved permission denial",
+  "legacy_deployment_changed": false
+}

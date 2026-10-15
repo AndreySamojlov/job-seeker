@@ -12,7 +12,7 @@ from job_machine.board.config import GreenhouseRepository
 from job_machine.board.greenhouse import build_greenhouse_report
 from job_machine.board.models import BoardFilters, MOSCOW, TablePage
 
-ENGINE_VERSION = '0.2.0a1'
+ENGINE_VERSION = '0.2.0a2'
 
 
 def create_app(repository=None) -> FastAPI:
