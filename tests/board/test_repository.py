@@ -51,3 +51,21 @@ def test_multiple_candidates_never_silently_choose_one():
 def test_unknown_candidate_is_rejected_before_analytics():
     with pytest.raises(ValueError):
         load_greenhouse_snapshot(Connection(), BoardFilters('missing', date(2026, 10, 15), date(2026, 10, 15)), TablePage())
+
+
+def test_each_query_uses_remaining_source_budget():
+    from job_machine.board.read_budget import ReadBudget, ReadDeadline
+    now = [0]
+    class Slow(Connection):
+        def execute(self, sql, params=None):
+            result = super().execute(sql, params)
+            if 'FROM candidate' in sql:
+                now[0] = 14900
+            if 'SELECT DISTINCT' in sql:
+                now[0] = 15000
+            return result
+    conn = Slow()
+    with pytest.raises(ReadDeadline):
+        load_greenhouse_snapshot(conn, BoardFilters('alpha', date(2026, 10, 15), date(2026, 10, 15)), TablePage(), budget=ReadBudget(now_ms=lambda: now[0]))
+    assert any("'100ms'" in sql for sql, _ in conn.calls)
+    assert not any('AS total_rows' in sql for sql, _ in conn.calls)

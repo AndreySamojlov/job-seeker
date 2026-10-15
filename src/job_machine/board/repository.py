@@ -1,7 +1,8 @@
 """Single read-only PostgreSQL snapshot; no schema or worker mutations."""
 from datetime import datetime, time, timedelta, timezone
 
-from job_machine.board.models import BoardFilters, GreenhouseSnapshot, MOSCOW, TablePage
+from job_machine.board.models import BoardFilters, GreenhouseSnapshot, MOSCOW, TablePage, ReadStamp
+from job_machine.board.read_budget import ReadBudget
 
 # Only the persisted per-job API URL proves board identity. Company is not a key.
 BASE = r"""
@@ -21,24 +22,30 @@ WITH source AS (
 """
 
 
-def load_greenhouse_snapshot(conn, filters: BoardFilters, table_page: TablePage) -> GreenhouseSnapshot:
+def load_greenhouse_snapshot(conn, filters: BoardFilters, table_page: TablePage, *, budget=None) -> GreenhouseSnapshot:
+    budget = budget or ReadBudget()
     with conn.transaction():
+        budget.source_remaining_ms()
         conn.execute('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY')
-        conn.execute("SET LOCAL statement_timeout = '10000ms'")
-        candidates = conn.execute('SELECT candidate_id, name FROM candidate WHERE active ORDER BY candidate_id').fetchall()
+        stamp = ReadStamp()
+        def execute(sql, params=None):
+            timeout = budget.statement_timeout_ms()
+            conn.execute(f"SET LOCAL statement_timeout = '{timeout}ms'")
+            return conn.execute(sql, params)
+        candidates = execute('SELECT candidate_id, name FROM candidate WHERE active ORDER BY candidate_id').fetchall()
         candidate_id = filters.candidate_id
         if candidate_id is None and len(candidates) == 1:
             candidate_id = candidates[0]['candidate_id']
         if candidate_id is not None and candidate_id not in {c['candidate_id'] for c in candidates}:
             raise ValueError('Candidate unavailable')
-        result = GreenhouseSnapshot(candidate_id=candidate_id, candidates=candidates)
+        result = GreenhouseSnapshot(candidate_id=candidate_id, candidates=candidates, stamp=stamp)
         if candidate_id is None:
             return result
         params = dict(candidate=candidate_id, board=filters.board,
                       start=datetime.combine(filters.date_from, time.min, MOSCOW),
                       end=datetime.combine(filters.date_to + timedelta(days=1), time.min, MOSCOW))
         def query(suffix):
-            return conn.execute(BASE + suffix, params)
+            return execute(BASE + suffix, params)
         result.board_options = [r['token'] for r in query(
             'SELECT DISTINCT board_token AS token FROM source WHERE board_token IS NOT NULL ORDER BY token').fetchall()]
         counts = query('SELECT count(*) AS total_rows, count(*) FILTER (WHERE board_token IS NULL) AS unknown_board, '
@@ -55,4 +62,5 @@ def load_greenhouse_snapshot(conn, filters: BoardFilters, table_page: TablePage)
         result.rows = query(f'SELECT * FROM selected ORDER BY {table_page.sort_key} {table_page.sort_direction} '
                             f'NULLS LAST, vacancy_id LIMIT 100 OFFSET {table_page.page * 100}').fetchall()
         result.fetched_at = datetime.now(timezone.utc)
+        budget.source_remaining_ms()
         return result

@@ -5,6 +5,8 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 from job_machine.board.models import BoardFilters, GreenhouseSnapshot, TablePage
+from job_machine.board.context import canonical_context
+from job_machine.board.read_budget import monotonic_ms
 
 
 def board_labels():
@@ -54,7 +56,10 @@ def build_greenhouse_report(snapshot: GreenhouseSnapshot, filters: BoardFilters,
         row['availability_checked_at'] = None
         rows.append(row)
     return dict(schema_version=1, state='live',
-        meta=dict(domain='greenhouse', filters=dict(candidate_id=snapshot.candidate_id,
+        meta=dict(domain='greenhouse', context=canonical_context(filters, table_page, snapshot.candidate_id),
+                  read_id=snapshot.read_id, snapshot_at=snapshot.stamp.snapshot_at.isoformat(),
+                  snapshot_age_ms=max(0, int(monotonic_ms() - snapshot.stamp.monotonic_started_ms)),
+                  filters=dict(candidate_id=snapshot.candidate_id,
                   discovered_from=filters.date_from.isoformat(), discovered_to=filters.date_to.isoformat(),
                   board=filters.board or '', availability=filters.availability or ''),
                   timezone='Europe/Moscow', fetched_at=snapshot.fetched_at.isoformat(), selection_required=required,
@@ -82,4 +87,4 @@ def build_greenhouse_report(snapshot: GreenhouseSnapshot, filters: BoardFilters,
                     ('location', 'Локация', 'text'), ('work_mode', 'Формат', 'text'), ('discovered_at', 'Обнаружена', 'datetime'),
                     ('availability', 'Доступность', 'text'), ('availability_checked_at', 'Проверена', 'datetime'),
                     ('fit_score', 'Фит', 'number'), ('fit_band', 'Группа фита', 'text'), ('fit_score_version', 'Версия фита', 'text')]],
-                   rows=rows, total_rows=snapshot.total_rows, page=table_page.page, page_size=100))
+                   row_key='vacancy_id', rows=rows, total_rows=snapshot.total_rows, page=table_page.page, page_size=100))

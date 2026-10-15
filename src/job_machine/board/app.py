@@ -1,9 +1,11 @@
 """Separate S1 app. Run with uvicorn job_machine.board.app:create_app --factory."""
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
+from contextlib import asynccontextmanager
+import json
 from importlib.metadata import version
 
 from fastapi import FastAPI, HTTPException, Query, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from fastapi.encoders import jsonable_encoder
 from cockpit_engine.web.board_contract import BoardDomain, BoardSpec
 from cockpit_engine.web.board_routes import register_board_routes
@@ -12,6 +14,9 @@ from job_machine.board.config import GreenhouseRepository
 from job_machine.board.greenhouse import build_greenhouse_report
 from job_machine.board.models import BoardFilters, MOSCOW, TablePage
 
+from job_machine.board.read_budget import ReadBudget, monotonic_ms
+from job_machine.board.read_runtime import ReadCoordinator, PreparedReport, ReadBusy
+
 ENGINE_VERSION = '0.2.0a2'
 
 
@@ -19,19 +24,25 @@ def create_app(repository=None) -> FastAPI:
     if version('cockpit-engine') != ENGINE_VERSION:
         raise RuntimeError('Unsupported cockpit-engine version; expected ' + ENGINE_VERSION)
     repository = repository if repository is not None else GreenhouseRepository()
-    app = FastAPI(title='Job Seeker Board', docs_url=None, redoc_url=None, openapi_url=None)
+    coordinator = ReadCoordinator()
+    @asynccontextmanager
+    async def lifespan(app):
+        yield
+        await coordinator.aclose()
+    app = FastAPI(title='Job Seeker Board', docs_url=None, redoc_url=None, openapi_url=None, lifespan=lifespan)
     register_board_routes(app, board=BoardSpec(key='job-board', title='Job Seeker', page_path='/',
         data_url='/api/board/greenhouse', domains=(BoardDomain('greenhouse', 'Greenhouse'),)))
 
     @app.get('/healthz')
-    def health():
+    async def health():
         return {'status': 'ok'}
 
     @app.get('/api/board/greenhouse')
-    def greenhouse(request: Request, domain: str = 'greenhouse', candidate_id: str | None = None,
+    async def greenhouse(request: Request, domain: str = 'greenhouse', candidate_id: str | None = None,
                    discovered_from: date | None = None, discovered_to: date | None = None,
                    board: str | None = None, availability: str | None = None,
                    page: int = Query(0, ge=0), sort_key: str = 'discovered_at', sort_direction: str = 'desc'):
+        budget = ReadBudget()
         allowed = {'domain', 'candidate_id', 'discovered_from', 'discovered_to', 'board', 'availability', 'page', 'sort_key', 'sort_direction'}
         if domain != 'greenhouse' or set(request.query_params) - allowed:
             raise HTTPException(422, 'Invalid selection')
@@ -42,14 +53,22 @@ def create_app(repository=None) -> FastAPI:
             paging = TablePage(page, sort_key, sort_direction)
         except ValueError:
             raise HTTPException(422, 'Invalid selection') from None
+        def prepare(budget):
+            snapshot = repository.load(filters, paging, budget=budget)
+            report = build_greenhouse_report(snapshot, filters, paging)
+            report['meta']['fetched_at'] = datetime.now(timezone.utc).isoformat()
+            report['meta']['snapshot_age_ms'] = max(0, int(monotonic_ms() - snapshot.stamp.monotonic_started_ms))
+            body = json.dumps(jsonable_encoder(report), ensure_ascii=False, allow_nan=False, separators=(',', ':')).encode('utf-8')
+            budget.check_response_deadline()
+            return PreparedReport(body)
         try:
-            snapshot = repository.load(filters, paging)
+            result = await coordinator.run(prepare, budget=budget)
         except ValueError:
-            raise HTTPException(422, 'Candidate unavailable') from None
-        except Exception:
-            return JSONResponse(dict(schema_version=1, state='unavailable', detail='Данные недоступны'),
-                                status_code=503, headers={'Cache-Control': 'no-store'})
-        return JSONResponse(jsonable_encoder(build_greenhouse_report(snapshot, filters, paging)),
-                            headers={'Cache-Control': 'no-store'})
+            raise HTTPException(422, 'candidate_unavailable') from None
+        except Exception as exc:
+            return JSONResponse(dict(schema_version=1, state='unavailable', detail='Данные недоступны',
+                                     code='read_busy' if isinstance(exc, ReadBusy) else 'source_unavailable'),
+                                status_code=503, headers={'Cache-Control': 'no-store', **({'Retry-After': '60'} if isinstance(exc, ReadBusy) else {})})
+        return Response(result.body, media_type='application/json', headers={'Cache-Control': 'no-store'})
 
     return app

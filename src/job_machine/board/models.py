@@ -2,6 +2,8 @@
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta, timezone
 import re
+from uuid import uuid4
+from job_machine.board.read_budget import monotonic_ms
 
 MOSCOW = timezone(timedelta(hours=3))
 SORT_KEYS = ('title', 'company', 'board_token', 'location', 'work_mode', 'discovered_at', 'availability', 'availability_checked_at', 'fit_score', 'fit_band', 'fit_score_version')
@@ -40,6 +42,12 @@ class TablePage:
 
 
 @dataclass
+class ReadStamp:
+    snapshot_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    monotonic_started_ms: float = field(default_factory=monotonic_ms)
+
+
+@dataclass
 class GreenhouseSnapshot:
     candidate_id: str | None = None
     candidates: list = field(default_factory=list)
@@ -52,4 +60,6 @@ class GreenhouseSnapshot:
     boards: list = field(default_factory=list)
     points: list = field(default_factory=list)
     rows: list = field(default_factory=list)
+    stamp: ReadStamp = field(default_factory=ReadStamp)
     fetched_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    read_id: str = field(default_factory=lambda: str(uuid4()))

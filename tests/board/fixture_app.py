@@ -7,7 +7,7 @@ from job_machine.board.models import GreenhouseSnapshot, MOSCOW
 
 
 class SyntheticRepository:
-    def load(self, filters, page):
+    def load(self, filters, page, *, budget=None):
         if filters.board == 'fail':
             raise RuntimeError('Synthetic source failure')
         if filters.board == 'slow':
