@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Sample Application (generic cookie banner + decoy form button)</title></head>
+<body>
+  <form id="application" method="post" action="/submitted">
+    <label for="full_name">Full name</label>
+    <input id="full_name" name="full_name" type="text" required>
+
+    <!-- Decoy: a real application control whose text overlaps the cookie-banner
+         vocabulary ("Decline") — _dismiss_cookie_banner must NOT click this. -->
+    <button type="button" id="decline_demographic">Decline to answer</button>
+
+    <input id="consent" name="consent" type="checkbox">
+    <label for="consent">I agree to the privacy policy</label>
+
+    <button>Submit Application</button>
+  </form>
+
+  <!-- Non-OneTrust vendor, scoped inside a recognisable cookie-banner container.
+       Full-viewport dark-filter (same mechanism as the live OneTrust incident)
+       guarantees the consent checkbox above is pointer-intercepted, not just
+       visually adjacent to the banner panel. -->
+  <div class="cookie-consent-dark-filter"
+       style="position:fixed;top:0;left:0;width:100%;height:100%;
+              background:rgba(0,0,0,0.5);z-index:9998;"></div>
+  <div class="cookie-consent-banner"
+       style="position:fixed;bottom:0;left:0;width:100%;z-index:9999;
+              background:#fff;padding:20px;border-top:1px solid #ccc;">
+    <p>This site uses cookies.</p>
+    <button id="generic_reject">Reject All</button>
+    <button id="generic_accept">Accept All</button>
+  </div>
+  <script>
+    function removeBanner() {
+      document.querySelector('.cookie-consent-banner').remove();
+      document.querySelector('.cookie-consent-dark-filter').remove();
+    }
+    document.getElementById('generic_reject').addEventListener('click', removeBanner);
+    document.getElementById('generic_accept').addEventListener('click', removeBanner);
+    // Decoy button — if this ever gets clicked by mistake, flag it visibly so the
+    // test can assert on it.
+    document.getElementById('decline_demographic').addEventListener('click', function () {
+      document.getElementById('decline_demographic').setAttribute('data-clicked', 'true');
+    });
+    // Stay on-page after submit so the test can inspect DOM state afterwards.
+    document.getElementById('application').addEventListener('submit', function (e) {
+      e.preventDefault();
+    });
+  </script>
+</body>
+</html>

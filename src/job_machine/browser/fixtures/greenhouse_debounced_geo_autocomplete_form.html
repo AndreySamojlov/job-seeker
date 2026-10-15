@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Geo autocomplete</title></head>
+<body>
+  <form id="application" method="post" action="/submitted">
+    <label for="candidate-location">Location (City)</label>
+    <input id="candidate-location" role="combobox" aria-autocomplete="list" aria-expanded="false">
+    <div class="rs-menu"></div>
+    <button type="submit">Submit Application</button>
+  </form>
+  <script>
+    (function () {
+      var input = document.getElementById('candidate-location');
+      var menu = document.querySelector('.rs-menu');
+      var CITIES = ['Lisbon, Portugal', 'Berlin, Germany'];
+      var timer = null;
+      function renderOptions(matches) {
+        menu.innerHTML = '';
+        matches.forEach(function (label, i) {
+          var opt = document.createElement('div');
+          opt.id = 'react-select-candidate-location-option-' + i;
+          opt.textContent = label;
+          opt.addEventListener('click', function () {
+            input.setAttribute('data-selected', label);
+            input.value = label;
+            menu.innerHTML = '';
+          });
+          menu.appendChild(opt);
+        });
+      }
+      input.addEventListener('click', function () {
+        menu.innerHTML = ''; // как реальный гео-виджет: пусто, пока не начали печатать
+      });
+      input.addEventListener('input', function () {
+        input.dataset.inputEvents = (parseInt(input.dataset.inputEvents || '0', 10) + 1);
+        if (timer) { clearTimeout(timer); }
+        var q = input.value.trim().toLowerCase();
+        timer = setTimeout(function () {
+          var matches = CITIES.filter(function (c) {
+            return c.toLowerCase().indexOf(q) !== -1;
+          });
+          renderOptions(matches);
+        }, 300);
+      });
+    })();
+  </script>
+</body>
+</html>

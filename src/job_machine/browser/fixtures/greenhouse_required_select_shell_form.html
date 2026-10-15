@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Greenhouse required select shell</title></head>
+<body>
+  <!--
+    Живая разметка job-boards.greenhouse.io (снята 2026-08-06 с
+    /remotecom/jobs/7331443003). Каждый custom-вопрос — ПАРА элементов:
+
+      * видимый комбобокс  <input id="question_N" class="select__input"
+        role="combobox">  — несёт лейбл вопроса, но required=false;
+      * заглушка React Select <input class="...-requiredInput" required> —
+        несёт требуемость, но НЕ имеет ни name, ни id.
+
+    Именно из-за этого расщепления обязательный вопрос был невидим для
+    mandatory_unknown: лейблованная половина выглядела необязательной, а
+    обязательная половина получала fallback-имя field_N и глушилась
+    _AUTO_FIELD_RE в fill/adapter.py.
+
+    Класс requiredInput здесь с тем же CSS-in-JS хешем, что на живой странице,
+    НАРОЧНО: он нестабилен между деплоями Greenhouse, и тест обязан проходить
+    без привязки к нему — сращивание идёт по структуре (общий контейнер с
+    role=combobox), а не по имени класса.
+  -->
+  <form id="application" method="post" action="/submitted">
+    <label for="first_name">First Name*</label>
+    <input id="first_name" class="input input__single-line" type="text">
+
+    <div class="field">
+      <label for="question_27010971003">How did you hear about Remote?*</label>
+      <div class="select-shell remix-css-b62m3t-container">
+        <div class="select__control">
+          <div class="select__value-container">
+            <input id="question_27010971003" class="select__input" type="text"
+                   role="combobox" aria-autocomplete="list" aria-expanded="false">
+          </div>
+        </div>
+        <input class="remix-css-1a0ro4n-requiredInput" type="text" required
+               tabindex="-1" value="">
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="question_27010973003">Work eligibility — are you legally eligible to work?*</label>
+      <div class="select-shell remix-css-b62m3t-container">
+        <div class="select__control">
+          <div class="select__value-container">
+            <input id="question_27010973003" class="select__input" type="text"
+                   role="combobox" aria-autocomplete="list" aria-expanded="false">
+          </div>
+        </div>
+        <input class="remix-css-1a0ro4n-requiredInput" type="text" required
+               tabindex="-1" value="">
+      </div>
+    </div>
+
+    <button type="submit">Submit Application</button>
+  </form>
+</body>
+</html>

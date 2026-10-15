@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>GH Application</title></head>
+<body>
+  <h1>Apply</h1>
+  <form id="application" method="post" action="/submitted">
+    <label for="fn">First name</label>
+    <input id="fn" name="job_application[first_name]" type="text" required>
+
+    <label for="ln">Last name</label>
+    <input id="ln" name="job_application[last_name]" type="text" required>
+
+    <label for="em">Email</label>
+    <input id="em" name="job_application[email]" type="email" required>
+
+    <label for="q0">Notice period (months)</label>
+    <input id="q0" name="job_application[answers_attributes][0][text_value]" type="text">
+
+    <label for="q1">English level</label>
+    <select id="q1" name="job_application[answers_attributes][1]">
+      <option value=""></option>
+      <option>A2</option>
+      <option>B2 — Upper intermediate</option>
+    </select>
+
+    <label for="rs">Resume</label>
+    <input id="rs" name="job_application[resume]" type="file">
+
+    <button type="submit">Submit Application</button>
+  </form>
+</body>
+</html>

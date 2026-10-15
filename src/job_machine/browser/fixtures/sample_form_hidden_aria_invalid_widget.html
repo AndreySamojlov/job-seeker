@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Sample Application (hidden aria-invalid widget)</title></head>
+<body>
+  <h1>Apply: Sample Role</h1>
+  <form id="application" method="post" action="/submitted">
+    <label for="full_name">Full name</label>
+    <input id="full_name" name="full_name" type="text" required>
+
+    <!-- Leftover from a since-abandoned validation pass: aria-invalid="true" but
+         display:none (offsetParent === null) — must NOT trip a failure. Regression
+         guard for the visibility check in _invalid_fields_signal, which otherwise
+         would false-negative a genuinely valid, complete submission. -->
+    <input id="hidden_widget" type="text" aria-invalid="true" style="display:none">
+
+    <button type="submit">Submit Application</button>
+  </form>
+  <script>
+    document.getElementById('application').addEventListener('submit', function (e) {
+      e.preventDefault();
+    });
+  </script>
+</body>
+</html>

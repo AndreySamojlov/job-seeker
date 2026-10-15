@@ -1,0 +1,1951 @@
+{
+  "_comment": "Multi-source job board registry. Поля: ats (greenhouse|ashby|lever), token (публичный board-токен, не секрет), label (отображаемое имя компании, опционально). Дедуп и валидация — в sources.load_sources(). Мёртвые токены отсеются на verify. Обновлено 2026-07-02: 281 борд (184 GH + 57 Lever + 40 Ashby) — харвест yc-oss + OpenJobs поверх базы от 2026-06-30 (scripts/harvest_boards.py). Обновлено 2026-07-03: +9 бордов (290 всего) — целевой ресёрч компаний с русско-английской культурой и полной удалённой работой по миру (Кипр-релокация, гейминг-диаспора, fintech/dev-tools, remote-worldwide), проба через scripts/probe_candidates.py; попутно найден и починен баг LeverClient — не поддерживал EU data-residency борды (api.eu.lever.co). Обновлено 2026-07-03 (раунд 2): +20 бордов (310 всего) — целевой ресёрч 'удалёнка из любой точки мира' по 2 группам (англосаксонская локализация + международная база), 152 компании исследовано, проба через scripts/probe_candidates.py. Обновлено 2026-07-03 (раунд 3): +25 подтверждённо живых бордов (335 всего) без текущего совпадения по целевым ролям -- добавлены безусловно, т.к. найдены глубоким ресёрчем (не слаг-перебором): будущие вакансии поймает штатный discovery/verify. Обновлено 2026-07-04 (раунд 4): +5 живых бордов (340 всего) -- найдены прямой WebFetch-проверкой careers-страниц компаний, не резолвившихся по known_url первого ресёрч-захода (реальный board token отличался от домашней careers-страницы).",
+  "sources": [
+    {
+      "_comment": "=== GREENHOUSE (184 boards) ==="
+    },
+    {
+      "ats": "greenhouse",
+      "token": "remotecom",
+      "label": "Remote.com"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "doctolib",
+      "label": "Doctolib"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "contentful",
+      "label": "Contentful"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "grafanalabs",
+      "label": "Grafana Labs"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "vercel",
+      "label": "Vercel"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "getyourguide",
+      "label": "GetYourGuide"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "temporaltechnologies",
+      "label": "Temporal Technologies"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "typeform",
+      "label": "Typeform"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "mirakl",
+      "label": "Mirakl"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "wargamingen",
+      "label": "Wargaming"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "jetbrains",
+      "label": "JetBrains"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "nebius",
+      "label": "Nebius"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "platacard",
+      "label": "Plata"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "groupib",
+      "label": "Group-IB"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "wheely",
+      "label": "Wheely"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "brainrocketltd",
+      "label": "BrainRocket"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "evoplaygames",
+      "label": "EvoPlay Games"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "outfit7",
+      "label": "Outfit7"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "stripe",
+      "label": "Stripe"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "dropbox",
+      "label": "Dropbox"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "cloudflare",
+      "label": "Cloudflare"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "datadog",
+      "label": "Datadog"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "mongodb",
+      "label": "MongoDB"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "shopify",
+      "label": "Shopify"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "gitlab",
+      "label": "GitLab"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "elastic",
+      "label": "Elastic"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "figma",
+      "label": "Figma"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "segment",
+      "label": "Segment"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "intercom",
+      "label": "Intercom"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "asana",
+      "label": "Asana"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "reddit",
+      "label": "Reddit"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "coinbase",
+      "label": "Coinbase"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "zapier",
+      "label": "Zapier"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "hubspot",
+      "label": "HubSpot"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "ujet",
+      "label": "Ujet"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "fluxon",
+      "label": "Fluxon"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "gongio",
+      "label": "Gong"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "540",
+      "label": "540"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "smartsheet",
+      "label": "Smartsheet"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "sureify",
+      "label": "Sureify"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "entersekt",
+      "label": "Entersekt"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "calendly",
+      "label": "Calendly"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "headway",
+      "label": "Headway"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "donorbox",
+      "label": "Donorbox"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "guidepointsecurity",
+      "label": "Guidepoint Security"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "wingspan",
+      "label": "Wingspan"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "gofasti",
+      "label": "GoFasti"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "ecosio",
+      "label": "Ecosio"
+    },
+    {
+      "_comment": "--- GH: из .env (не было в greenhouse_boards.json) ---"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "sumup",
+      "label": "SumUp"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "okta",
+      "label": "Okta"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "celonis",
+      "label": "Celonis"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "hellofresh",
+      "label": "HelloFresh"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "postman",
+      "label": "Postman"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "gocardless",
+      "label": "GoCardless"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "wolt",
+      "label": "Wolt"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "twilio",
+      "label": "Twilio"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "newrelic",
+      "label": "New Relic"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "pleo",
+      "label": "Pleo"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "pipedrive",
+      "label": "Pipedrive"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "mews",
+      "label": "Mews"
+    },
+    {
+      "_comment": "--- GH: дополнительные EU/remote-friendly ---"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "adyen",
+      "label": "Adyen"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "mollie",
+      "label": "Mollie"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "messagebird",
+      "label": "MessageBird"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "camunda",
+      "label": "Camunda"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "fastly",
+      "label": "Fastly"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "netlify",
+      "label": "Netlify"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "algolia",
+      "label": "Algolia"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "1password",
+      "label": "1Password"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "chainguard",
+      "label": "Chainguard"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "mixpanel",
+      "label": "Mixpanel"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "appsflyer",
+      "label": "AppsFlyer"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "fiverr",
+      "label": "Fiverr"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "wix",
+      "label": "Wix"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "monday",
+      "label": "Monday.com"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "armis",
+      "label": "Armis"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "snyk",
+      "label": "Snyk"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "checkmarx",
+      "label": "Checkmarx"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "samsara",
+      "label": "Samsara"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "amplitude",
+      "label": "Amplitude"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "braze",
+      "label": "Braze"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "contentstack",
+      "label": "Contentstack"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "sanity",
+      "label": "Sanity"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "storyblok",
+      "label": "Storyblok"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "hygraph",
+      "label": "Hygraph"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "appsmith",
+      "label": "Appsmith"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "grafbase",
+      "label": "Grafbase"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "onfido",
+      "label": "Onfido"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "paddle",
+      "label": "Paddle"
+    },
+    {
+      "_comment": "=== LEVER (57 boards) — EU + US remote-friendly ==="
+    },
+    {
+      "ats": "lever",
+      "token": "netflix",
+      "label": "Netflix"
+    },
+    {
+      "ats": "lever",
+      "token": "spotify",
+      "label": "Spotify"
+    },
+    {
+      "ats": "lever",
+      "token": "duolingo",
+      "label": "Duolingo"
+    },
+    {
+      "ats": "lever",
+      "token": "notion",
+      "label": "Notion"
+    },
+    {
+      "ats": "lever",
+      "token": "loom",
+      "label": "Loom"
+    },
+    {
+      "ats": "lever",
+      "token": "miro",
+      "label": "Miro"
+    },
+    {
+      "ats": "lever",
+      "token": "automattic",
+      "label": "Automattic"
+    },
+    {
+      "ats": "lever",
+      "token": "zendesk",
+      "label": "Zendesk"
+    },
+    {
+      "ats": "lever",
+      "token": "lattice",
+      "label": "Lattice"
+    },
+    {
+      "ats": "lever",
+      "token": "brex",
+      "label": "Brex"
+    },
+    {
+      "ats": "lever",
+      "token": "rippling",
+      "label": "Rippling"
+    },
+    {
+      "ats": "lever",
+      "token": "launchdarkly",
+      "label": "LaunchDarkly"
+    },
+    {
+      "ats": "lever",
+      "token": "monzo",
+      "label": "Monzo"
+    },
+    {
+      "ats": "lever",
+      "token": "wise",
+      "label": "Wise"
+    },
+    {
+      "ats": "lever",
+      "token": "checkout",
+      "label": "Checkout.com"
+    },
+    {
+      "ats": "lever",
+      "token": "deliveroo",
+      "label": "Deliveroo"
+    },
+    {
+      "ats": "lever",
+      "token": "pitch",
+      "label": "Pitch"
+    },
+    {
+      "ats": "lever",
+      "token": "hotjar",
+      "label": "Hotjar"
+    },
+    {
+      "ats": "lever",
+      "token": "buffer",
+      "label": "Buffer"
+    },
+    {
+      "ats": "lever",
+      "token": "whereby",
+      "label": "Whereby"
+    },
+    {
+      "ats": "lever",
+      "token": "doist",
+      "label": "Doist"
+    },
+    {
+      "ats": "lever",
+      "token": "toggl",
+      "label": "Toggl"
+    },
+    {
+      "ats": "lever",
+      "token": "canva",
+      "label": "Canva"
+    },
+    {
+      "ats": "lever",
+      "token": "pendo",
+      "label": "Pendo"
+    },
+    {
+      "ats": "lever",
+      "token": "invisionapp",
+      "label": "InVision"
+    },
+    {
+      "ats": "lever",
+      "token": "carta",
+      "label": "Carta"
+    },
+    {
+      "ats": "lever",
+      "token": "gusto",
+      "label": "Gusto"
+    },
+    {
+      "ats": "lever",
+      "token": "retool",
+      "label": "Retool"
+    },
+    {
+      "ats": "lever",
+      "token": "gem",
+      "label": "Gem"
+    },
+    {
+      "ats": "lever",
+      "token": "chime",
+      "label": "Chime"
+    },
+    {
+      "ats": "lever",
+      "token": "deel",
+      "label": "Deel"
+    },
+    {
+      "ats": "lever",
+      "token": "remote",
+      "label": "Remote"
+    },
+    {
+      "ats": "lever",
+      "token": "personio",
+      "label": "Personio"
+    },
+    {
+      "ats": "lever",
+      "token": "factorial",
+      "label": "Factorial"
+    },
+    {
+      "ats": "lever",
+      "token": "leadiq",
+      "label": "LeadIQ"
+    },
+    {
+      "_comment": "=== ASHBY (40 boards) — EU startups + US dev-tool remote ==="
+    },
+    {
+      "ats": "ashby",
+      "token": "linear",
+      "label": "Linear"
+    },
+    {
+      "ats": "ashby",
+      "token": "ramp",
+      "label": "Ramp"
+    },
+    {
+      "ats": "ashby",
+      "token": "posthog",
+      "label": "PostHog"
+    },
+    {
+      "ats": "ashby",
+      "token": "supabase",
+      "label": "Supabase"
+    },
+    {
+      "ats": "ashby",
+      "token": "dbtlabs",
+      "label": "dbt Labs"
+    },
+    {
+      "ats": "ashby",
+      "token": "airbyte",
+      "label": "Airbyte"
+    },
+    {
+      "ats": "ashby",
+      "token": "hightouch",
+      "label": "Hightouch"
+    },
+    {
+      "ats": "ashby",
+      "token": "neon",
+      "label": "Neon"
+    },
+    {
+      "ats": "ashby",
+      "token": "prefect",
+      "label": "Prefect"
+    },
+    {
+      "ats": "ashby",
+      "token": "dagster",
+      "label": "Dagster"
+    },
+    {
+      "ats": "ashby",
+      "token": "planetscale",
+      "label": "PlanetScale"
+    },
+    {
+      "ats": "ashby",
+      "token": "resend",
+      "label": "Resend"
+    },
+    {
+      "ats": "ashby",
+      "token": "liveblocks",
+      "label": "Liveblocks"
+    },
+    {
+      "ats": "ashby",
+      "token": "stytch",
+      "label": "Stytch"
+    },
+    {
+      "ats": "ashby",
+      "token": "mercury",
+      "label": "Mercury"
+    },
+    {
+      "ats": "ashby",
+      "token": "brex",
+      "label": "Brex"
+    },
+    {
+      "ats": "ashby",
+      "token": "turbopuffer",
+      "label": "Turbopuffer"
+    },
+    {
+      "ats": "ashby",
+      "token": "modal",
+      "label": "Modal"
+    },
+    {
+      "ats": "ashby",
+      "token": "sourcegraph",
+      "label": "Sourcegraph"
+    },
+    {
+      "ats": "ashby",
+      "token": "grafana",
+      "label": "Grafana"
+    },
+    {
+      "ats": "ashby",
+      "token": "framer",
+      "label": "Framer"
+    },
+    {
+      "ats": "ashby",
+      "token": "vercel",
+      "label": "Vercel"
+    },
+    {
+      "ats": "lever",
+      "token": "voodoo",
+      "label": "Voodoo"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "rockstargames",
+      "label": "Rockstar Games"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "gramgamescareers",
+      "label": "Gram Games"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "2k",
+      "label": "2K"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "canonical",
+      "label": "Canonical"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "discord",
+      "label": "Discord"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "hightouch",
+      "label": "Hightouch"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "sonyinteractiveentertainmentglobal",
+      "label": "Sony Interactive Entertainment"
+    },
+    {
+      "ats": "ashby",
+      "token": "valon",
+      "label": "Valon"
+    },
+    {
+      "ats": "ashby",
+      "token": "givebutter",
+      "label": "Givebutter"
+    },
+    {
+      "ats": "lever",
+      "token": "xsolla",
+      "label": "Xsolla"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "decisions",
+      "label": "Decisions"
+    },
+    {
+      "ats": "lever",
+      "token": "avalanchestudios",
+      "label": "Avalanche Studios Group"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "groupon",
+      "label": "Groupon"
+    },
+    {
+      "ats": "lever",
+      "token": "extremenetworks",
+      "label": "Extreme Networks"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "mobentertainment",
+      "label": "Mob entertainment "
+    },
+    {
+      "ats": "greenhouse",
+      "token": "zoominfo",
+      "label": "ZoomInfo"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "zetaglobal",
+      "label": "Zeta Global"
+    },
+    {
+      "ats": "ashby",
+      "token": "seconddinner",
+      "label": "Second Dinner"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "zscaler",
+      "label": "Zscaler"
+    },
+    {
+      "ats": "lever",
+      "token": "easybrain",
+      "label": "Easybrain"
+    },
+    {
+      "ats": "ashby",
+      "token": "supercell",
+      "label": "supercell"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "whatwapp",
+      "label": "Whatwapp"
+    },
+    {
+      "ats": "ashby",
+      "token": "polygon-labs",
+      "label": "Polygon Labs"
+    },
+    {
+      "ats": "lever",
+      "token": "rw1",
+      "label": "realworld one"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "sonymusicentertainment",
+      "label": "Sony Music Entertainment"
+    },
+    {
+      "ats": "lever",
+      "token": "netomi",
+      "label": "Netomi"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "andurilindustries",
+      "label": "Anduril Industries"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "wongdoody",
+      "label": "WongDoody"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "realchemistry",
+      "label": "Real Chemistry"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "hasbro",
+      "label": "Hasbro"
+    },
+    {
+      "ats": "lever",
+      "token": "minted",
+      "label": "Minted"
+    },
+    {
+      "ats": "lever",
+      "token": "zoox",
+      "label": "zoox"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "mercury",
+      "label": "Mercury"
+    },
+    {
+      "ats": "ashby",
+      "token": "higharc",
+      "label": "Higharc"
+    },
+    {
+      "ats": "ashby",
+      "token": "hyperhug",
+      "label": "Hyperhug"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "innovecs",
+      "label": "Innovecs"
+    },
+    {
+      "ats": "ashby",
+      "token": "welltech",
+      "label": "Welltech"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "nextiva",
+      "label": "Nextiva"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "airtable",
+      "label": "Airtable"
+    },
+    {
+      "ats": "ashby",
+      "token": "skydio",
+      "label": "Skydio"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "wayve",
+      "label": "Wayve"
+    },
+    {
+      "ats": "lever",
+      "token": "binance",
+      "label": "binance"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "klaviyo",
+      "label": "Klaviyo"
+    },
+    {
+      "ats": "ashby",
+      "token": "mapbox",
+      "label": "Mapbox"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "affinity",
+      "label": "Affinity"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "prophecysimpledatalabs",
+      "label": "Prophecy"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "netradyne",
+      "label": "Netradyne"
+    },
+    {
+      "ats": "lever",
+      "token": "saviynt",
+      "label": "Saviynt"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "purestorage",
+      "label": "Pure Storage"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "quince",
+      "label": "Quince"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "fivetran",
+      "label": "fivetran"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "valtech",
+      "label": "Valtech"
+    },
+    {
+      "ats": "ashby",
+      "token": "kayak",
+      "label": "KAYAK"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "akqa",
+      "label": "AKQA"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "rtbhouse",
+      "label": "RTB House"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "nothing",
+      "label": "Nothing"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "ogilvy",
+      "label": "Ogilvy"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "orioninnovation",
+      "label": "Orion Innovation"
+    },
+    {
+      "ats": "lever",
+      "token": "arootah",
+      "label": "Arootah"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "sonicwall",
+      "label": "SonicWall"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "6sense",
+      "label": "6sense"
+    },
+    {
+      "ats": "lever",
+      "token": "jumpcloud",
+      "label": "JumpCloud"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "sohohouseco",
+      "label": "Soho House & Co"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "gruve",
+      "label": "Gruve"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "easyship",
+      "label": "Easyship"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "abnormalsecurity",
+      "label": "Abnormal Security"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "dialpad",
+      "label": "Dialpad"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "hudl",
+      "label": "Hudl"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "disco",
+      "label": "DISCO"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "tenstorrent",
+      "label": "Tenstorrent"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "monks",
+      "label": "Monks"
+    },
+    {
+      "ats": "lever",
+      "token": "egen",
+      "label": "Egen"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "eositsolutions",
+      "label": "EOS IT Solutions"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "banyansoftware",
+      "label": "Banyan Software"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "kaseya",
+      "label": "Kaseya"
+    },
+    {
+      "ats": "lever",
+      "token": "vendavo",
+      "label": "Vendavo"
+    },
+    {
+      "ats": "lever",
+      "token": "ion",
+      "label": "Ion"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "wrike",
+      "label": "Wrike"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "yext",
+      "label": "Yext"
+    },
+    {
+      "ats": "lever",
+      "token": "azul",
+      "label": "Azul"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "roku",
+      "label": "Roku"
+    },
+    {
+      "ats": "lever",
+      "token": "dnb",
+      "label": "dun bradstreet"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "aiserajobs",
+      "label": "Aisera"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "conga",
+      "label": "conga"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "unispace",
+      "label": "Unispace"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "capco",
+      "label": "Capco"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "affinidi",
+      "label": "affinidi"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "cambridgemobiletelematics",
+      "label": "Cambridge Mobile Telematics"
+    },
+    {
+      "ats": "ashby",
+      "token": "trust-wallet",
+      "label": "Trust Wallet"
+    },
+    {
+      "ats": "ashby",
+      "token": "deepgram",
+      "label": "Deepgram"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "alphasense",
+      "label": "Alpha Sense"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "mozilla",
+      "label": "Mozilla"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "truecaller",
+      "label": "truecaller"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "monzo",
+      "label": "Monzo"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "cargurus",
+      "label": "Car Gurus"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "make",
+      "label": "Make"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "ttcglobal",
+      "label": "TTC Global"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "inthepocket",
+      "label": "In The Pocket"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "sourcegraph91",
+      "label": "Sourcegraph Inc."
+    },
+    {
+      "ats": "greenhouse",
+      "token": "philo",
+      "label": "Philo"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "altentechnologyusa",
+      "label": "Alten Technology"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "diligentcorporation",
+      "label": "Diligent Corporation"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "ethoslife",
+      "label": "Ethos Life"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "globalizationpartners",
+      "label": "Globalization Partners"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "legion",
+      "label": "legion"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "gomotive",
+      "label": "GoMotive"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "okx",
+      "label": "OKX"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "poppulo",
+      "label": "Populla"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "rackner",
+      "label": "Rackner"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "splice",
+      "label": "Splice"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "veeamsoftware",
+      "label": "Veeam Software"
+    },
+    {
+      "ats": "lever",
+      "token": "sonarsource",
+      "label": "Sonar Source"
+    },
+    {
+      "ats": "lever",
+      "token": "doola",
+      "label": "Doola"
+    },
+    {
+      "ats": "lever",
+      "token": "actian",
+      "label": "Actian"
+    },
+    {
+      "ats": "lever",
+      "token": "smarsh",
+      "label": "smarsh"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "janestreet",
+      "label": "Jane Street"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "tide",
+      "label": "Tide"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "n26",
+      "label": "N26"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "scaleai",
+      "label": "Scale AI"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "mitratech",
+      "label": "Mitratech"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "rushstreetinteractive",
+      "label": "Rush street interactive "
+    },
+    {
+      "ats": "greenhouse",
+      "token": "addepar1",
+      "label": "Addepar"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "telnyx54",
+      "label": "Telnyx"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "globalhealthcareexchangeinc",
+      "label": "GHX"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "tekion",
+      "label": "Tekion Corp"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "armada",
+      "label": "Armada"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "oportun",
+      "label": "oportun"
+    },
+    {
+      "ats": "ashby",
+      "token": "rescale",
+      "label": "Rescale"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "gusto",
+      "label": "Gusto"
+    },
+    {
+      "ats": "ashby",
+      "token": "sift",
+      "label": "Sift"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "pagerduty",
+      "label": "PagerDuty"
+    },
+    {
+      "ats": "ashby",
+      "token": "ready",
+      "label": "Ready For Zero"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "airbnb",
+      "label": "Airbnb"
+    },
+    {
+      "ats": "ashby",
+      "token": "human",
+      "label": "Human Dx"
+    },
+    {
+      "ats": "ashby",
+      "token": "double",
+      "label": "Double Robotics"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "instacart",
+      "label": "Instacart"
+    },
+    {
+      "_comment": "--- RU/EN-культура + Кипр/remote-worldwide, ресёрч 2026-07-03 (probe_candidates.py) ---"
+    },
+    {
+      "ats": "lever",
+      "token": "xm",
+      "label": "XM Group (Trading Point)"
+    },
+    {
+      "ats": "lever",
+      "token": "coinspaid",
+      "label": "CoinsPaid"
+    },
+    {
+      "ats": "lever",
+      "token": "metabase",
+      "label": "Metabase"
+    },
+    {
+      "ats": "ashby",
+      "token": "scorewarrior",
+      "label": "Scorewarrior"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "customerio",
+      "label": "Customer.io"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "alpaca",
+      "label": "Alpaca Markets"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "fundraiseup",
+      "label": "Fundraise Up"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "delasportbulgaria",
+      "label": "Delasport"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "kaizengaming",
+      "label": "Kaizen Gaming"
+    },
+    {
+      "_comment": "=== ROUND 2026-07-03 (anglo-intl remote-from-anywhere research, +20 boards) ==="
+    },
+    {
+      "ats": "greenhouse",
+      "token": "wikimedia",
+      "label": "Wikimedia Foundation"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "bugcrowd",
+      "label": "Bugcrowd"
+    },
+    {
+      "ats": "ashby",
+      "token": "paxos",
+      "label": "Paxos"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "testlio",
+      "label": "Testlio"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "fingerprint",
+      "label": "Fingerprint"
+    },
+    {
+      "ats": "ashby",
+      "token": "1password",
+      "label": "1Password"
+    },
+    {
+      "ats": "workable",
+      "token": "sperasoft",
+      "label": "Sperasoft"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "railsware",
+      "label": "Railsware"
+    },
+    {
+      "ats": "ashby",
+      "token": "solidgate",
+      "label": "Solidgate"
+    },
+    {
+      "ats": "ashby",
+      "token": "obrio",
+      "label": "OBRIO (Genesis)"
+    },
+    {
+      "ats": "recruitee",
+      "token": "macpaw",
+      "label": "MacPaw"
+    },
+    {
+      "ats": "ashby",
+      "token": "preply",
+      "label": "Preply"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "nix",
+      "label": "N-iX"
+    },
+    {
+      "ats": "workable",
+      "token": "netguru",
+      "label": "Netguru"
+    },
+    {
+      "ats": "lever",
+      "token": "yuno",
+      "label": "Yuno"
+    },
+    {
+      "ats": "lever",
+      "token": "aleph",
+      "label": "Aleph (getaleph.com)"
+    },
+    {
+      "ats": "ashby",
+      "token": "colonist",
+      "label": "Colonist (colonist.io)"
+    },
+    {
+      "ats": "ashby",
+      "token": "kraken.com",
+      "label": "Kraken (Payward / Kraken Digital Asset Exchange)"
+    },
+    {
+      "ats": "ashby",
+      "token": "bjakcareer",
+      "label": "Bjak"
+    },
+    {
+      "ats": "ashby",
+      "token": "m-kopa",
+      "label": "M-KOPA"
+    },
+    {
+      "_comment": "=== ROUND 2026-07-03 (round 3: confirmed-live boards without a current target-role match, added unconditionally since human-vetted, not slug-guessed) ==="
+    },
+    {
+      "ats": "ashby",
+      "token": "kit",
+      "label": "Kit (formerly ConvertKit)"
+    },
+    {
+      "ats": "ashby",
+      "token": "tremendous",
+      "label": "Tremendous"
+    },
+    {
+      "ats": "ashby",
+      "token": "sardine",
+      "label": "Sardine"
+    },
+    {
+      "ats": "ashby",
+      "token": "talos-trading",
+      "label": "Talos"
+    },
+    {
+      "ats": "workable",
+      "token": "trolley",
+      "label": "Trolley (formerly Payment Rails)"
+    },
+    {
+      "ats": "ashby",
+      "token": "synctera",
+      "label": "Synctera"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "karbon",
+      "label": "Karbon"
+    },
+    {
+      "ats": "workable",
+      "token": "floatjobs",
+      "label": "Float (float.com)"
+    },
+    {
+      "ats": "lever",
+      "token": "deputy",
+      "label": "Deputy"
+    },
+    {
+      "ats": "ashby",
+      "token": "immersivelabs",
+      "label": "Immersive (Immersive Labs)"
+    },
+    {
+      "ats": "workable",
+      "token": "global-app-testing",
+      "label": "Global App Testing"
+    },
+    {
+      "ats": "workable",
+      "token": "devsquad",
+      "label": "DevSquad"
+    },
+    {
+      "ats": "ashby",
+      "token": "restream",
+      "label": "Restream"
+    },
+    {
+      "ats": "lever",
+      "token": "ajax",
+      "label": "Ajax Systems"
+    },
+    {
+      "ats": "lever",
+      "token": "airslate",
+      "label": "airSlate"
+    },
+    {
+      "ats": "recruitee",
+      "token": "huuuge",
+      "label": "Huuuge Games"
+    },
+    {
+      "ats": "recruitee",
+      "token": "madewithlove",
+      "label": "madewithlove"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "xapo61",
+      "label": "Xapo Bank"
+    },
+    {
+      "ats": "lever",
+      "token": "cloudwalk",
+      "label": "CloudWalk / InfinitePay"
+    },
+    {
+      "ats": "lever",
+      "token": "toku",
+      "label": "Toku"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "wildlifestudios",
+      "label": "Wildlife Studios"
+    },
+    {
+      "ats": "ashby",
+      "token": "percona",
+      "label": "Percona"
+    },
+    {
+      "ats": "ashby",
+      "token": "revenuecat",
+      "label": "RevenueCat"
+    },
+    {
+      "ats": "workable",
+      "token": "trailofbits",
+      "label": "Trail of Bits"
+    },
+    {
+      "ats": "workable",
+      "token": "fireflies",
+      "label": "Fireflies.ai"
+    },
+    {
+      "_comment": "=== ROUND 2026-07-04 (round 4: real ATS boards found by direct career-page WebFetch check of the remaining 104, currently confirmed live) ==="
+    },
+    {
+      "ats": "greenhouse",
+      "token": "buildkite",
+      "label": "Buildkite"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "pantherlabs",
+      "label": "Panther (Panther Labs)"
+    },
+    {
+      "ats": "ashby",
+      "token": "sentilink",
+      "label": "SentiLink"
+    },
+    {
+      "ats": "lever",
+      "token": "codeway",
+      "label": "Codeway"
+    },
+    {
+      "ats": "ashby",
+      "token": "helpscout",
+      "label": "Help Scout"
+    },
+    {
+      "ats": "arbeitnow",
+      "token": "default",
+      "label": null
+    },
+    {
+      "ats": "jobicy",
+      "token": "default",
+      "label": null,
+      "query": {"geo": "europe"}
+    },
+    {
+      "ats": "himalayas",
+      "token": "default",
+      "label": null
+    },
+    {
+      "ats": "remotive",
+      "token": "default",
+      "label": null
+    },
+    {
+      "ats": "djinni",
+      "token": "default",
+      "label": null
+    },
+    {
+      "ats": "weworkremotely",
+      "token": "default",
+      "label": null
+    },
+    {
+      "ats": "netempregos",
+      "token": "default",
+      "label": null
+    },
+    {
+      "ats": "kariera",
+      "token": "default",
+      "label": null
+    },
+    {
+      "ats": "landingjobs",
+      "token": "default",
+      "label": null
+    },
+    {
+      "_comment": "=== ROUND 2026-07-15, этап 1 (QA-фокус под daria-b: гейминг + QA-аутсорс + CIS-продукт, 79 кандидатов через scripts/probe_candidates.py вслепую по slug) — 3 живых борда на целевые роли. Низкий выход (3/79): большинство целевых компаний не на GH/Lever/Ashby/Workable/Recruitee, либо slug не угадан. ==="
+    },
+    {
+      "ats": "greenhouse",
+      "token": "scopely",
+      "label": "Scopely"
+    },
+    {
+      "ats": "lever",
+      "token": "kolibrigames",
+      "label": "Kolibri Games"
+    },
+    {
+      "ats": "ashby",
+      "token": "genesis",
+      "label": "Genesis (ashby genesis token — verify identity before relying on this being the CIS Genesis group)"
+    },
+    {
+      "_comment": "=== ROUND 2026-07-15, этап 2 (WebFetch-верификация career-страниц оставшихся 76 кандидатов из этапа 1, 4 параллельных агента) — 5 живых бордов с реальными QA-вакансиями на момент проверки. Сегмент реально доминируется НЕподдерживаемыми ATS: Teamtailor (EveryMatrix/Push Gaming/Yolo Group), SmartRecruiters (Playtech), Workday (SoftServe/Product Madness), Pinpoint (AppQuantum/inDrive), Oracle Fusion (Ciklum), PeopleForce (BetConstruct), кастомные порталы (Andersen/QA Madness/Sombra/TestDevLab/DataArt и др. — у всех реально есть QA-вакансии, но нет ATS-адаптера). Следующий кандидат на поддержку по частоте встречаемости — Teamtailor или Pinpoint (отдельный срез, не в этом раунде). ==="
+    },
+    {
+      "ats": "greenhouse",
+      "token": "miniclip",
+      "label": "Miniclip"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "tripledotstudios",
+      "label": "Tripledot Studios (QA-роль сейчас в Минске onsite — пограничный случай по гео, не строго EU/remote)"
+    },
+    {
+      "ats": "workable",
+      "token": "trinetix",
+      "label": "Trinetix"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "grammarly",
+      "label": "Grammarly (Superhuman)"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "betsson",
+      "label": "Betsson Group"
+    },
+    {
+      "_comment": "=== ROUND 2026-07-15, этап 3 (SmartRecruiters/Pinpoint ATS-адаптеры смёржены — переносим уже найденные живые борды из этапа 2 в реальную конфигурацию) ==="
+    },
+    {
+      "ats": "smartrecruiters",
+      "token": "playtech",
+      "label": "Playtech"
+    },
+    {
+      "ats": "smartrecruiters",
+      "token": "Evolution",
+      "label": "Evolution"
+    },
+    {
+      "ats": "pinpoint",
+      "token": "appquantum",
+      "label": "AppQuantum"
+    },
+    {
+      "ats": "pinpoint",
+      "token": "indrive",
+      "label": "inDrive"
+    },
+    {
+      "_comment": "=== hh.ru (worldwide-remote, RU-язык) — прямой httpx (не Playwright — см. hh.py docstring, ревизия 2026-07-20), отдельный более частый cron, см. docs/superpowers/specs/2026-07-17-hh-ru-sourcing-design.md. Список расширен 2026-07-20 с 6 до 16 фраз (полное покрытие ролей andrey-s + daria-b) — httpx дешёвый, курировать до 6-8 больше не нужно."
+    },
+    {
+      "ats": "hh",
+      "token": "qa-lead",
+      "label": "hh.ru: QA Lead",
+      "query": {"text": "QA Lead", "area": "1001", "schedule": "remote"}
+    },
+    {
+      "ats": "hh",
+      "token": "qa-manager",
+      "label": "hh.ru: QA Manager",
+      "query": {"text": "QA Manager", "area": "1001", "schedule": "remote"}
+    },
+    {
+      "ats": "hh",
+      "token": "head-of-qa",
+      "label": "hh.ru: Head of QA",
+      "query": {"text": "Head of QA", "area": "1001", "schedule": "remote"}
+    },
+    {
+      "ats": "hh",
+      "token": "engineering-manager",
+      "label": "hh.ru: Engineering Manager",
+      "query": {"text": "Engineering Manager", "area": "1001", "schedule": "remote"}
+    },
+    {
+      "ats": "hh",
+      "token": "delivery-manager",
+      "label": "hh.ru: Delivery Manager",
+      "query": {"text": "Delivery Manager", "area": "1001", "schedule": "remote"}
+    },
+    {
+      "ats": "hh",
+      "token": "project-manager",
+      "label": "hh.ru: Project Manager",
+      "query": {"text": "Project Manager", "area": "1001", "schedule": "remote"}
+    },
+    {
+      "ats": "hh",
+      "token": "program-manager",
+      "label": "hh.ru: Program Manager",
+      "query": {"text": "Program Manager", "area": "1001", "schedule": "remote"}
+    },
+    {
+      "ats": "hh",
+      "token": "release-manager",
+      "label": "hh.ru: Release Manager",
+      "query": {"text": "Release Manager", "area": "1001", "schedule": "remote"}
+    },
+    {
+      "ats": "hh",
+      "token": "team-lead",
+      "label": "hh.ru: Team Lead",
+      "query": {"text": "Team Lead", "area": "1001", "schedule": "remote"}
+    },
+    {
+      "ats": "hh",
+      "token": "tech-lead",
+      "label": "hh.ru: Tech Lead",
+      "query": {"text": "Tech Lead", "area": "1001", "schedule": "remote"}
+    },
+    {
+      "ats": "hh",
+      "token": "qa-engineer",
+      "label": "hh.ru: QA Engineer",
+      "query": {"text": "QA Engineer", "area": "1001", "schedule": "remote"}
+    },
+    {
+      "ats": "hh",
+      "token": "test-automation",
+      "label": "hh.ru: Test Automation",
+      "query": {"text": "Test Automation", "area": "1001", "schedule": "remote"}
+    },
+    {
+      "ats": "hh",
+      "token": "test-engineer",
+      "label": "hh.ru: Test Engineer",
+      "query": {"text": "Test Engineer", "area": "1001", "schedule": "remote"}
+    },
+    {
+      "ats": "hh",
+      "token": "manual-qa",
+      "label": "hh.ru: Manual QA",
+      "query": {"text": "Manual QA", "area": "1001", "schedule": "remote"}
+    },
+    {
+      "ats": "hh",
+      "token": "software-tester",
+      "label": "hh.ru: Software Tester",
+      "query": {"text": "Software Tester", "area": "1001", "schedule": "remote"}
+    },
+    {
+      "ats": "hh",
+      "token": "testirovshchik",
+      "label": "hh.ru: Тестировщик",
+      "query": {"text": "Тестировщик", "area": "1001", "schedule": "remote"}
+    }
+  ]
+}

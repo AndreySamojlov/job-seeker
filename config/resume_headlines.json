@@ -1,0 +1,11 @@
+{
+  "andrey-s": [
+    {"keywords": ["qa", "quality", "test", "sdet"], "headline": "Head of QA / Quality Engineering Leader"},
+    {"keywords": ["delivery manager", "delivery lead", "implementation manager"], "headline": "IT Delivery Leader / Delivery Manager"},
+    {"keywords": ["program manager", "project manager", "pmo", "portfolio"], "headline": "IT Delivery Leader / Program Manager"},
+    {"keywords": ["engineering manager", "head of engineering", "director of engineering"], "headline": "Engineering Manager / Delivery Leader"},
+    {"keywords": ["product manager", "product lead", "product owner"], "headline": "IT Delivery Leader / Product Delivery Lead"},
+    {"keywords": ["team lead", "tech lead"], "headline": "IT Delivery Leader / Team Lead"},
+    {"keywords": ["support", "solutions consultant", "customer success"], "headline": "IT Delivery Leader / Support & Solutions Lead"}
+  ]
+}

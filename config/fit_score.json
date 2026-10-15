@@ -1,0 +1,37 @@
+{
+  "version": "fit-2",
+  "weights": {
+    "requirements": 0.30,
+    "hands_on": 0.15,
+    "domain": 0.15,
+    "stack": 0.15,
+    "role_family": 0.10,
+    "seniority": 0.10,
+    "geo_mode": 0.05
+  },
+  "soft_floors": { "requirements": 40, "hands_on": 40, "seniority": 40 },
+  "band_thresholds": { "A": 70, "B": 50, "C": 30 },
+  "status_points": { "strong": 100, "partial": 50, "unknown": 0, "gap": 0 },
+  "importance_weights": { "must": 1.0, "nice": 0.5 },
+  "hands_on_scale": { "0": 100, "1": 55, "2": 20, "3": 0 },
+  "seniority_scale": { "0": 100, "1": 60, "2": 30 },
+  "domain_points": { "match": 100, "adjacent": 60, "other": 25 },
+  "domain_adjacency": {
+    "gaming": ["igaming"],
+    "igaming": ["gaming"],
+    "fintech": ["banking", "crypto"],
+    "banking": ["fintech"],
+    "crypto": ["fintech"],
+    "ecommerce": ["marketplace"],
+    "marketplace": ["ecommerce"],
+    "saas_b2b": ["adtech"],
+    "adtech": ["saas_b2b"]
+  },
+  "geo_points": {
+    "global_remote": 100,
+    "regional_remote": 90,
+    "hybrid": 70,
+    "onsite": 60
+  },
+  "confidence_floor": 0.6
+}

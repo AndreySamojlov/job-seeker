@@ -1,0 +1,33 @@
+{
+  "at": "2026-10-15T11:07:13.283059+00:00",
+  "source_commit": "842e46a1f436d31ad2cad5d0a49830356d818907",
+  "python": "3.12.10",
+  "install": "uv sync --frozen --all-groups --python 3.12",
+  "lock_unchanged": true,
+  "unit": {
+    "command": ".venv/Scripts/python.exe scripts/check_baseline.py unit",
+    "passed": 1113,
+    "deselected": 423,
+    "warnings": 1,
+    "exit_code": 0
+  },
+  "smoke": {
+    "command": ".venv/Scripts/python.exe scripts/check_baseline.py smoke",
+    "passed": 37,
+    "warnings": 1,
+    "exit_code": 0
+  },
+  "excluded": "DB/browser/E2E and live lifecycle mutation",
+  "new_code_sha256": {
+    "src/job_machine/ops/client.py": "1099440f32eb9faff04e0848af84db1e7e5e94bfb1f56e2f67fc404a705a7547",
+    "src/job_machine/ops/dashboard.py": "115b8450008bebe259e191dd6db0fc33ca911b8e3153959b1337ef716d7b921d",
+    "src/job_machine/ops/mcp_server.py": "39396ab3ef1353e842ef666ed9097d963b67770f63765e63ffa3edd5e4dc1da2",
+    "src/job_machine/ops/remote_data.py": "534ba0d75ab4067585cc0f71aa70632ec305e166d8cf5d97f5e03c43a766a2a6",
+    "src/job_machine/ops/__init__.py": "f3a76ec8c495cf1c7a79c313cda0387af682018f126c8a7db954c6ab43e992fe",
+    "src/job_machine/ops/__main__.py": "91ff9f094a3dd960951a8ff1ac83dadae2736eca924d530f24c2ec7b261cc3e7",
+    "scripts/check_baseline.py": "636c924862d5c91cc98c43197bd1b4114765e1a313b042b7766c2050f8ccec9d",
+    "tests/ops/test_client.py": "2c4416a62c3fb982bc3e0dea0f24653bda5e60328afcbe93f5017de5a352eb0e",
+    "tests/ops/test_dashboard.py": "e8210f9ebfb1e632fb8443dda6ab83a68fb3746774e3121e8a95b120194803dc",
+    "tests/baseline/test_check_baseline.py": "d5280d79b3b20036c484897174d32b31f26465f93184b8cace99bd9acde7b6a9"
+  }
+}

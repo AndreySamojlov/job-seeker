@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Application received</title></head>
+<body>
+  <!-- Честное подтверждение со СТАНДАРТНЫМ футером корпоративного карьерного
+       сайта: подписка на вакансии с пустым `required`-полем. У пустого required
+       :invalid истинно всегда, без всякой отправки, поэтому документ-широкая
+       проверка ошибок увела бы настоящую подачу в submit_unknown. Форма
+       подписки не проходит предикат «похожа на форму подачи» (один контрол,
+       нет file-input) — и не считается ни ошибкой, ни оставшейся анкетой. -->
+  <h1>Thank you for applying</h1>
+  <p>Your application has been submitted. We will be in touch shortly.</p>
+
+  <footer>
+    <h3>Job alerts</h3>
+    <p>Join our talent community and hear about roles like this one.</p>
+    <form id="job_alerts" method="get" action="#">
+      <label for="alert_email">Email</label>
+      <input id="alert_email" name="alert_email" type="email" required>
+      <button type="submit">Subscribe</button>
+    </form>
+  </footer>
+</body>
+</html>

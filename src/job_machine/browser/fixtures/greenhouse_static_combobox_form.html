@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Static combobox</title></head>
+<body>
+  <form id="application" method="post" action="/submitted">
+    <label for="preferred-language">Preferred language</label>
+    <input id="preferred-language" role="combobox" aria-autocomplete="list" aria-expanded="false" readonly>
+    <div class="rs-menu"></div>
+    <button type="submit">Submit Application</button>
+  </form>
+  <script>
+    (function () {
+      var input = document.getElementById('preferred-language');
+      var menu = document.querySelector('.rs-menu');
+      var OPTIONS = ['English', 'Portuguese'];
+      input.addEventListener('click', function () {
+        menu.innerHTML = '';
+        OPTIONS.forEach(function (label, i) {
+          var opt = document.createElement('div');
+          opt.id = 'react-select-preferred-language-option-' + i;
+          opt.textContent = label;
+          opt.addEventListener('click', function () {
+            input.setAttribute('data-selected', label);
+            input.value = label;
+            menu.innerHTML = '';
+          });
+          menu.appendChild(opt);
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

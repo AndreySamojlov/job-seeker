@@ -1,0 +1,30 @@
+# Project Knowledge
+
+## Решения
+
+- 2026-10-15: оба пути fill сохраняются по решению пользователя. Повторного выбора не требуется.
+- Рабочая база — фиксированный Claude master; другие ветки интегрируются выборочно. Provenance manifest хранит точное происхождение. Открытый checkout, наиболее новый commit и production tag не взаимозаменяемы.
+- Пользователь уточнил обязательность существующего lab-do: срез A включает живые данные и управление его сервисами. Локальная база не становится параллельным production; миграции и redeploy не выполнялись.
+- Новый целевой репозиторий был unborn; используется `codex/job-machine-recovery` в указанном пользователем каталоге без дополнительного worktree.
+
+## Ошибки и уроки
+
+- Review P1: состояния application не отражают всю активность deterministic fill/handoff. Удалена ложная проверка безопасности через active=0; stop/restart требуют отдельного allow_interruption. Это принятие риска прерывания, не реализация graceful drain.
+- Review P2: load_dotenv может найти `.env` выше или внутри репозитория. Runner отключает dotenv; воспроизведение и исправление проверены настоящим дочерним процессом.
+- Windows MCP SDK очищает PROGRAMDATA; OpenSSH без него возвращает 255 без stderr. В проверенном MCP launch environment переменная передаётся явно; пример сохранён в config. Передавать все credentials окружающей среды для исправления не требуется.
+- Реальный stdio выявил вторую проблему: SSH наследовал JSON-RPC stdin и зависал. Для команд без входа используется DEVNULL, для запросов — отдельный input pipe; regression прошёл.
+- Порты 8765/8766 заняты другими приложениями. Панель использует проверенный свободный 18766, чужие процессы не остановлены.
+
+## Реестр открытых вопросов
+
+| ID | Предмет | Следующий владелец |
+|---|---|---|
+| K1 | Agent-fill и production-only migrations отсутствуют в объединённой новой сборке | E2 |
+| K2 | Исторические missing/hash mismatch/outside references; неоднозначные подтверждения submitted | E3, reconciliation без повторной отправки |
+| K3 | DB/browser/synthetic E2E и backup/restore не проверены | E2/E3 |
+| K4 | Lifecycle проверен на fake transport; гарантий graceful drain нет | Эксплуатация, конкретный recovery сценарий |
+| K5 | Starlette предупреждает об устаревшем httpx TestClient | Зависимости, отдельное обоснованное обновление |
+
+## Trust
+
+Baseline: подтверждён byte-for-byte импорт 506 файлов, frozen install, unit regression, независимый review с двумя исправлениями. Ops: подтверждено live чтение восьми сервисов, health 200 и реальные выборки. Полнота нового pipeline и сохранность всей истории не доказаны. Evidence: audit/baseline; review/решения: audit/execution-ledger.md. Завершение A не закрывает полный Product Intent.

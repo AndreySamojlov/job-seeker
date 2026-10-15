@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Sample Application (unrelated invalid widget outside submitted form)</title></head>
+<body>
+  <h1>Apply: Sample Role</h1>
+  <form id="application" method="post" action="/submitted">
+    <label for="full_name">Full name</label>
+    <input id="full_name" name="full_name" type="text" required>
+    <button type="submit">Submit Application</button>
+  </form>
+
+  <!-- Unrelated widget OUTSIDE the application form — a newsletter-signup box, not
+       part of the job application. Required and left empty on purpose: document-wide
+       :invalid would find it, but it must NOT affect the outcome of submitting the
+       #application form above (regression guard for the <form>-scoped handle in
+       _has_invalid_fields, commit 156cfbe). -->
+  <form id="newsletter">
+    <label for="newsletter_email">Subscribe to our newsletter</label>
+    <input id="newsletter_email" name="newsletter_email" type="email" required>
+    <button type="submit">Subscribe</button>
+  </form>
+  <script>
+    // Stay on-page after a valid submit (SPA-style, like a real ATS that handles
+    // submission via JS/XHR without a full navigation) so the newsletter widget's
+    // DOM node — and any stale document-wide handle — is still around to prove
+    // the scoping, instead of the assertion being masked by a real navigation.
+    document.getElementById('application').addEventListener('submit', function (e) {
+      e.preventDefault();
+    });
+  </script>
+</body>
+</html>

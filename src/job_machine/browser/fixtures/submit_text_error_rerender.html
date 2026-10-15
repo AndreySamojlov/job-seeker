@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Apply: Sample Role</title></head>
+<body>
+  <!-- Провал, который не видно ничем, кроме самой формы на экране: адрес
+       сменился, ошибка нарисована обычным текстом (ни :invalid, ни aria-invalid),
+       а в шапке шаблона стоит благодарность — то есть и якорь заголовка, и
+       отсутствие невалидных контролов говорят «успех». Единственный честный
+       различитель — что анкета никуда не делась. -->
+  <h1>Thank you for applying</h1>
+  <p class="error-message">Work authorization is a mandatory question.</p>
+
+  <form id="application" method="get" action="submit_text_error_rerender.html">
+    <label for="full_name">Full name</label>
+    <input id="full_name" name="full_name" type="text" value="Andrey">
+
+    <label for="email">Email</label>
+    <input id="email" name="email" type="text" value="andrey@example.com">
+
+    <label for="work_auth">Are you authorized to work in this country?</label>
+    <select id="work_auth" name="work_auth">
+      <option value="">Select...</option>
+      <option value="yes">Yes</option>
+    </select>
+
+    <label for="resume">Resume (PDF)</label>
+    <input id="resume" name="resume" type="file">
+
+    <button type="submit">Submit Application</button>
+  </form>
+</body>
+</html>

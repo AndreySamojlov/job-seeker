@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Sample Application</title></head>
+<body>
+  <h1>Apply: Sample Role</h1>
+  <form id="application" method="post" action="/submitted">
+    <label for="full_name">Full name</label>
+    <input id="full_name" name="full_name" type="text" required>
+
+    <label for="email">Email</label>
+    <input id="email" name="email" type="email" required>
+
+    <label for="location">Location</label>
+    <select id="location" name="location">
+      <option>Remote</option>
+      <option>Berlin</option>
+      <option>Lisbon</option>
+    </select>
+
+    <label for="resume">Resume (PDF)</label>
+    <input id="resume" name="resume" type="file">
+
+    <label for="cover">Cover letter</label>
+    <textarea id="cover" name="cover"></textarea>
+
+    <input id="consent" name="consent" type="checkbox">
+    <label for="consent">I agree to the privacy policy and consent to processing</label>
+
+    <button type="submit">Submit Application</button>
+  </form>
+</body>
+</html>

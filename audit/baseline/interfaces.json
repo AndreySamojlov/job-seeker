@@ -1,0 +1,13 @@
+{
+  "mcp_tools": [
+    "runtime_data",
+    "runtime_health",
+    "runtime_logs",
+    "runtime_service",
+    "runtime_status"
+  ],
+  "live_services_via_mcp": 8,
+  "http_status": 200,
+  "dashboard_url": "http://127.0.0.1:18766/",
+  "mutations_performed": false
+}

@@ -1,0 +1,31 @@
+{
+  "role_family_map": {
+    "qa": ["qa", "quality assurance", "quality engineering", "test automation", "sdet", "tester", "quality"],
+    "delivery": ["delivery", "program manager", "programme manager", "pmo", "portfolio", "delivery manager", "delivery lead"],
+    "generic_leadership": ["team lead", "team leader"],
+    "engineering_management": ["engineering manager", "head of engineering", "director of engineering", "vp engineering", "vp of engineering", "engineering lead"],
+    "support": ["support", "service desk", "customer support", "helpdesk", "technical support"],
+    "product": ["product manager", "product owner", "head of product", "cpo", "product lead"],
+    "data": ["data engineer", "etl", "analytics engineer", "data scientist", "data analyst"],
+    "design": ["designer", "ux", "ui designer", "product designer"],
+    "sales": ["account executive", "sales", "business development", "sdr"]
+  },
+  "level_bands": ["intern", "junior", "mid", "senior", "lead", "head", "director", "vp", "c_level"],
+  "level_keywords": {
+    "intern": ["intern", "internship", "working student", "trainee", "apprentice"],
+    "junior": ["junior", "jr.", "entry level", "entry-level", "associate", "graduate"],
+    "senior": ["senior", "sr.", "sr "],
+    "lead": ["lead", "team lead", "staff", "principal engineer", "manager"],
+    "head": ["head of", "principal", "senior manager"],
+    "director": ["director"],
+    "vp": ["vp", "vice president", "svp"],
+    "c_level": ["cto", "ceo", "cfo", "coo", "cpo", "chief"]
+  },
+  "level_up_tolerance": 1,
+  "level_down_tolerance": 3,
+  "geo_region_map": {
+    "europe": ["europe", "eu", "emea", "european union"]
+  },
+  "geo_global_tokens": ["worldwide", "global", "anywhere", "remote - global"],
+  "company_daily_cap_default": 5
+}

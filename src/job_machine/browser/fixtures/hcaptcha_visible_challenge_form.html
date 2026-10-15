@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>hCaptcha visible-challenge form</title></head>
+<body>
+  <h1>Apply</h1>
+  <form id="application" method="post" action="/submitted">
+    <label for="fn">Full name</label>
+    <input id="fn" name="full_name" type="text" required>
+
+    <label for="em">Email</label>
+    <input id="em" name="email" type="email" required>
+
+    <button type="submit">Submit Application</button>
+  </form>
+
+  <!-- Тот же anchor-iframe, но challenge-iframe СЕЙЧАС реально показан
+       (не спрятан за экраном) — риск-скоринг эскалировал invisible-режим
+       до реального челленджа, который нужно решать. -->
+  <iframe
+    src="https://hcaptcha.invalid/captcha/v1/static/hcaptcha.html#frame=checkbox-invisible&sitekey=fake"
+    title="hCaptcha checkbox"></iframe>
+  <iframe
+    src="https://hcaptcha.invalid/captcha/v1/static/hcaptcha.html#frame=challenge&sitekey=fake&size=invisible"
+    title="hCaptcha challenge"
+    width="300" height="150"></iframe>
+</body>
+</html>

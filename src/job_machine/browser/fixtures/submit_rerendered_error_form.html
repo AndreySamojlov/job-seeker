@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Sample Application (server re-renders form with errors)</title></head>
+<body>
+  <h1>Apply: Sample Role</h1>
+  <!-- Серверный ре-рендер: клик уводит на НОВЫЙ URL (с токеном подтверждения в
+       path!), где страница вежливо благодарит, но форма на экране цела и поле
+       подсвечено ошибкой. Прежний form_handle там мёртв, поэтому "ошибок нет"
+       по нему — артефакт уничтоженного контекста. Проверка обязана смотреть на
+       живой документ. -->
+  <form id="application" method="get" action="submit_confirmation_with_errors.html">
+    <label for="full_name">Full name</label>
+    <input id="full_name" name="full_name" type="text" required>
+
+    <button type="submit">Submit Application</button>
+  </form>
+</body>
+</html>

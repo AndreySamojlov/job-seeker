@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.superpowers/
+.env
+.env.*
+!.env.example
+.runtime/
+artifacts/
+applications/
+audit/baseline/*.log
+audit/baseline/*.xml

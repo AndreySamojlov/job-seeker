@@ -1,0 +1,507 @@
+column:answer.candidate_id:text:NOT NULL
+column:answer.field:text:NOT NULL
+column:answer.rule:text:NULL
+column:answer.state:text:NOT NULL
+column:answer.updated_at:timestamp with time zone:NULL
+column:answer.value:text:NULL
+column:application.answers_hash:text:NULL
+column:application.answers_version:text:NULL
+column:application.application_id:uuid:NOT NULL
+column:application.candidate_id:text:NOT NULL
+column:application.claims_version:text:NULL
+column:application.consents_hash:text:NULL
+column:application.created_at:timestamp with time zone:NULL
+column:application.current_blocker:text:NULL
+column:application.fill_status:text:NULL
+column:application.final_apply_url:text:NULL
+column:application.outcome_confirmed_at:timestamp with time zone:NULL
+column:application.outcome_source:text:NULL
+column:application.outcome_status:text:NULL
+column:application.package_status:text:NULL
+column:application.payload_hash:text:NULL
+column:application.resume_artifact_id:uuid:NULL
+column:application.state:text:NOT NULL
+column:application.submit_status:text:NULL
+column:application.updated_at:timestamp with time zone:NULL
+column:application.vacancy_id:uuid:NULL
+column:application.verdict:text:NULL
+column:application_answer.application_answer_id:uuid:NOT NULL
+column:application_answer.application_id:uuid:NOT NULL
+column:application_answer.field:text:NOT NULL
+column:application_answer.rule:text:NULL
+column:application_answer.state:text:NOT NULL
+column:application_answer.updated_at:timestamp with time zone:NULL
+column:application_answer.value:text:NOT NULL
+column:application_binding_set.application_id:uuid:NOT NULL
+column:application_binding_set.binding_set_id:uuid:NOT NULL
+column:application_binding_set.binding_set_version:integer:NOT NULL
+column:application_binding_set.candidate_id:text:NOT NULL
+column:application_binding_set.contract_id:uuid:NOT NULL
+column:application_binding_set.contract_version:integer:NOT NULL
+column:application_binding_set.coverage_hash:text:NOT NULL
+column:application_binding_set.created_at:timestamp with time zone:NOT NULL
+column:application_binding_set.effective_readiness:text:NOT NULL
+column:application_binding_set.optional_unanswered:integer:NOT NULL
+column:application_binding_set.payload_hash:text:NOT NULL
+column:application_binding_set.required_bound:integer:NOT NULL
+column:application_binding_set.required_confirmation_total:integer:NOT NULL
+column:application_binding_set.required_confirmed:integer:NOT NULL
+column:application_binding_set.required_data_total:integer:NOT NULL
+column:application_binding_set.required_total:integer:NOT NULL
+column:application_binding_set.snapshot_status:text:NOT NULL
+column:application_binding_set.unsupported_required:integer:NOT NULL
+column:application_contract.adapter_version:text:NOT NULL
+column:application_contract.application_id:uuid:NOT NULL
+column:application_contract.ats_family:text:NOT NULL
+column:application_contract.candidate_id:text:NOT NULL
+column:application_contract.canonical_url:text:NOT NULL
+column:application_contract.compiler_version:text:NOT NULL
+column:application_contract.contract_id:uuid:NOT NULL
+column:application_contract.contract_json:jsonb:NOT NULL
+column:application_contract.contract_version:integer:NOT NULL
+column:application_contract.created_at:timestamp with time zone:NOT NULL
+column:application_contract.form_fingerprint:text:NOT NULL
+column:application_contract.maturity:text:NOT NULL
+column:application_contract.readiness:text:NOT NULL
+column:application_contract.snapshot_artifact_id:uuid:NULL
+column:application_contract.snapshot_hash:text:NOT NULL
+column:application_contract.tested_at:timestamp with time zone:NULL
+column:application_field_binding.binding_id:uuid:NOT NULL
+column:application_field_binding.binding_set_id:uuid:NOT NULL
+column:application_field_binding.classification:text:NOT NULL
+column:application_field_binding.created_at:timestamp with time zone:NOT NULL
+column:application_field_binding.field_id:text:NOT NULL
+column:application_field_binding.provenance_kind:text:NULL
+column:application_field_binding.required:boolean:NOT NULL
+column:application_field_binding.resolution_status:text:NOT NULL
+column:application_field_binding.semantic_key:text:NULL
+column:application_field_binding.snapshot_outcome:text:NOT NULL
+column:application_field_binding.source_ref:text:NULL
+column:application_field_binding.transform:text:NULL
+column:application_operation.application_id:uuid:NOT NULL
+column:application_operation.approval_id:uuid:NULL
+column:application_operation.attempt_id:uuid:NULL
+column:application_operation.created_at:timestamp with time zone:NOT NULL
+column:application_operation.error_code:text:NULL
+column:application_operation.error_detail:jsonb:NOT NULL
+column:application_operation.finished_at:timestamp with time zone:NULL
+column:application_operation.idempotency_key:text:NOT NULL
+column:application_operation.kind:text:NOT NULL
+column:application_operation.lease_until:timestamp with time zone:NULL
+column:application_operation.operation_id:uuid:NOT NULL
+column:application_operation.payload_hash:text:NULL
+column:application_operation.stage:text:NOT NULL
+column:application_operation.status:text:NOT NULL
+column:application_operation.updated_at:timestamp with time zone:NOT NULL
+column:application_operation.worker_id:text:NULL
+column:approval.application_id:uuid:NULL
+column:approval.approval_id:uuid:NOT NULL
+column:approval.approval_status:text:NOT NULL
+column:approval.approval_token:text:NULL
+column:approval.approval_type:text:NULL
+column:approval.approved_at:timestamp with time zone:NULL
+column:approval.consumed_at:timestamp with time zone:NULL
+column:approval.created_at:timestamp with time zone:NOT NULL
+column:approval.expires_at:timestamp with time zone:NULL
+column:approval.payload_hash:text:NULL
+column:approval.reserved_attempt_id:uuid:NULL
+column:approval.updated_at:timestamp with time zone:NOT NULL
+column:artifact.application_id:uuid:NULL
+column:artifact.artifact_id:uuid:NOT NULL
+column:artifact.artifact_type:text:NULL
+column:artifact.content_hash:text:NULL
+column:artifact.created_at:timestamp with time zone:NULL
+column:artifact.path_or_uri:text:NULL
+column:assisted_event.batch_id:uuid:NOT NULL
+column:assisted_event.candidate_id:text:NOT NULL
+column:assisted_event.created_at:timestamp with time zone:NOT NULL
+column:assisted_event.detail:jsonb:NOT NULL
+column:assisted_event.element_fingerprint:text:NULL
+column:assisted_event.event_id:uuid:NOT NULL
+column:assisted_event.event_type:text:NOT NULL
+column:assisted_event.field_id:text:NULL
+column:assisted_event.occurred_at:timestamp with time zone:NOT NULL
+column:assisted_event.sequence_no:integer:NOT NULL
+column:assisted_event.session_id:uuid:NOT NULL
+column:assisted_event_batch.batch_hash:text:NOT NULL
+column:assisted_event_batch.batch_id:uuid:NOT NULL
+column:assisted_event_batch.candidate_id:text:NOT NULL
+column:assisted_event_batch.created_at:timestamp with time zone:NOT NULL
+column:assisted_event_batch.event_count:integer:NOT NULL
+column:assisted_event_batch.idempotency_key:text:NOT NULL
+column:assisted_event_batch.session_id:uuid:NOT NULL
+column:assisted_session.application_id:uuid:NOT NULL
+column:assisted_session.binding_set_id:uuid:NULL
+column:assisted_session.binding_set_version:integer:NULL
+column:assisted_session.candidate_id:text:NOT NULL
+column:assisted_session.contract_id:uuid:NOT NULL
+column:assisted_session.contract_version:integer:NOT NULL
+column:assisted_session.coverage_hash:text:NULL
+column:assisted_session.disclosed_payload_hash:text:NOT NULL
+column:assisted_session.error_code:text:NULL
+column:assisted_session.final_payload_hash:text:NULL
+column:assisted_session.finished_at:timestamp with time zone:NULL
+column:assisted_session.session_id:uuid:NOT NULL
+column:assisted_session.started_at:timestamp with time zone:NOT NULL
+column:assisted_session.status:text:NOT NULL
+column:assisted_session.submit_started_at:timestamp with time zone:NULL
+column:assisted_session.updated_at:timestamp with time zone:NOT NULL
+column:candidate.active:boolean:NOT NULL
+column:candidate.candidate_id:text:NOT NULL
+column:candidate.created_at:timestamp with time zone:NULL
+column:candidate.headline:text:NULL
+column:candidate.name:text:NOT NULL
+column:claim.candidate_id:text:NOT NULL
+column:claim.claim_id:text:NOT NULL
+column:claim.claim_text:text:NOT NULL
+column:claim.proof:text:NULL
+column:claim.safe_use:text:NULL
+column:claim.status:text:NOT NULL
+column:claim.updated_at:timestamp with time zone:NULL
+column:cloud_achievement.aid:text:NOT NULL
+column:cloud_achievement.candidate_id:text:NOT NULL
+column:cloud_achievement.claims:text:NULL
+column:cloud_achievement.metric:text:NULL
+column:cloud_achievement.pid:text:NULL
+column:cloud_achievement.safe_use:text:NULL
+column:cloud_achievement.status:text:NULL
+column:cloud_achievement.text:text:NULL
+column:cloud_achievement.updated_at:timestamp with time zone:NULL
+column:cloud_position.candidate_id:text:NOT NULL
+column:cloud_position.company:text:NULL
+column:cloud_position.end_date:text:NULL
+column:cloud_position.location:text:NULL
+column:cloud_position.pid:text:NOT NULL
+column:cloud_position.start_date:text:NULL
+column:cloud_position.summary:text:NULL
+column:cloud_position.title:text:NULL
+column:cloud_position.updated_at:timestamp with time zone:NULL
+column:cloud_skill.candidate_id:text:NOT NULL
+column:cloud_skill.category:text:NULL
+column:cloud_skill.evidence:text:NULL
+column:cloud_skill.framing:text:NULL
+column:cloud_skill.name:text:NOT NULL
+column:cloud_skill.safe_use:text:NULL
+column:cloud_skill.updated_at:timestamp with time zone:NULL
+column:company_watchlist.company_name:text:NOT NULL
+column:company_watchlist.company_name_normalized:text:NOT NULL
+column:company_watchlist.evidence_count:integer:NOT NULL
+column:company_watchlist.first_seen_at:timestamp with time zone:NOT NULL
+column:company_watchlist.id:bigint:NOT NULL
+column:company_watchlist.last_seen_at:timestamp with time zone:NOT NULL
+column:company_watchlist.notes:text:NULL
+column:company_watchlist.sample_postings:jsonb:NOT NULL
+column:event.candidate_id:text:NULL
+column:event.created_at:timestamp with time zone:NULL
+column:event.entity_id:uuid:NULL
+column:event.entity_type:text:NULL
+column:event.event_id:uuid:NOT NULL
+column:event.event_type:text:NULL
+column:event.payload_json:jsonb:NULL
+column:event.trace_id:uuid:NULL
+column:hh_watchlist_sync.synced_at:timestamp with time zone:NOT NULL
+column:hh_watchlist_sync.vacancy_id:uuid:NOT NULL
+column:inbound_email.application_id:uuid:NULL
+column:inbound_email.body_excerpt:text:NULL
+column:inbound_email.candidate_id:text:NULL
+column:inbound_email.category:text:NULL
+column:inbound_email.confidence:double precision:NULL
+column:inbound_email.created_at:timestamp with time zone:NULL
+column:inbound_email.from_addr:text:NULL
+column:inbound_email.id:uuid:NOT NULL
+column:inbound_email.mailbox:text:NOT NULL
+column:inbound_email.match_evidence:jsonb:NOT NULL
+column:inbound_email.review_decision:text:NULL
+column:inbound_email.reviewed_at:timestamp with time zone:NULL
+column:inbound_email.sender_domain:text:NULL
+column:inbound_email.status:text:NOT NULL
+column:inbound_email.subject:text:NULL
+column:inbound_email.uid:bigint:NOT NULL
+column:mail_cursor.last_uid:bigint:NOT NULL
+column:mail_cursor.mailbox:text:NOT NULL
+column:notification_daily.chat_id:text:NOT NULL
+column:notification_daily.sent_at:timestamp with time zone:NOT NULL
+column:notification_daily.summary_date:date:NOT NULL
+column:notification_daily.tg_message_id:bigint:NULL
+column:notification_dispatch.chat_id:text:NOT NULL
+column:notification_dispatch.created_at:timestamp with time zone:NOT NULL
+column:notification_dispatch.event_id:uuid:NOT NULL
+column:notification_dispatch.kind:text:NOT NULL
+column:notification_dispatch.sent_at:timestamp with time zone:NULL
+column:notification_dispatch.status:text:NOT NULL
+column:notification_dispatch.tg_message_id:bigint:NULL
+column:runtime_control.control_id:text:NOT NULL
+column:runtime_control.enabled:boolean:NOT NULL
+column:runtime_control.updated_at:timestamp with time zone:NOT NULL
+column:runtime_control.updated_by:text:NOT NULL
+column:schema_migrations.applied_at:timestamp with time zone:NOT NULL
+column:schema_migrations.name:text:NOT NULL
+column:schema_migrations.number:integer:NOT NULL
+column:search_profile.candidate_id:text:NOT NULL
+column:search_profile.company_daily_cap:integer:NULL
+column:search_profile.languages:jsonb:NULL
+column:search_profile.locations:jsonb:NULL
+column:search_profile.notes:text:NULL
+column:search_profile.roles:jsonb:NULL
+column:search_profile.salary_floor:integer:NULL
+column:search_profile.seniority_band:text:NULL
+column:search_profile.updated_at:timestamp with time zone:NULL
+column:search_profile.work_mode:jsonb:NULL
+column:source_fetch_state.last_fetched_at:timestamp with time zone:NULL
+column:source_fetch_state.last_status:text:NULL
+column:source_fetch_state.source_key:text:NOT NULL
+column:submission_attempt.actor:text:NOT NULL
+column:submission_attempt.application_id:uuid:NOT NULL
+column:submission_attempt.approval_id:uuid:NULL
+column:submission_attempt.assisted_session_id:uuid:NULL
+column:submission_attempt.attempt_id:uuid:NOT NULL
+column:submission_attempt.click_started_at:timestamp with time zone:NULL
+column:submission_attempt.confirmation_signal:text:NULL
+column:submission_attempt.confirmation_url:text:NULL
+column:submission_attempt.contract_version:integer:NULL
+column:submission_attempt.created_at:timestamp with time zone:NOT NULL
+column:submission_attempt.errors_absent:boolean:NOT NULL
+column:submission_attempt.failure_signal:text:NULL
+column:submission_attempt.final_payload_hash:text:NULL
+column:submission_attempt.form_absent:boolean:NOT NULL
+column:submission_attempt.lease_until:timestamp with time zone:NOT NULL
+column:submission_attempt.resolution_note:text:NULL
+column:submission_attempt.resolution_source:text:NULL
+column:submission_attempt.resolved_at:timestamp with time zone:NULL
+column:submission_attempt.screenshot_path:text:NULL
+column:submission_attempt.status:text:NOT NULL
+column:submission_attempt.unmatched:jsonb:NOT NULL
+column:submission_attempt.updated_at:timestamp with time zone:NOT NULL
+column:submission_attempt.worker_id:text:NOT NULL
+column:telegram_lead.channel:text:NOT NULL
+column:telegram_lead.fetched_at:timestamp with time zone:NOT NULL
+column:telegram_lead.keyword_match:boolean:NOT NULL
+column:telegram_lead.lead_id:uuid:NOT NULL
+column:telegram_lead.message_id:bigint:NOT NULL
+column:telegram_lead.permalink:text:NOT NULL
+column:telegram_lead.posted_at:timestamp with time zone:NULL
+column:telegram_lead.raw_text:text:NOT NULL
+column:telegram_lead_triage.candidate_id:text:NOT NULL
+column:telegram_lead_triage.extracted:jsonb:NULL
+column:telegram_lead_triage.is_relevant:boolean:NOT NULL
+column:telegram_lead_triage.lead_id:uuid:NOT NULL
+column:telegram_lead_triage.triaged_at:timestamp with time zone:NOT NULL
+column:triage_result.candidate_id:text:NOT NULL
+column:triage_result.claims_version:text:NULL
+column:triage_result.fit_band:text:NULL
+column:triage_result.fit_breakdown:jsonb:NULL
+column:triage_result.fit_score:integer:NULL
+column:triage_result.fit_score_version:text:NULL
+column:triage_result.fit_summary:text:NULL
+column:triage_result.hard_requirements:jsonb:NULL
+column:triage_result.material_unknowns:jsonb:NULL
+column:triage_result.overclaim_risks:jsonb:NULL
+column:triage_result.triaged_at:timestamp with time zone:NULL
+column:triage_result.vacancy_id:uuid:NOT NULL
+column:triage_result.verdict:text:NOT NULL
+column:vacancy.ats_family:text:NULL
+column:vacancy.canonical_url:text:NULL
+column:vacancy.company:text:NULL
+column:vacancy.discovered_at:timestamp with time zone:NULL
+column:vacancy.location:text:NULL
+column:vacancy.normalized_company:text:NULL
+column:vacancy.normalized_title:text:NULL
+column:vacancy.source:text:NULL
+column:vacancy.source_url:text:NULL
+column:vacancy.state:text:NULL
+column:vacancy.title:text:NULL
+column:vacancy.vacancy_id:uuid:NOT NULL
+column:vacancy.vacancy_status:text:NULL
+column:vacancy.verified_at:timestamp with time zone:NULL
+column:vacancy.work_mode:text:NULL
+constraint:answer.answer_candidate_fk:foreign_key:FOREIGN KEY (candidate_id) REFERENCES candidate(candidate_id)
+constraint:answer.answer_pkey:primary_key:PRIMARY KEY (candidate_id, field)
+constraint:application.application_candidate_fk:foreign_key:FOREIGN KEY (candidate_id) REFERENCES candidate(candidate_id)
+constraint:application.application_candidate_identity_uq:unique:UNIQUE (application_id, candidate_id)
+constraint:application.application_outcome_chk:check:CHECK (((outcome_status IS NULL) OR (outcome_status = ANY (ARRAY['rejected'::text, 'interview_scheduled'::text]))))
+constraint:application.application_pkey:primary_key:PRIMARY KEY (application_id)
+constraint:application.application_state_canonical_chk:check:CHECK ((state = ANY (ARRAY['needs_package'::text, 'package_ready'::text, 'form_inspected'::text, 'fill_blocked'::text, 'pre_submit_ready'::text, 'awaiting_approval'::text, 'approved'::text, 'submitting'::text, 'submit_blocked'::text, 'submit_unknown'::text, 'submitted'::text, 'failed'::text])))
+constraint:application.application_vacancy_id_fkey:foreign_key:FOREIGN KEY (vacancy_id) REFERENCES vacancy(vacancy_id)
+constraint:application.fk_application_resume_artifact:foreign_key:FOREIGN KEY (resume_artifact_id) REFERENCES artifact(artifact_id)
+constraint:application_answer.application_answer_application_id_field_key:unique:UNIQUE (application_id, field)
+constraint:application_answer.application_answer_application_id_fkey:foreign_key:FOREIGN KEY (application_id) REFERENCES application(application_id)
+constraint:application_answer.application_answer_pkey:primary_key:PRIMARY KEY (application_answer_id)
+constraint:application_binding_set.application_binding_set_application_id_binding_set_version_key:unique:UNIQUE (application_id, binding_set_version)
+constraint:application_binding_set.application_binding_set_binding_set_id_contract_id_applicat_key:unique:UNIQUE (binding_set_id, contract_id, application_id, candidate_id, contract_version, binding_set_version, coverage_hash)
+constraint:application_binding_set.application_binding_set_binding_set_version_check:check:CHECK ((binding_set_version > 0))
+constraint:application_binding_set.application_binding_set_contract_fk:foreign_key:FOREIGN KEY (contract_id, application_id, candidate_id, contract_version) REFERENCES application_contract(contract_id, application_id, candidate_id, contract_version)
+constraint:application_binding_set.application_binding_set_optional_unanswered_check:check:CHECK ((optional_unanswered >= 0))
+constraint:application_binding_set.application_binding_set_pkey:primary_key:PRIMARY KEY (binding_set_id)
+constraint:application_binding_set.application_binding_set_readiness_chk:check:CHECK ((effective_readiness = ANY (ARRAY['needs_input'::text, 'ready'::text, 'unsupported'::text, 'stale'::text])))
+constraint:application_binding_set.application_binding_set_ready_coverage_chk:check:CHECK (((effective_readiness <> 'ready'::text) OR ((required_total = (required_data_total + required_confirmation_total)) AND (required_bound = required_data_total) AND (required_confirmed = required_confirmation_total) AND (unsupported_required = 0) AND (snapshot_status = 'passed'::text))))
+constraint:application_binding_set.application_binding_set_required_bound_check:check:CHECK ((required_bound >= 0))
+constraint:application_binding_set.application_binding_set_required_confirmation_total_check:check:CHECK ((required_confirmation_total >= 0))
+constraint:application_binding_set.application_binding_set_required_confirmed_check:check:CHECK ((required_confirmed >= 0))
+constraint:application_binding_set.application_binding_set_required_data_total_check:check:CHECK ((required_data_total >= 0))
+constraint:application_binding_set.application_binding_set_required_total_check:check:CHECK ((required_total >= 0))
+constraint:application_binding_set.application_binding_set_snapshot_status_chk:check:CHECK ((snapshot_status = ANY (ARRAY['not_run'::text, 'passed'::text, 'failed'::text, 'stale'::text])))
+constraint:application_binding_set.application_binding_set_unsupported_required_check:check:CHECK ((unsupported_required >= 0))
+constraint:application_contract.application_contract_application_candidate_fk:foreign_key:FOREIGN KEY (application_id, candidate_id) REFERENCES application(application_id, candidate_id)
+constraint:application_contract.application_contract_application_id_contract_version_key:unique:UNIQUE (application_id, contract_version)
+constraint:application_contract.application_contract_ats_chk:check:CHECK ((ats_family = 'greenhouse'::text))
+constraint:application_contract.application_contract_contract_id_application_id_candidate_i_key:unique:UNIQUE (contract_id, application_id, candidate_id, contract_version)
+constraint:application_contract.application_contract_contract_version_check:check:CHECK ((contract_version > 0))
+constraint:application_contract.application_contract_maturity_chk:check:CHECK ((maturity = ANY (ARRAY['observed'::text, 'tested'::text, 'assisted'::text, 'stable'::text, 'autonomy_candidate'::text])))
+constraint:application_contract.application_contract_pkey:primary_key:PRIMARY KEY (contract_id)
+constraint:application_contract.application_contract_readiness_chk:check:CHECK ((readiness = ANY (ARRAY['ready'::text, 'needs_input'::text, 'unsupported'::text, 'stale'::text])))
+constraint:application_contract.application_contract_snapshot_artifact_id_fkey:foreign_key:FOREIGN KEY (snapshot_artifact_id) REFERENCES artifact(artifact_id)
+constraint:application_field_binding.application_field_binding_binding_set_id_field_id_key:unique:UNIQUE (binding_set_id, field_id)
+constraint:application_field_binding.application_field_binding_binding_set_id_fkey:foreign_key:FOREIGN KEY (binding_set_id) REFERENCES application_binding_set(binding_set_id)
+constraint:application_field_binding.application_field_binding_pkey:primary_key:PRIMARY KEY (binding_id)
+constraint:application_field_binding.application_field_binding_snapshot_outcome_chk:check:CHECK ((snapshot_outcome = ANY (ARRAY['not_run'::text, 'filled'::text, 'persisted'::text, 'unmatched'::text, 'ambiguous_option'::text, 'unsupported'::text, 'stale'::text]))) NOT VALID
+constraint:application_operation.application_operation_application_id_fkey:foreign_key:FOREIGN KEY (application_id) REFERENCES application(application_id)
+constraint:application_operation.application_operation_approval_id_fkey:foreign_key:FOREIGN KEY (approval_id) REFERENCES approval(approval_id)
+constraint:application_operation.application_operation_attempt_id_fkey:foreign_key:FOREIGN KEY (attempt_id) REFERENCES submission_attempt(attempt_id)
+constraint:application_operation.application_operation_kind_chk:check:CHECK ((kind = ANY (ARRAY['prepare'::text, 'submit'::text])))
+constraint:application_operation.application_operation_kind_idempotency_key_key:unique:UNIQUE (kind, idempotency_key)
+constraint:application_operation.application_operation_pkey:primary_key:PRIMARY KEY (operation_id)
+constraint:application_operation.application_operation_stage_chk:check:CHECK ((stage = ANY (ARRAY['queued'::text, 'resume'::text, 'package'::text, 'fill'::text, 'awaiting_owner_approval'::text, 'submit'::text, 'verify'::text, 'terminal'::text])))
+constraint:application_operation.application_operation_status_chk:check:CHECK ((status = ANY (ARRAY['queued'::text, 'running'::text, 'awaiting_owner_approval'::text, 'succeeded'::text, 'blocked'::text, 'failed'::text, 'submit_unknown'::text])))
+constraint:approval.approval_application_id_fkey:foreign_key:FOREIGN KEY (application_id) REFERENCES application(application_id)
+constraint:approval.approval_pkey:primary_key:PRIMARY KEY (approval_id)
+constraint:approval.approval_reserved_attempt_fk:foreign_key:FOREIGN KEY (reserved_attempt_id) REFERENCES submission_attempt(attempt_id)
+constraint:approval.approval_status_canonical_chk:check:CHECK ((approval_status = ANY (ARRAY['pending'::text, 'approved'::text, 'rejected'::text, 'expired'::text, 'consumed'::text])))
+constraint:artifact.artifact_application_id_fkey:foreign_key:FOREIGN KEY (application_id) REFERENCES application(application_id)
+constraint:artifact.artifact_pkey:primary_key:PRIMARY KEY (artifact_id)
+constraint:assisted_event.assisted_event_batch_fk:foreign_key:FOREIGN KEY (batch_id, session_id, candidate_id) REFERENCES assisted_event_batch(batch_id, session_id, candidate_id)
+constraint:assisted_event.assisted_event_pkey:primary_key:PRIMARY KEY (event_id)
+constraint:assisted_event.assisted_event_sequence_no_check:check:CHECK ((sequence_no > 0))
+constraint:assisted_event.assisted_event_session_id_sequence_no_key:unique:UNIQUE (session_id, sequence_no)
+constraint:assisted_event_batch.assisted_event_batch_batch_id_session_id_candidate_id_key:unique:UNIQUE (batch_id, session_id, candidate_id)
+constraint:assisted_event_batch.assisted_event_batch_candidate_id_fkey:foreign_key:FOREIGN KEY (candidate_id) REFERENCES candidate(candidate_id)
+constraint:assisted_event_batch.assisted_event_batch_event_count_check:check:CHECK ((event_count >= 0))
+constraint:assisted_event_batch.assisted_event_batch_hash_chk:check:CHECK ((length(batch_hash) = 64))
+constraint:assisted_event_batch.assisted_event_batch_pkey:primary_key:PRIMARY KEY (batch_id)
+constraint:assisted_event_batch.assisted_event_batch_session_fk:foreign_key:FOREIGN KEY (session_id, candidate_id) REFERENCES assisted_session(session_id, candidate_id)
+constraint:assisted_event_batch.assisted_event_batch_session_id_idempotency_key_key:unique:UNIQUE (session_id, idempotency_key)
+constraint:assisted_session.assisted_session_application_uq:unique:UNIQUE (session_id, application_id)
+constraint:assisted_session.assisted_session_binding_set_fk:foreign_key:FOREIGN KEY (binding_set_id, contract_id, application_id, candidate_id, contract_version, binding_set_version, coverage_hash) REFERENCES application_binding_set(binding_set_id, contract_id, application_id, candidate_id, contract_version, binding_set_version, coverage_hash)
+constraint:assisted_session.assisted_session_binding_set_shape_chk:check:CHECK ((((binding_set_id IS NULL) AND (binding_set_version IS NULL) AND (coverage_hash IS NULL)) OR ((binding_set_id IS NOT NULL) AND (binding_set_version IS NOT NULL) AND (coverage_hash IS NOT NULL))))
+constraint:assisted_session.assisted_session_contract_fk:foreign_key:FOREIGN KEY (contract_id, application_id, candidate_id, contract_version) REFERENCES application_contract(contract_id, application_id, candidate_id, contract_version)
+constraint:assisted_session.assisted_session_contract_version_uq:unique:UNIQUE (session_id, contract_version)
+constraint:assisted_session.assisted_session_final_hash_chk:check:CHECK (((final_payload_hash IS NULL) OR ((length(final_payload_hash) >= 1) AND (length(final_payload_hash) <= 256))))
+constraint:assisted_session.assisted_session_identity_uq:unique:UNIQUE (session_id, candidate_id)
+constraint:assisted_session.assisted_session_payload_hash_chk:check:CHECK (((length(disclosed_payload_hash) >= 1) AND (length(disclosed_payload_hash) <= 256)))
+constraint:assisted_session.assisted_session_pkey:primary_key:PRIMARY KEY (session_id)
+constraint:assisted_session.assisted_session_status_chk:check:CHECK ((status = ANY (ARRAY['created'::text, 'open'::text, 'submitted_observed'::text, 'completed'::text, 'cancelled'::text, 'not_submitted'::text, 'submit_unknown'::text, 'failed'::text])))
+constraint:candidate.candidate_pkey:primary_key:PRIMARY KEY (candidate_id)
+constraint:claim.claim_candidate_fk:foreign_key:FOREIGN KEY (candidate_id) REFERENCES candidate(candidate_id)
+constraint:claim.claim_pkey:primary_key:PRIMARY KEY (candidate_id, claim_id)
+constraint:cloud_achievement.cloud_achievement_pkey:primary_key:PRIMARY KEY (candidate_id, aid)
+constraint:cloud_achievement.cloud_achievement_pos_fk:foreign_key:FOREIGN KEY (candidate_id, pid) REFERENCES cloud_position(candidate_id, pid)
+constraint:cloud_position.cloud_position_candidate_fk:foreign_key:FOREIGN KEY (candidate_id) REFERENCES candidate(candidate_id)
+constraint:cloud_position.cloud_position_pkey:primary_key:PRIMARY KEY (candidate_id, pid)
+constraint:cloud_skill.cloud_skill_candidate_fk:foreign_key:FOREIGN KEY (candidate_id) REFERENCES candidate(candidate_id)
+constraint:cloud_skill.cloud_skill_pkey:primary_key:PRIMARY KEY (candidate_id, name)
+constraint:company_watchlist.company_watchlist_company_name_normalized_key:unique:UNIQUE (company_name_normalized)
+constraint:company_watchlist.company_watchlist_pkey:primary_key:PRIMARY KEY (id)
+constraint:event.event_pkey:primary_key:PRIMARY KEY (event_id)
+constraint:hh_watchlist_sync.hh_watchlist_sync_pkey:primary_key:PRIMARY KEY (vacancy_id)
+constraint:hh_watchlist_sync.hh_watchlist_sync_vacancy_id_fkey:foreign_key:FOREIGN KEY (vacancy_id) REFERENCES vacancy(vacancy_id)
+constraint:inbound_email.inbound_email_application_id_fkey:foreign_key:FOREIGN KEY (application_id) REFERENCES application(application_id)
+constraint:inbound_email.inbound_email_candidate_id_fkey:foreign_key:FOREIGN KEY (candidate_id) REFERENCES candidate(candidate_id)
+constraint:inbound_email.inbound_email_confidence_chk:check:CHECK (((confidence IS NULL) OR ((confidence >= (0)::double precision) AND (confidence <= (1)::double precision))))
+constraint:inbound_email.inbound_email_mailbox_uid_key:unique:UNIQUE (mailbox, uid)
+constraint:inbound_email.inbound_email_pkey:primary_key:PRIMARY KEY (id)
+constraint:mail_cursor.mail_cursor_pkey:primary_key:PRIMARY KEY (mailbox)
+constraint:notification_daily.notification_daily_pkey:primary_key:PRIMARY KEY (summary_date)
+constraint:notification_dispatch.notification_dispatch_event_id_fkey:foreign_key:FOREIGN KEY (event_id) REFERENCES event(event_id)
+constraint:notification_dispatch.notification_dispatch_pkey:primary_key:PRIMARY KEY (event_id)
+constraint:runtime_control.runtime_control_id_chk:check:CHECK ((control_id = 'submit'::text))
+constraint:runtime_control.runtime_control_pkey:primary_key:PRIMARY KEY (control_id)
+constraint:schema_migrations.schema_migrations_pkey:primary_key:PRIMARY KEY (number)
+constraint:search_profile.search_profile_candidate_fk:foreign_key:FOREIGN KEY (candidate_id) REFERENCES candidate(candidate_id)
+constraint:search_profile.search_profile_pkey:primary_key:PRIMARY KEY (candidate_id)
+constraint:source_fetch_state.source_fetch_state_pkey:primary_key:PRIMARY KEY (source_key)
+constraint:submission_attempt.submission_attempt_actor_chk:check:CHECK ((actor = ANY (ARRAY['automation'::text, 'user'::text])))
+constraint:submission_attempt.submission_attempt_actor_shape_chk:check:CHECK ((((actor = 'automation'::text) AND (approval_id IS NOT NULL) AND (assisted_session_id IS NULL)) OR ((actor = 'user'::text) AND (approval_id IS NULL) AND (assisted_session_id IS NOT NULL) AND (contract_version IS NOT NULL) AND (((status = 'confirmed'::text) AND (final_payload_hash IS NOT NULL)) OR (status = 'unknown'::text)))))
+constraint:submission_attempt.submission_attempt_application_id_fkey:foreign_key:FOREIGN KEY (application_id) REFERENCES application(application_id)
+constraint:submission_attempt.submission_attempt_approval_id_fkey:foreign_key:FOREIGN KEY (approval_id) REFERENCES approval(approval_id)
+constraint:submission_attempt.submission_attempt_assisted_application_fk:foreign_key:FOREIGN KEY (assisted_session_id, application_id) REFERENCES assisted_session(session_id, application_id)
+constraint:submission_attempt.submission_attempt_assisted_session_fk:foreign_key:FOREIGN KEY (assisted_session_id) REFERENCES assisted_session(session_id)
+constraint:submission_attempt.submission_attempt_assisted_version_fk:foreign_key:FOREIGN KEY (assisted_session_id, contract_version) REFERENCES assisted_session(session_id, contract_version)
+constraint:submission_attempt.submission_attempt_pkey:primary_key:PRIMARY KEY (attempt_id)
+constraint:submission_attempt.submission_attempt_status_chk:check:CHECK ((status = ANY (ARRAY['claimed'::text, 'clicking'::text, 'confirmed'::text, 'not_submitted'::text, 'unknown'::text, 'failed'::text])))
+constraint:telegram_lead.telegram_lead_channel_message_id_key:unique:UNIQUE (channel, message_id)
+constraint:telegram_lead.telegram_lead_pkey:primary_key:PRIMARY KEY (lead_id)
+constraint:telegram_lead_triage.telegram_lead_triage_candidate_id_fkey:foreign_key:FOREIGN KEY (candidate_id) REFERENCES candidate(candidate_id)
+constraint:telegram_lead_triage.telegram_lead_triage_lead_id_fkey:foreign_key:FOREIGN KEY (lead_id) REFERENCES telegram_lead(lead_id)
+constraint:telegram_lead_triage.telegram_lead_triage_pkey:primary_key:PRIMARY KEY (lead_id, candidate_id)
+constraint:triage_result.triage_result_candidate_id_fkey:foreign_key:FOREIGN KEY (candidate_id) REFERENCES candidate(candidate_id)
+constraint:triage_result.triage_result_pkey:primary_key:PRIMARY KEY (candidate_id, vacancy_id)
+constraint:triage_result.triage_result_vacancy_id_fkey:foreign_key:FOREIGN KEY (vacancy_id) REFERENCES vacancy(vacancy_id)
+constraint:vacancy.vacancy_canonical_url_key:unique:UNIQUE (canonical_url)
+constraint:vacancy.vacancy_pkey:primary_key:PRIMARY KEY (vacancy_id)
+index:answer.answer_pkey:CREATE UNIQUE INDEX answer_pkey ON answer USING btree (candidate_id, field)
+index:application.application_candidate_identity_uq:CREATE UNIQUE INDEX application_candidate_identity_uq ON application USING btree (application_id, candidate_id)
+index:application.application_pkey:CREATE UNIQUE INDEX application_pkey ON application USING btree (application_id)
+index:application_answer.application_answer_application_id_field_key:CREATE UNIQUE INDEX application_answer_application_id_field_key ON application_answer USING btree (application_id, field)
+index:application_answer.application_answer_pkey:CREATE UNIQUE INDEX application_answer_pkey ON application_answer USING btree (application_answer_id)
+index:application_binding_set.application_binding_set_application_id_binding_set_version_key:CREATE UNIQUE INDEX application_binding_set_application_id_binding_set_version_key ON application_binding_set USING btree (application_id, binding_set_version)
+index:application_binding_set.application_binding_set_binding_set_id_contract_id_applicat_key:CREATE UNIQUE INDEX application_binding_set_binding_set_id_contract_id_applicat_key ON application_binding_set USING btree (binding_set_id, contract_id, application_id, candidate_id, contract_version, binding_set_version, coverage_hash)
+index:application_binding_set.application_binding_set_pkey:CREATE UNIQUE INDEX application_binding_set_pkey ON application_binding_set USING btree (binding_set_id)
+index:application_contract.application_contract_application_id_contract_version_key:CREATE UNIQUE INDEX application_contract_application_id_contract_version_key ON application_contract USING btree (application_id, contract_version)
+index:application_contract.application_contract_contract_id_application_id_candidate_i_key:CREATE UNIQUE INDEX application_contract_contract_id_application_id_candidate_i_key ON application_contract USING btree (contract_id, application_id, candidate_id, contract_version)
+index:application_contract.application_contract_pkey:CREATE UNIQUE INDEX application_contract_pkey ON application_contract USING btree (contract_id)
+index:application_field_binding.application_field_binding_binding_set_id_field_id_key:CREATE UNIQUE INDEX application_field_binding_binding_set_id_field_id_key ON application_field_binding USING btree (binding_set_id, field_id)
+index:application_field_binding.application_field_binding_pkey:CREATE UNIQUE INDEX application_field_binding_pkey ON application_field_binding USING btree (binding_id)
+index:application_operation.application_operation_kind_idempotency_key_key:CREATE UNIQUE INDEX application_operation_kind_idempotency_key_key ON application_operation USING btree (kind, idempotency_key)
+index:application_operation.application_operation_pkey:CREATE UNIQUE INDEX application_operation_pkey ON application_operation USING btree (operation_id)
+index:application_operation.ux_application_operation_active:CREATE UNIQUE INDEX ux_application_operation_active ON application_operation USING btree (application_id, kind) WHERE (status = ANY (ARRAY['queued'::text, 'running'::text, 'awaiting_owner_approval'::text]))
+index:approval.approval_pkey:CREATE UNIQUE INDEX approval_pkey ON approval USING btree (approval_id)
+index:approval.ux_approval_active:CREATE UNIQUE INDEX ux_approval_active ON approval USING btree (application_id) WHERE (approval_status = ANY (ARRAY['pending'::text, 'approved'::text]))
+index:approval.ux_approval_reserved_attempt:CREATE UNIQUE INDEX ux_approval_reserved_attempt ON approval USING btree (reserved_attempt_id) WHERE (reserved_attempt_id IS NOT NULL)
+index:artifact.artifact_pkey:CREATE UNIQUE INDEX artifact_pkey ON artifact USING btree (artifact_id)
+index:assisted_event.assisted_event_pkey:CREATE UNIQUE INDEX assisted_event_pkey ON assisted_event USING btree (event_id)
+index:assisted_event.assisted_event_session_id_sequence_no_key:CREATE UNIQUE INDEX assisted_event_session_id_sequence_no_key ON assisted_event USING btree (session_id, sequence_no)
+index:assisted_event_batch.assisted_event_batch_batch_id_session_id_candidate_id_key:CREATE UNIQUE INDEX assisted_event_batch_batch_id_session_id_candidate_id_key ON assisted_event_batch USING btree (batch_id, session_id, candidate_id)
+index:assisted_event_batch.assisted_event_batch_pkey:CREATE UNIQUE INDEX assisted_event_batch_pkey ON assisted_event_batch USING btree (batch_id)
+index:assisted_event_batch.assisted_event_batch_session_id_idempotency_key_key:CREATE UNIQUE INDEX assisted_event_batch_session_id_idempotency_key_key ON assisted_event_batch USING btree (session_id, idempotency_key)
+index:assisted_session.assisted_session_application_uq:CREATE UNIQUE INDEX assisted_session_application_uq ON assisted_session USING btree (session_id, application_id)
+index:assisted_session.assisted_session_contract_version_uq:CREATE UNIQUE INDEX assisted_session_contract_version_uq ON assisted_session USING btree (session_id, contract_version)
+index:assisted_session.assisted_session_identity_uq:CREATE UNIQUE INDEX assisted_session_identity_uq ON assisted_session USING btree (session_id, candidate_id)
+index:assisted_session.assisted_session_pkey:CREATE UNIQUE INDEX assisted_session_pkey ON assisted_session USING btree (session_id)
+index:assisted_session.ux_assisted_session_candidate_active:CREATE UNIQUE INDEX ux_assisted_session_candidate_active ON assisted_session USING btree (candidate_id) WHERE (status = ANY (ARRAY['created'::text, 'open'::text, 'submitted_observed'::text]))
+index:candidate.candidate_pkey:CREATE UNIQUE INDEX candidate_pkey ON candidate USING btree (candidate_id)
+index:claim.claim_pkey:CREATE UNIQUE INDEX claim_pkey ON claim USING btree (candidate_id, claim_id)
+index:cloud_achievement.cloud_achievement_pkey:CREATE UNIQUE INDEX cloud_achievement_pkey ON cloud_achievement USING btree (candidate_id, aid)
+index:cloud_position.cloud_position_pkey:CREATE UNIQUE INDEX cloud_position_pkey ON cloud_position USING btree (candidate_id, pid)
+index:cloud_skill.cloud_skill_pkey:CREATE UNIQUE INDEX cloud_skill_pkey ON cloud_skill USING btree (candidate_id, name)
+index:company_watchlist.company_watchlist_company_name_normalized_key:CREATE UNIQUE INDEX company_watchlist_company_name_normalized_key ON company_watchlist USING btree (company_name_normalized)
+index:company_watchlist.company_watchlist_pkey:CREATE UNIQUE INDEX company_watchlist_pkey ON company_watchlist USING btree (id)
+index:event.event_pkey:CREATE UNIQUE INDEX event_pkey ON event USING btree (event_id)
+index:event.ix_event_entity_type_created:CREATE INDEX ix_event_entity_type_created ON event USING btree (entity_id, event_type, created_at DESC)
+index:event.ix_event_type_created:CREATE INDEX ix_event_type_created ON event USING btree (event_type, created_at)
+index:hh_watchlist_sync.hh_watchlist_sync_pkey:CREATE UNIQUE INDEX hh_watchlist_sync_pkey ON hh_watchlist_sync USING btree (vacancy_id)
+index:inbound_email.inbound_email_mailbox_uid_key:CREATE UNIQUE INDEX inbound_email_mailbox_uid_key ON inbound_email USING btree (mailbox, uid)
+index:inbound_email.inbound_email_pkey:CREATE UNIQUE INDEX inbound_email_pkey ON inbound_email USING btree (id)
+index:inbound_email.inbound_email_status_idx:CREATE INDEX inbound_email_status_idx ON inbound_email USING btree (status)
+index:mail_cursor.mail_cursor_pkey:CREATE UNIQUE INDEX mail_cursor_pkey ON mail_cursor USING btree (mailbox)
+index:notification_daily.notification_daily_pkey:CREATE UNIQUE INDEX notification_daily_pkey ON notification_daily USING btree (summary_date)
+index:notification_dispatch.ix_notif_pending:CREATE INDEX ix_notif_pending ON notification_dispatch USING btree (status) WHERE (status = 'pending'::text)
+index:notification_dispatch.notification_dispatch_pkey:CREATE UNIQUE INDEX notification_dispatch_pkey ON notification_dispatch USING btree (event_id)
+index:runtime_control.runtime_control_pkey:CREATE UNIQUE INDEX runtime_control_pkey ON runtime_control USING btree (control_id)
+index:schema_migrations.schema_migrations_pkey:CREATE UNIQUE INDEX schema_migrations_pkey ON schema_migrations USING btree (number)
+index:search_profile.search_profile_pkey:CREATE UNIQUE INDEX search_profile_pkey ON search_profile USING btree (candidate_id)
+index:source_fetch_state.source_fetch_state_pkey:CREATE UNIQUE INDEX source_fetch_state_pkey ON source_fetch_state USING btree (source_key)
+index:submission_attempt.submission_attempt_pkey:CREATE UNIQUE INDEX submission_attempt_pkey ON submission_attempt USING btree (attempt_id)
+index:submission_attempt.ux_submission_attempt_active:CREATE UNIQUE INDEX ux_submission_attempt_active ON submission_attempt USING btree (application_id) WHERE (status = ANY (ARRAY['claimed'::text, 'clicking'::text]))
+index:submission_attempt.ux_submission_attempt_confirmed:CREATE UNIQUE INDEX ux_submission_attempt_confirmed ON submission_attempt USING btree (application_id) WHERE (status = 'confirmed'::text)
+index:submission_attempt.ux_submission_attempt_live_or_confirmed:CREATE UNIQUE INDEX ux_submission_attempt_live_or_confirmed ON submission_attempt USING btree (application_id) WHERE (status = ANY (ARRAY['claimed'::text, 'clicking'::text, 'confirmed'::text]))
+index:telegram_lead.telegram_lead_channel_message_id_key:CREATE UNIQUE INDEX telegram_lead_channel_message_id_key ON telegram_lead USING btree (channel, message_id)
+index:telegram_lead.telegram_lead_pkey:CREATE UNIQUE INDEX telegram_lead_pkey ON telegram_lead USING btree (lead_id)
+index:telegram_lead_triage.telegram_lead_triage_pkey:CREATE UNIQUE INDEX telegram_lead_triage_pkey ON telegram_lead_triage USING btree (lead_id, candidate_id)
+index:triage_result.triage_result_pkey:CREATE UNIQUE INDEX triage_result_pkey ON triage_result USING btree (candidate_id, vacancy_id)
+index:vacancy.vacancy_canonical_url_key:CREATE UNIQUE INDEX vacancy_canonical_url_key ON vacancy USING btree (canonical_url)
+index:vacancy.vacancy_pkey:CREATE UNIQUE INDEX vacancy_pkey ON vacancy USING btree (vacancy_id)
+trigger:application_binding_set.application_binding_set_immutable:CREATE TRIGGER application_binding_set_immutable BEFORE DELETE OR UPDATE ON application_binding_set FOR EACH ROW EXECUTE FUNCTION reject_assisted_immutable_change()
+trigger:application_binding_set.application_binding_set_payload_hash_integrity:CREATE TRIGGER application_binding_set_payload_hash_integrity BEFORE INSERT ON application_binding_set FOR EACH ROW EXECUTE FUNCTION validate_application_binding_set_payload_hash()
+trigger:application_contract.application_contract_immutable:CREATE TRIGGER application_contract_immutable BEFORE DELETE OR UPDATE ON application_contract FOR EACH ROW EXECUTE FUNCTION reject_assisted_immutable_change()
+trigger:application_field_binding.application_field_binding_immutable:CREATE TRIGGER application_field_binding_immutable BEFORE DELETE OR UPDATE ON application_field_binding FOR EACH ROW EXECUTE FUNCTION reject_assisted_immutable_change()
+trigger:assisted_event.assisted_event_immutable:CREATE TRIGGER assisted_event_immutable BEFORE DELETE OR UPDATE ON assisted_event FOR EACH ROW EXECUTE FUNCTION reject_assisted_immutable_change()
+trigger:submission_attempt.submission_attempt_manual_session_integrity:CREATE TRIGGER submission_attempt_manual_session_integrity BEFORE INSERT OR UPDATE ON submission_attempt FOR EACH ROW EXECUTE FUNCTION validate_manual_attempt_session()

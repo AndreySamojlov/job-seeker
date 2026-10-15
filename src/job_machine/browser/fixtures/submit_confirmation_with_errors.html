@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Application</title></head>
+<body>
+  <!-- Утвердительный текст благодарности И токен "confirmation" в path — то
+       есть и текстовый, и URL-сигнал говорят «успех». Единственное, что отличает
+       эту страницу от настоящего подтверждения, — видимая ошибка на живой форме.
+       Ровно то, что теряется при опоре на протухший handle. -->
+  <h1>Thank you for applying</h1>
+  <form id="application" method="get" action="submit_confirmation_with_errors.html">
+    <label for="work_auth">Are you authorized to work in this country?</label>
+    <div id="work_auth" role="combobox" tabindex="0" aria-invalid="true"
+         style="border:1px solid red; padding:4px">Select...</div>
+
+    <button type="submit">Submit Application</button>
+  </form>
+</body>
+</html>

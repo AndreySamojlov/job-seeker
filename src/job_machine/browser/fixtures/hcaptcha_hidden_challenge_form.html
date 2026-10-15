@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>hCaptcha preloaded-hidden-challenge form</title></head>
+<body>
+  <h1>Apply</h1>
+  <form id="application" method="post" action="/submitted">
+    <label for="fn">Full name</label>
+    <input id="fn" name="full_name" type="text" required>
+
+    <label for="em">Email</label>
+    <input id="em" name="email" type="email" required>
+
+    <button type="submit">Submit Application</button>
+  </form>
+
+  <!-- Живая разметка hcaptcha.com 07.07.2026: anchor-iframe (invisible-режим) и
+       challenge-iframe присутствуют в DOM ВСЕГДА, challenge-iframe спрятан через
+       visibility:hidden (подтверждено computed style реальной страницы), пока
+       реально не нужен. Его src тоже содержит "invisible" (хвост query-параметров
+       виджета) — присутствие само по себе не означает видимый челлендж. -->
+  <iframe
+    src="https://hcaptcha.invalid/captcha/v1/static/hcaptcha.html#frame=checkbox-invisible&sitekey=fake"
+    title="hCaptcha checkbox"></iframe>
+  <iframe
+    src="https://hcaptcha.invalid/captcha/v1/static/hcaptcha.html#frame=challenge&sitekey=fake&size=invisible"
+    title="hCaptcha challenge"
+    style="visibility:hidden; width:300px; height:150px;"></iframe>
+</body>
+</html>

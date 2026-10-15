@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "job-machine-lab-do": {
+      "command": "C:\\Users\\samoj\\Documents\\ChatGPT\\Job Seeker\\.venv\\Scripts\\python.exe",
+      "args": [
+        "-m",
+        "job_machine.ops.mcp_server"
+      ],
+      "cwd": "C:\\Users\\samoj\\Documents\\ChatGPT\\Job Seeker",
+      "env": {
+        "PROGRAMDATA": "C:\\ProgramData"
+      }
+    }
+  }
+}

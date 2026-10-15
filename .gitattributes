@@ -1,0 +1,2 @@
+# LF во всём дереве (устав §5: UTF-8 без BOM + LF).
+* text=auto eol=lf

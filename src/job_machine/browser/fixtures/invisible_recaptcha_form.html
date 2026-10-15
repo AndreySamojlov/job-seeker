@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Invisible reCAPTCHA form</title></head>
+<body>
+  <h1>Apply</h1>
+  <form id="application" method="post" action="/submitted">
+    <label for="fn">Full name</label>
+    <input id="fn" name="full_name" type="text" required>
+
+    <label for="em">Email</label>
+    <input id="em" name="email" type="email" required>
+
+    <button type="submit">Submit Application</button>
+  </form>
+
+  <!-- Живая разметка Monks careers 07.07.2026: enterprise reCAPTCHA badge,
+       всегда в DOM, size=invisible в src — фоновый скоринг, не челлендж. -->
+  <div class="grecaptcha-logo">
+    <iframe
+      src="https://recaptcha.invalid/recaptcha/enterprise/anchor?size=invisible&k=fake"
+      title="reCAPTCHA"
+      width="256" height="60"></iframe>
+  </div>
+</body>
+</html>

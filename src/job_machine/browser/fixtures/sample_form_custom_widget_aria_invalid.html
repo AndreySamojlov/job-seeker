@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Sample Application (custom combobox widget, ARIA validation only)</title></head>
+<body>
+  <h1>Apply: Sample Role</h1>
+  <form id="application" method="post" action="/submitted">
+    <label for="full_name">Full name</label>
+    <input id="full_name" name="full_name" type="text" required>
+
+    <!-- Custom combobox widget matching the real markup Greenhouse renders for its
+         react-select questions (verified live 23.07.2026 against a still-open
+         job-boards.eu.greenhouse.io/jetbrains posting): NO native `required`
+         attribute — the browser's :invalid pseudo-class can never match this input.
+         Validation is entirely JS-driven via aria-required/aria-invalid, exactly
+         like the real widget. Pipeline correctly never auto-answers this kind of
+         question (CLAUDE.md §3), so it stays empty by design. -->
+    <label for="how_heard" id="how_heard-label">How did you hear about this role?</label>
+    <input id="how_heard" name="how_heard" type="text" aria-required="true"
+           aria-invalid="false" aria-errormessage="how_heard-error" readonly>
+
+    <button type="submit">Submit Application</button>
+  </form>
+  <script>
+    document.getElementById('application').addEventListener('submit', function (e) {
+      var widget = document.getElementById('how_heard');
+      if (!widget.value) {
+        e.preventDefault();
+        widget.setAttribute('aria-invalid', 'true');
+        if (!document.getElementById('how_heard-error')) {
+          var err = document.createElement('span');
+          err.id = 'how_heard-error';
+          err.textContent = 'This field is required.';
+          widget.insertAdjacentElement('afterend', err);
+        }
+      }
+    });
+  </script>
+</body>
+</html>

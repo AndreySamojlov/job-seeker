@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Security-Policy" content="script-src 'unsafe-inline'">
+</head>
+<body>
+  <div id="app"></div>
+  <script>
+    setTimeout(function () {
+      document.getElementById('app').innerHTML =
+        '<form>' +
+        '<input type="text" name="full_name" required>' +
+        '<input type="email" name="email" required>' +
+        '<input type="file" name="resume">' +
+        '<button type="submit">Submit Application</button>' +
+        '</form>';
+    }, 800);
+  </script>
+</body>
+</html>

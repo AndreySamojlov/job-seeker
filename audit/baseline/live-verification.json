@@ -1,0 +1,387 @@
+{
+  "at": "2026-10-15T10:55:07.531491+00:00",
+  "mutations_performed": false,
+  "services": [
+    {
+      "Id": "5ca05946c6b328292cef77c533aeb58ba0654ac632f8f72397135c03e270849e",
+      "Name": "/greenhouse-runtime-job-browser-1",
+      "Image": "sha256:670b27991e233af9e9eb427d925e36a0f98ab35dd8d474c0146c70abf3cc6094",
+      "ImageTag": "job-machine/browser:b174ad6d",
+      "State": {
+        "Running": true,
+        "Status": "running",
+        "Health": "healthy"
+      },
+      "Mounts": [
+        {
+          "Destination": "/data",
+          "Driver": "local",
+          "Mode": "rw",
+          "Name": "greenhouse-runtime-data",
+          "Propagation": "",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/greenhouse-runtime-data/_data",
+          "Type": "volume"
+        }
+      ]
+    },
+    {
+      "Id": "d31949b397fc0f840df69f61dfba7f4d0f7c2fe3b725882c01e6780396cd4ae5",
+      "Name": "/greenhouse-runtime-job-discovery-1",
+      "Image": "sha256:34a0b671ccc210796c3130a20e68d04a84d58e59cae464ee462a7433d331d12d",
+      "ImageTag": "job-machine/discovery:b174ad6d",
+      "State": {
+        "Running": true,
+        "Status": "running",
+        "Health": "healthy"
+      },
+      "Mounts": [
+        {
+          "Destination": "/data",
+          "Driver": "local",
+          "Mode": "rw",
+          "Name": "greenhouse-runtime-data",
+          "Propagation": "",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/greenhouse-runtime-data/_data",
+          "Type": "volume"
+        }
+      ]
+    },
+    {
+      "Id": "b42f0b99b819a26191616e60e861875681334d36491b2a262c31931f067cfe34",
+      "Name": "/greenhouse-runtime-job-triage-1",
+      "Image": "sha256:b4d57569e248320d3f4183b5a6138fe65e989bf803bb1a2eec4c073befe8a2f1",
+      "ImageTag": "job-machine/triage:calib-6c42f02",
+      "State": {
+        "Running": true,
+        "Status": "running",
+        "Health": "healthy"
+      },
+      "Mounts": [
+        {
+          "Destination": "/data",
+          "Driver": "local",
+          "Mode": "rw",
+          "Name": "greenhouse-runtime-data",
+          "Propagation": "",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/greenhouse-runtime-data/_data",
+          "Type": "volume"
+        }
+      ]
+    },
+    {
+      "Id": "dcd0cd2971232d99a935f79cdbc801467180ca214532c9c4deb6bfc6d143d48c",
+      "Name": "/greenhouse-runtime-job-resume-1",
+      "Image": "sha256:52bcbd8722fd5fc2bbcbf5505636cecf1bfe4a254e8a02669924f6139038bf2a",
+      "ImageTag": "job-machine/resume:3d0b9af",
+      "State": {
+        "Running": true,
+        "Status": "running",
+        "Health": "healthy"
+      },
+      "Mounts": [
+        {
+          "Destination": "/data",
+          "Driver": "local",
+          "Mode": "rw",
+          "Name": "greenhouse-runtime-data",
+          "Propagation": "",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/greenhouse-runtime-data/_data",
+          "Type": "volume"
+        }
+      ]
+    },
+    {
+      "Id": "3a76bc848ab814e973f25b110e5d363d5ff7e46f7a85901530811b3edd18ca8b",
+      "Name": "/greenhouse-runtime-job-package-1",
+      "Image": "sha256:6e63a54d7c15e5b10188ebfe7ebd95911cecfebfbe779a87188e58ea8def0d23",
+      "ImageTag": "job-machine/package:3d0b9af",
+      "State": {
+        "Running": true,
+        "Status": "running",
+        "Health": "healthy"
+      },
+      "Mounts": [
+        {
+          "Destination": "/data",
+          "Driver": "local",
+          "Mode": "rw",
+          "Name": "greenhouse-runtime-data",
+          "Propagation": "",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/greenhouse-runtime-data/_data",
+          "Type": "volume"
+        }
+      ]
+    },
+    {
+      "Id": "06567eb67ebca62b37b7df336a2f813bddcf1c84fc64eec641096244ac1ae80f",
+      "Name": "/greenhouse-runtime-job-fill-1",
+      "Image": "sha256:c5318c438f0811c9067527e1a5920b3669b327317fb1e22c1fdb11e1c2913b5d",
+      "ImageTag": "job-machine/fill:3d0b9af",
+      "State": {
+        "Running": true,
+        "Status": "running",
+        "Health": "healthy"
+      },
+      "Mounts": [
+        {
+          "Destination": "/data",
+          "Driver": "local",
+          "Mode": "rw",
+          "Name": "greenhouse-runtime-data",
+          "Propagation": "",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/greenhouse-runtime-data/_data",
+          "Type": "volume"
+        }
+      ]
+    },
+    {
+      "Id": "52e0a63d956eb6600248fd7c5a3c17f555f6059cf1e275f427d0a8e032f4a756",
+      "Name": "/greenhouse-runtime-job-submit-1",
+      "Image": "sha256:665200bc977109c8968368bd8f09f22075829132b57633457a7041bf192d8c1c",
+      "ImageTag": "job-machine/submit:3d0b9af",
+      "State": {
+        "Running": true,
+        "Status": "running",
+        "Health": "healthy"
+      },
+      "Mounts": [
+        {
+          "Destination": "/data",
+          "Driver": "local",
+          "Mode": "rw",
+          "Name": "greenhouse-runtime-data",
+          "Propagation": "",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/greenhouse-runtime-data/_data",
+          "Type": "volume"
+        },
+        {
+          "Destination": "/run/job-machine-verification",
+          "Driver": "local",
+          "Mode": "rw",
+          "Name": "greenhouse-runtime-verification-codes",
+          "Propagation": "",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/greenhouse-runtime-verification-codes/_data",
+          "Type": "volume"
+        }
+      ]
+    },
+    {
+      "Id": "128803f757513d8001a12d23241ddeb752d199f3bd328576515084d431077d63",
+      "Name": "/greenhouse-runtime-job-mail-1",
+      "Image": "sha256:3b078cbc6978aec3f878ea9b1ff0645afbc2370b603b1b93e1cbfef478122138",
+      "ImageTag": "job-machine/mail:3d0b9af",
+      "State": {
+        "Running": true,
+        "Status": "running",
+        "Health": null
+      },
+      "Mounts": [
+        {
+          "Destination": "/data",
+          "Driver": "local",
+          "Mode": "rw",
+          "Name": "greenhouse-runtime-data",
+          "Propagation": "",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/greenhouse-runtime-data/_data",
+          "Type": "volume"
+        }
+      ]
+    }
+  ],
+  "health": {
+    "browser": {
+      "http_status": 200,
+      "body": {
+        "status": "ok"
+      }
+    },
+    "discovery": {
+      "http_status": 200,
+      "body": {
+        "status": "ok"
+      }
+    },
+    "triage": {
+      "http_status": 200,
+      "body": {
+        "status": "ok"
+      }
+    },
+    "resume": {
+      "http_status": 200,
+      "body": {
+        "status": "ok"
+      }
+    },
+    "package": {
+      "http_status": 200,
+      "body": {
+        "status": "ok"
+      }
+    },
+    "fill": {
+      "http_status": 200,
+      "body": {
+        "status": "ok"
+      }
+    },
+    "submit": {
+      "http_status": 200,
+      "body": {
+        "status": "ok"
+      }
+    },
+    "mail": {
+      "http_status": 200,
+      "body": {
+        "status": "ok"
+      }
+    }
+  },
+  "summary": [
+    {
+      "entity": "vacancy",
+      "state": "discovered",
+      "count": 145324
+    },
+    {
+      "entity": "vacancy",
+      "state": "skipped",
+      "count": 3097
+    },
+    {
+      "entity": "vacancy",
+      "state": "triaged",
+      "count": 56
+    },
+    {
+      "entity": "vacancy",
+      "state": "verified",
+      "count": 24396
+    },
+    {
+      "entity": "application",
+      "state": "agent_fill_pending",
+      "count": 1
+    },
+    {
+      "entity": "application",
+      "state": "submit_blocked",
+      "count": 132
+    },
+    {
+      "entity": "application",
+      "state": "submit_unknown",
+      "count": 23
+    },
+    {
+      "entity": "application",
+      "state": "failed",
+      "count": 200
+    },
+    {
+      "entity": "application",
+      "state": "pre_submit_ready",
+      "count": 51
+    },
+    {
+      "entity": "application",
+      "state": "needs_package",
+      "count": 46
+    },
+    {
+      "entity": "application",
+      "state": "approved",
+      "count": 1
+    },
+    {
+      "entity": "application",
+      "state": "submitted",
+      "count": 15
+    },
+    {
+      "entity": "application",
+      "state": "fill_blocked",
+      "count": 338
+    },
+    {
+      "entity": "attempt",
+      "state": "confirmed",
+      "count": 1
+    },
+    {
+      "entity": "attempt",
+      "state": "unknown",
+      "count": 36
+    },
+    {
+      "entity": "attempt",
+      "state": "failed",
+      "count": 102
+    },
+    {
+      "entity": "attempt",
+      "state": "not_submitted",
+      "count": 3
+    }
+  ],
+  "read_checks": {
+    "applications": {
+      "rows_returned": 2
+    },
+    "vacancies": {
+      "rows_returned": 2
+    },
+    "triage": {
+      "rows_returned": 2
+    },
+    "events": {
+      "rows_returned": 2
+    },
+    "ready": {
+      "rows_returned": 2
+    },
+    "blockers": {
+      "rows_returned": 13
+    }
+  },
+  "artifact_samples": [
+    {
+      "artifact_id": "5a4a9bf7-125e-4d79-9e29-632cd783bfbe",
+      "artifact_type": "resume",
+      "content_hash": "662b0d7c518f3d720d02f734983552053f6285570d961e0c6fe56fd8cef68e32",
+      "file_status": "missing"
+    },
+    {
+      "artifact_id": "af9d0725-ef57-47a1-a910-093f165909ab",
+      "artifact_type": "resume",
+      "content_hash": "9990755a85723730146cf11f2f65e4d1cd7650c7c6a818eeb6a8ab74a3960078",
+      "file_status": "missing"
+    },
+    {
+      "artifact_id": "34de8b47-fbe5-47eb-8813-7e86fa1ccfd1",
+      "artifact_type": "resume",
+      "content_hash": "1131486acd64efa8d910179d0b3b8201a8a503e406589110432d716d3c87ddc1",
+      "file_status": "missing"
+    }
+  ],
+  "log_check": {
+    "service": "submit",
+    "lines_returned": 3
+  },
+  "artifact_last_100": {
+    "missing": 24,
+    "hash_match": 42,
+    "hash_mismatch": 12,
+    "outside_runtime_data": 22
+  }
+}

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Sample Application (required field pipeline intentionally never answers)</title></head>
+<body>
+  <h1>Apply: Sample Role</h1>
+  <form id="application" method="post" action="/submitted">
+    <label for="full_name">Full name</label>
+    <input id="full_name" name="full_name" type="text" required>
+
+    <!-- Work authorization / demographic-style declaration: policy (CLAUDE.md §3)
+         forbids auto-answering this, so the pipeline never puts it in `fields` —
+         but the site marks it hard-required. Live incident 23.07.2026: clicking
+         Submit here silently "succeeded" because nothing checked the result. -->
+    <label for="work_auth">Are you authorized to work in this country?</label>
+    <select id="work_auth" name="work_auth" required>
+      <option value="">Select...</option>
+      <option value="yes">Yes</option>
+      <option value="no">No</option>
+    </select>
+
+    <button type="submit">Submit Application</button>
+  </form>
+</body>
+</html>
