@@ -1,0 +1,25 @@
+{
+  "health": 200,
+  "candidate_contexts": 2,
+  "checks": [
+    {
+      "total": 7366,
+      "page_rows": 100,
+      "snapshot_age_ms": 3978,
+      "coherent": true
+    },
+    {
+      "total": 7366,
+      "page_rows": 100,
+      "snapshot_age_ms": 3708,
+      "coherent": true
+    }
+  ],
+  "privileges": {
+    "readonly": "on",
+    "can_select": true,
+    "can_insert": false,
+    "can_update": false
+  },
+  "workers_unchanged": true
+}

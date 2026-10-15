@@ -11,7 +11,12 @@ import psycopg
 from psycopg.rows import dict_row
 
 from job_machine.board.repository import load_greenhouse_snapshot
-from job_machine.ops.tunnel_dashboard import postgres_tunnel_status
+
+
+def postgres_tunnel_status():
+    # Server deployment has no laptop ops package or daemon dependency.
+    from job_machine.ops.tunnel_dashboard import postgres_tunnel_status as status
+    return status()
 
 
 @contextmanager
