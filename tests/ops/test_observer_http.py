@@ -73,3 +73,17 @@ def test_snapshot_expiring_during_status_read_is_not_rendered(monkeypatch):
         assert response.status_code == 503
         assert response.headers['X-Job-Machine-Data'] == 'unavailable'
         assert 'Блокеров нет' not in response.text
+
+
+def test_page_contains_real_bar_charts_instead_of_funnel_cards():
+    from job_machine.ops.dashboard import create_app
+    class Source:
+        def data(self, view, **kwargs):
+            if view=='summary': return [dict(entity='application',state='submit_unknown',count=23)]
+            return []
+        def status(self): return []
+    with TestClient(create_app(Source())) as client:
+        page = client.get('/').text
+        assert 'class="progress-bar"' in page
+        assert 'class="stage"' not in page
+        assert 'submission_attempt.status' in page

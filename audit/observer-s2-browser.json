@@ -1,0 +1,18 @@
+{
+  "live": {
+    "http": 200,
+    "outcome": "live"
+  },
+  "partial": {
+    "http": 200,
+    "outcome": "partial"
+  },
+  "stale": {
+    "http": 200,
+    "outcome": "stale"
+  },
+  "unavailable": {
+    "http": 503,
+    "outcome": "unavailable"
+  }
+}

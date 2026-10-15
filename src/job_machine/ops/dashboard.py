@@ -4,12 +4,13 @@ import time
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from starlette.middleware.trustedhost import TrustedHostMiddleware
-from job_machine.dashboard.render import _STYLE, _funnel_html, _blockers_html, _ready_html
+from job_machine.dashboard.render import _STYLE, _blockers_html, _ready_html
 from job_machine.ops.client import TransientTransportError, redact
 from job_machine.ops.dashboard_state import SnapshotStore, page_outcome
 from job_machine.ops.observations import normalize_observations
 from job_machine.ops.observer_render import esc, render_observer_status
 from job_machine.ops.tunnel_dashboard import TunnelDashboardClient
+from job_machine.ops.progress import build_progress, render_progress, PROGRESS_STYLE
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +18,9 @@ logger = logging.getLogger(__name__)
 def _validated(name, rows):
     if name == 'observations':
         return normalize_observations(rows)
+    if name == 'summary':
+        build_progress(rows)
+        return rows
     if not isinstance(rows, list) or any(not isinstance(row, dict) for row in rows):
         raise ValueError('Invalid source response')
     for row in rows:
@@ -64,16 +68,12 @@ def create_app(client=None):
         page = ('<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8">'
                 '<meta name="viewport" content="width=device-width, initial-scale=1">'
                 '<meta http-equiv="refresh" content="30">'
-                f'<style>{_STYLE}table{{display:block;max-width:100%;overflow-x:auto}}'
+                f'<style>{_STYLE}{PROGRESS_STYLE}table{{display:block;max-width:100%;overflow-x:auto}}'
                 'p,td{overflow-wrap:anywhere}</style><title>Job Machine — Observer</title></head><body>'
                 '<h1>Job Machine — lab-do</h1>' + render_observer_status(blocks))
-        funnel = {}
         if blocks['summary'].state != 'unavailable':
-            for row in blocks['summary'].data:
-                funnel.setdefault(row['entity'], {})[row['state'] or 'unknown'] = row['count']
-            page += '<h2>Состояния вакансий и заявок</h2><p>Текущие состояния разных сущностей; не сквозная конверсия.</p>' + _funnel_html(funnel)
-            attempts = ', '.join(f'{esc(k)}: {esc(v)}' for k,v in funnel.get('attempt', {}).items())
-            page += '<h2>Попытки отправки</h2><p>' + (attempts or 'Нет записей') + '</p>'
+            page += render_progress(blocks['summary'].data, state=blocks['summary'].state,
+                                    fetched_at=blocks['summary'].fetched_at)
         else:
             page += '<h2>Состояния вакансий и заявок</h2><p>Сведения недоступны.</p>'
         for name,title,render in [('blockers','Блокеры заявок',_blockers_html),
