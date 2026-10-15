@@ -1,8 +1,14 @@
+# Рабочая борда —16.10.2026
+
+Борда доставлена на lab-do отдельным read-only сервисом и подключена именованным job-board туннелем существующего демона. Пользовательский URL: http://127.0.0.1:8095/ . Health/HTML200 и оба реальных candidate contexts проверены через этот маршрут. Engine0.2.0a4;8существующих desired сохранены, workers IDs/images неизменны. Визуальную проверку пользователь взял на себя. [Доставка и evidence](../audit/greenhouse-board-deploy.md).
+
+18768 — synthetic fixture, не рабочая серверная борда. Прежние отказы auto-review сохранены в истории; текущая запись registry и согласованный restart выполнены штатными инструментами без изменения security settings. App-server reconnecting существовал до доставки и не исправлялся в другом проекте.
+
 ## Greenhouse Live — текущая интеграция
 
 Подключён immutable wheel0.2.0a4 с opt-in refresh60s/TTL300s/client timeout25s. Consumer отдаёт полный canonical context, read_id, snapshot origin/age и table.row_key; сервер ограничивает источник15s и ответ20s, admission — два выполняющихся чтения без очереди. Общий engine управляет текущим/pending снимком, native interaction barrier и согласованным обновлением. Static consumers остаются без auto-refresh по умолчанию.
 
-Новая приёмка ещё открыта: Browser запретил доступ к18768 сохранённой политикой; отдельный запуск новой live parity отклонён автоматической проверкой (`blocked by policy`), не повторялся обходным способом. Предыдущая parity ниже — историческое доказательство S1, не проверка нового runtime. [Evidence Greenhouse Live](../audit/greenhouse-live.md). Ни размещение lab-do, ни production changes не выполнялись.
+Новая приёмка ещё открыта: Browser запретил доступ к18768 сохранённой политикой; отдельный запуск новой live parity отклонён автоматической проверкой (`blocked by policy`), не повторялся обходным способом. Предыдущая parity ниже — историческое доказательство S1, не проверка нового runtime. [Evidence Greenhouse Live](../audit/greenhouse-live.md). Эта пометка относится локальному этапу; актуальная серверная доставка описана выше.
 
 # Cockpit Engine: локальная борда S1
 

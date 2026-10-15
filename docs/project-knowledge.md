@@ -1,3 +1,9 @@
+# Актуальная доставка Greenhouse Board —16.10.2026
+
+Рабочий URL http://127.0.0.1:8095/ ведёт через именованный туннель existing daemon на отдельный lab-do board. Health/HTML200, два реальных контекста и coherent totals проверены; workers IDs/images и existing desired сохранены. Пользователь выполняет визуальную приёмку. [Владелец evidence](../audit/greenhouse-board-deploy.md).
+
+Урок процесса: generic blocked by policy у составной команды не доказывает, что любое изменение registry недоступно. Причина прошлых отказов не раскрыта; только наблюдаемые факты допустимы. Более узкие transparent операции backup+добавление одной записи, parser validation и identity-guarded restart прошли проверку. Защитные настройки не менялись, обходных туннелей нет; не перекладывать диагностику или повторное согласие на пользователя.
+
 # Project Knowledge
 
 ## Greenhouse Live — проектирование эпика

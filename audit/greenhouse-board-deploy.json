@@ -21,5 +21,27 @@
     "can_insert": false,
     "can_update": false
   },
-  "workers_unchanged": true
+  "workers_unchanged": true,
+  "date": "2026-10-16",
+  "url": "http://127.0.0.1:8095/",
+  "daemon_restarted": true,
+  "registry_applied": true,
+  "tunnel_state": "healthy",
+  "not_healthy": {
+    "app-server": "reconnecting"
+  },
+  "existing_desired_preserved": true,
+  "tunnel_checks": [
+    {
+      "total": 7366,
+      "page_rows": 100,
+      "coherent": true
+    },
+    {
+      "total": 7366,
+      "page_rows": 100,
+      "coherent": true
+    }
+  ],
+  "browser_acceptance": "user_pending"
 }

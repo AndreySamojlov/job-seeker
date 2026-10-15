@@ -251,3 +251,6 @@ S2.T1/S2 выполнены:1187unit/87smoke, независимый review бе
 Полный разрез Story→Task: GHL.S2.T1 — отдельная работающая борда на lab-do с минимальной ролью SELECT, ограниченными ресурсами, health и проверенным откатом; GHL.S2.T2 — пользователь открывает её через именованный туннель существующего демона, с сохранением desired остальных туннелей и контролируемым прерыванием при reload. T2 зависит от T1. Heart/Core — T2, слой1 — T1; Heart Slice оба, маршрут T1→T2. Task reached, детей нет.
 
 Preflight:3,9ГБ свободно,1313МБ available RAM; существующий package image58МБ и Python3.12.13 позволяют additive image без remote downloads. Проверены ops status/health/data/logs. Демон читает registry лишь при старте, reload API отсутствует; прерывание остальных соединений требует отдельного явного принятия непосредственно перед этим шагом.
+
+
+GHL.S2 delivery16.10.2026: T1 и T2 технически доставлены. Job-board existing-daemon healthy, URL http://127.0.0.1:8095/ ; health/HTML/два реальных candidate contexts проверены, workers и прежние desired неизменны. Ранние auto-review отказы не объявляются текущей блокировкой: backup+scoped registry addition и identity-guarded restart выполнены после уже полученного согласия. [Evidence](../audit/greenhouse-board-deploy.md). Пользовательская визуальная приёмка ожидается;18768 остаётся synthetic.
