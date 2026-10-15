@@ -1,0 +1,11 @@
+{
+  "synthetic_scored_rows": 50000,
+  "page_rows": 100,
+  "body_bytes": 1580160,
+  "build_and_json_seconds": 0.2882,
+  "source_wheel_installed_assets_equal": 49,
+  "wheel_sha256": "b202dd3f5f0dc90a1dd91447d20a1170ee76483e6748276c247cd67996e12c8f",
+  "browser_acceptance": false,
+  "live_parity": false,
+  "wheel_version": "0.2.0a4"
+}

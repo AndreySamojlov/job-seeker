@@ -6,6 +6,8 @@ Intent: пользователь выбрал Greenhouse, автоматичес
 
 Design review: независимый агент выявил необходимость единого server deadline/admission до executor и явного expiry→recovery без старых selection barriers. Предложенные технические механизмы уточнены; ключи строк валидируются, default dates после bootstrap фиксируются. Результат review — анализ проекта, не проверка реализации/нагрузки/визуального поведения. Код приложения, engine и production в этой стадии не менялись.
 
+Реализация Greenhouse Live: consumer budget/context и общий engine refresh/native lifecycle подключены wheel0.2.0a4. Независимый review выявил4Important; исправлены canonical-vs-echo проверка, conservative resume, release selection barrier и классификация builder error. Адресные RED/GREEN и итоговые suites подтверждают локальную реализацию; Browser saved deny и отказ автоматической проверки новой live parity оставляют приёмку открытой. Общая DB-suite имеет прежнее падение discovery throttle при interval0, не скрытое успехами unit. [Evidence](../audit/greenhouse-live.md) владеет командами, результатами и ограничениями; production-доставка не выполнялась.
+
 ## BOARD.S1 — 15.10.2026
 
 Incident после initial integration: пользователь сообщил о радикальном несоответствии native дизайну и таблицам. Статическое расследование подтвердило второй shell/flat-table внутри portable0.2.0a1. Исправлено в общем engine0.2.0a2, подключён новом wheel; добавлены real DOM seam tests, native tblDispose. Исходная численная/HTTP-приёмка была недостаточна для UI. Trust визуальной части не повышается до разрешённой реальной browser acceptance. [Исправление и доказательства](../audit/board-native-ui.md).

@@ -2,11 +2,11 @@
   "archive": "job-seeker-handoff-0.2.0a1.zip",
   "archive_sha256": "f4b37b86c1f3cd3016151735268f84019e020f9c5172c70a55bbb39c356b7fe1",
   "wheel": {
-    "path": "vendor/cockpit_engine-0.2.0a2-py3-none-any.whl",
-    "sha256": "e07945f6c5f35fdc83190e08be010329bc1d3d7f2e75454b79cef6d5b7be5bbd",
-    "source_commit": "f87e31b163c190e22d3ae8c70d9a7a0bb8be0f47",
+    "path": "vendor/cockpit_engine-0.2.0a4-py3-none-any.whl",
+    "sha256": "b202dd3f5f0dc90a1dd91447d20a1170ee76483e6748276c247cd67996e12c8f",
+    "source_commit": "5b97579839c9a7c3039c81180a6c6932b1fade3d",
     "source_branch": "codex/portable-board-s1",
-    "adaptation": "Native shell/table correction built from isolated engine source; no consumer asset copies."
+    "adaptation": "Native refresh lifecycle with reviewed canonical filter bindings, conservative resume/expiry and released interaction tokens. Immutable successor to0.2.0a3."
   },
   "documents": [
     {
@@ -42,6 +42,20 @@
     {
       "path": "vendor/cockpit_engine-0.2.0a1-py3-none-any.whl",
       "sha256": "73de9d3e18962982f22106debf48b44ee558e05c06638776a4cbb41999712c44"
+    },
+    {
+      "path": "vendor/cockpit_engine-0.2.0a2-py3-none-any.whl",
+      "sha256": "e07945f6c5f35fdc83190e08be010329bc1d3d7f2e75454b79cef6d5b7be5bbd",
+      "source_commit": "f87e31b163c190e22d3ae8c70d9a7a0bb8be0f47",
+      "source_branch": "codex/portable-board-s1",
+      "adaptation": "Native shell/table correction built from isolated engine source; no consumer asset copies."
+    },
+    {
+      "path": "vendor/cockpit_engine-0.2.0a3-py3-none-any.whl",
+      "sha256": "b4e745036316e432c12c9a2b056b656a0894cf8feb2304414fa89d0e950d6860",
+      "source_commit": "87faf8c4d66e47b68030a36a2b89df6a2d67bfc1",
+      "source_branch": "codex/portable-board-s1",
+      "adaptation": "Opt-in refresh controller and native interaction lifecycle; canonical context and freshness metadata from consumer; no consumer asset copies."
     }
   ]
 }

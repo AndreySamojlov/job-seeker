@@ -1,3 +1,9 @@
+## Greenhouse Live — текущая интеграция
+
+Подключён immutable wheel0.2.0a4 с opt-in refresh60s/TTL300s/client timeout25s. Consumer отдаёт полный canonical context, read_id, snapshot origin/age и table.row_key; сервер ограничивает источник15s и ответ20s, admission — два выполняющихся чтения без очереди. Общий engine управляет текущим/pending снимком, native interaction barrier и согласованным обновлением. Static consumers остаются без auto-refresh по умолчанию.
+
+Новая приёмка ещё открыта: Browser запретил доступ к18768 сохранённой политикой; отдельный запуск новой live parity отклонён автоматической проверкой (`blocked by policy`), не повторялся обходным способом. Предыдущая parity ниже — историческое доказательство S1, не проверка нового runtime. [Evidence Greenhouse Live](../audit/greenhouse-live.md). Ни размещение lab-do, ни production changes не выполнялись.
+
 # Cockpit Engine: локальная борда S1
 
 S1 реализована в `job_machine.board` на `cockpit-engine==0.2.0a2`. После жалобы на несоответствие дизайна portable adapter исправлен в общем движке: используются штатный каркас отчёта и интерактивная таблица. Визуальная приёмка ещё открыта: Browser сообщает о сохранённом запрете доступа к синтетической странице. Полный замысел — [переданный Intent](board-source/intent.md); серверная доставка на lab-do (S3) и страница состояния (S2) не выполнены.

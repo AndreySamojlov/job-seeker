@@ -87,6 +87,12 @@ def test_snapshot_origin_precedes_completion():
         assert report['meta']['read_id']
 
 
+def test_refresh_is_explicitly_enabled_on_installed_engine():
+    with TestClient(create_app(Repository())) as client:
+        assert '"interval_ms": 60000' in client.get('/').text
+        assert client.get('/cockpit-assets/board-refresh.js').status_code == 200
+
+
 def test_busy_pipeline_does_not_block_health():
     import asyncio
     from threading import Event
@@ -116,3 +122,14 @@ def test_busy_pipeline_does_not_block_health():
                     assert (await first).status_code == 200
                     assert (await second).status_code == 200
     asyncio.run(run())
+
+
+def test_builder_value_error_is_not_candidate_error(monkeypatch):
+    def broken(*args): raise ValueError('synthetic builder defect')
+    monkeypatch.setattr('job_machine.board.app.build_greenhouse_report', broken)
+    with TestClient(create_app(Repository())) as client:
+        response = client.get('/api/board/greenhouse')
+        assert response.status_code == 500
+        assert response.json()['code'] == 'invalid_report'
+        assert 'candidate_unavailable' not in response.text
+        assert 'synthetic' not in response.text
