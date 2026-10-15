@@ -30,6 +30,8 @@ MCP проверен реальным stdio handshake и чтением status. 
 
 ## Источники правды
 
+Отдельная локальная борда Cockpit Engine S1: [http://127.0.0.1:18767/](http://127.0.0.1:18767/). Реализованы read-only данные Greenhouse и установленный общий UI; browser acceptance ещё заблокирована. [Интеграция, запуск и ограничения](docs/board-integration.md), [evidence](audit/board-s1.md). Серверная доставка S3 не выполнена.
+
 - `docs/product-intent.md` — полный согласованный замысел; `docs/decomposition-map.md` — маршрут восстановления.
 - `docs/fact/` — подтверждённая реализация; `docs/project-knowledge.md` — решения, дефекты, доверие.
 - `provenance/baseline.json` — 506 файлов из Claude master `842e46a`; `audit/baseline/` — доказательства проверок.

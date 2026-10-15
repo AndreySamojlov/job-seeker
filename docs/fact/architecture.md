@@ -31,3 +31,7 @@ HTTP200 допускает partial/stale;503 означает отсутстви
 Применение OBS.S1: 15.10.2026 по отдельному поручению пользователя локальный процесс18766 обновлён на код dbf1e01. Реальный URL проверен200/live; workers и их image/container identity сохранены. Это доставка панели на ноутбуке, без redeploy конвейера. [Evidence](../../audit/observer-s1-deploy.json).
 
 OBS.S2 доставлена на тот же локальный18766 кодом34256d8. Pure renderer ops/progress.py использует существующий summary, без новых запросов/зависимостей/сервисов. Методы read-only и TTL S1 сохранены, а source details компактно свёрнуты. [Evidence доставки/сверки чисел](../../audit/observer-s2-deploy.json). Production workers и их image/container identity не менялись.
+
+## Локальная борда Cockpit Engine S1
+
+`job_machine.board` — отдельное приложение FastAPI на закреплённом vendor wheel0.2.0a1; engine поставляет UI через opt-in board routes, consumer — read-only SQL и JSON. Локальный18767 использует авторизованный daemon PostgreSQL15433, без собственного SSH и legacy engine/core migrations. Один repeatable-read/read-only snapshot объединяет агрегаты, scatter и серверную страницу100 строк. Будущие серверная роль/контейнер/веб-туннель относятся S3 и ещё не реализованы. [Контракт эксплуатации](../board-integration.md), [evidence](../../audit/board-s1.md). Визуальная приёмка S1 заблокирована настройкой Browser.

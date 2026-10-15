@@ -1,0 +1,35 @@
+{
+  "checked_at": "2026-10-15T21:49:58.998487+03:00",
+  "selection_start": "2026-06-23",
+  "selection_end": "2026-10-15",
+  "candidate_checks": [
+    {
+      "total": 45382,
+      "scored": 73,
+      "page_rows": 100,
+      "aggregates_equal": true,
+      "candidate_context_equal": true
+    },
+    {
+      "total": 45382,
+      "scored": 0,
+      "page_rows": 100,
+      "aggregates_equal": true,
+      "candidate_context_equal": true
+    }
+  ],
+  "workers_unchanged": true,
+  "health": [
+    200,
+    200,
+    200,
+    200,
+    200,
+    200,
+    200,
+    200
+  ],
+  "tunnel_registry_unchanged": true,
+  "browser_acceptance": false,
+  "writes": false
+}

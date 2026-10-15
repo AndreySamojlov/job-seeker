@@ -1,0 +1,53 @@
+from contextlib import contextmanager
+from datetime import date
+
+import pytest
+
+from job_machine.board.models import BoardFilters, TablePage
+from job_machine.board.repository import load_greenhouse_snapshot
+
+
+class Cursor:
+    def __init__(self, rows): self.rows = rows
+    def fetchall(self): return self.rows
+    def fetchone(self): return self.rows[0]
+
+
+class Connection:
+    def __init__(self): self.calls = []; self.in_transaction = False
+    @contextmanager
+    def transaction(self):
+        self.in_transaction = True
+        try: yield
+        finally: self.in_transaction = False
+    def execute(self, sql, params=None):
+        assert self.in_transaction
+        self.calls.append((sql, params))
+        if 'FROM candidate' in sql: return Cursor([{'candidate_id': 'alpha', 'name': 'Alpha'}, {'candidate_id': 'beta', 'name': 'Beta'}])
+        if 'AS total_rows' in sql: return Cursor([dict(total_rows=0, unknown_board=0, unscored=0)])
+        return Cursor([])
+
+
+def test_transaction_and_parameterization():
+    conn = Connection()
+    selection = BoardFilters('alpha', date(2026, 10, 13), date(2026, 10, 15), board="x';DROP TABLE vacancy;--")
+    result = load_greenhouse_snapshot(conn, selection, TablePage(sort_key='fit_score'))
+    assert result.total_rows == 0
+    sql_text = '\n'.join(s for s, p in conn.calls)
+    assert 'REPEATABLE READ READ ONLY' in sql_text
+    assert 'statement_timeout' in sql_text
+    assert "x';DROP" not in sql_text
+    assert 'LIMIT 100 OFFSET' in sql_text
+    assert 'NULLS LAST, vacancy_id' in sql_text
+
+
+def test_multiple_candidates_never_silently_choose_one():
+    conn = Connection()
+    result = load_greenhouse_snapshot(conn, BoardFilters(None, date(2026, 10, 15), date(2026, 10, 15)), TablePage())
+    assert result.candidate_id is None
+    assert not any('LEFT JOIN' in sql for sql, params in conn.calls)
+
+
+def test_unknown_candidate_is_rejected_before_analytics():
+    with pytest.raises(ValueError):
+        load_greenhouse_snapshot(Connection(), BoardFilters('missing', date(2026, 10, 15), date(2026, 10, 15)), TablePage())

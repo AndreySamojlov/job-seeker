@@ -246,8 +246,8 @@
     {
       "path": "pyproject.toml",
       "source_sha256": "ea19098ddd3b0dda3ac8196ce363d8bdced00d99e7db5c0604498b8e230bf49c",
-      "target_sha256": "ea19098ddd3b0dda3ac8196ce363d8bdced00d99e7db5c0604498b8e230bf49c",
-      "adaptation": null
+      "target_sha256": "484eb0bc49f7c986183480c777c2f89b129f9297192b5f27f596c9c763a8a0e3",
+      "adaptation": "S1 board runtime: add exact cockpit-engine 0.2.0a1 local wheel plus FastAPI/Uvicorn dependency group; lock changed only for this dependency."
     },
     {
       "path": "scripts/requeue_quick_skips.py",
@@ -3036,8 +3036,8 @@
     {
       "path": "uv.lock",
       "source_sha256": "82b560167926d0eaf123af2e24eac0fb9ef8d7c39f896899d52ce101ec3b80b4",
-      "target_sha256": "82b560167926d0eaf123af2e24eac0fb9ef8d7c39f896899d52ce101ec3b80b4",
-      "adaptation": null
+      "target_sha256": "acf4c22d93571735931bde10eb9b46f907308c9c5e3a8705ea2ab77e5ef5ec21",
+      "adaptation": "S1 board runtime: add exact cockpit-engine 0.2.0a1 local wheel plus FastAPI/Uvicorn dependency group; lock changed only for this dependency."
     }
   ],
   "excluded": [

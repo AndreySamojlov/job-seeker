@@ -1,0 +1,38 @@
+{
+  "archive": "job-seeker-handoff-0.2.0a1.zip",
+  "archive_sha256": "f4b37b86c1f3cd3016151735268f84019e020f9c5172c70a55bbb39c356b7fe1",
+  "wheel": {
+    "path": "vendor/cockpit_engine-0.2.0a1-py3-none-any.whl",
+    "sha256": "73de9d3e18962982f22106debf48b44ee558e05c06638776a4cbb41999712c44"
+  },
+  "documents": [
+    {
+      "path": "docs/board-source/intent.md",
+      "archive_path": "docs/project/job-seeker-board-intent.md",
+      "source_sha256": "4b5546dfc13a1038099d068b282a541d838558963b6cbd829f1801be8f0e34fc",
+      "target_sha256": "4b5546dfc13a1038099d068b282a541d838558963b6cbd829f1801be8f0e34fc",
+      "adaptation": null
+    },
+    {
+      "path": "docs/board-source/architecture.md",
+      "archive_path": "docs/project/job-seeker-board-architecture-proposal.md",
+      "source_sha256": "f440626ca2d0fedf54aec26619906b29f5ac5e24633936b9bcd0ce516518ab56",
+      "target_sha256": "f440626ca2d0fedf54aec26619906b29f5ac5e24633936b9bcd0ce516518ab56",
+      "adaptation": null
+    },
+    {
+      "path": "docs/board-source/board-v1.md",
+      "archive_path": "docs/contracts/board-v1.md",
+      "source_sha256": "8839e1987030642cfb35b4c2a8215ec09d732c630663881052c0170479f0f03d",
+      "target_sha256": "8839e1987030642cfb35b4c2a8215ec09d732c630663881052c0170479f0f03d",
+      "adaptation": null
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-15-board-s1-job-seeker.md",
+      "archive_path": "docs/superpowers/plans/2026-10-15-board-s1-job-seeker.md",
+      "source_sha256": "29f644ff2975704a22b9ef41dfb4f6c6ef9fdd6fc029d2efbf042527550651f1",
+      "target_sha256": "eba47fd5ce095657787605a388ef05f667ed55bd658d87150046d7c733b4d442",
+      "adaptation": "Relocate spec/evidence links and annotate actual text candidate ID plus S1 authorization; no feature scope change."
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+"""Pure Greenhouse calculations and portable board-v1 configuration."""
+from datetime import timedelta
+import json
+from pathlib import Path
+from urllib.parse import urlsplit
+
+from job_machine.board.models import BoardFilters, GreenhouseSnapshot, TablePage
+
+
+def board_labels():
+    registry = Path(__file__).resolve().parents[3] / 'config' / 'sources.json'
+    if not registry.exists():
+        return {}
+    sources = json.loads(registry.read_text(encoding='utf-8')).get('sources', [])
+    return {s['token']: s.get('label') or s['token'] for s in sources if s.get('ats') == 'greenhouse' and s.get('token')}
+
+
+def safe_url(value):
+    try:
+        parsed = urlsplit(value or '')
+        if parsed.scheme in ('https', 'http') and parsed.hostname and not parsed.username and not parsed.password:
+            return value
+    except ValueError:
+        pass
+    return None
+
+
+def build_greenhouse_report(snapshot: GreenhouseSnapshot, filters: BoardFilters, table_page: TablePage = TablePage()) -> dict:
+    labels = board_labels()
+    def label(token):
+        return f'{labels[token]} ({token})' if token in labels and labels[token] != token else token or 'Борд неизвестен'
+    days = (filters.date_to - filters.date_from).days + 1
+    counts = {row['day']: row['count'] for row in snapshot.daily}
+    dates = [filters.date_from + timedelta(days=i) for i in range(days)]
+    daily = [counts.get(day, 0) for day in dates]
+    required = snapshot.candidate_id is None
+    known_boards = sum(row['token'] is not None for row in snapshot.boards)
+    by_version = {}
+    for point in snapshot.points:
+        rubric = point.get('fit_score_version') or 'Версия неизвестна'
+        by_version.setdefault(rubric, []).append(dict(x=int(point['discovered_at'].timestamp() * 1000), y=point['fit_score']))
+    series = [
+        dict(id='timeline', x=[d.isoformat() for d in dates], axis='time', series=[dict(name='Обнаружено', y=daily)]),
+        dict(id='fit', x=[r['label'] for r in snapshot.bands], series=[dict(name='Вакансии', y=[r['count'] for r in snapshot.bands])]),
+        dict(id='boards', x=[label(r['token']) for r in snapshot.boards], series=[dict(name='Вакансии', y=[r['count'] for r in snapshot.boards])]),
+        dict(id='dates', series=[dict(name=f'Фит · {rubric}', data=points) for rubric, points in sorted(by_version.items())]),
+    ]
+    rows = []
+    for source in snapshot.rows:
+        row = dict(source)
+        row.update(vacancy_id=str(row['vacancy_id']), url=safe_url(row.get('url')),
+                   board_token=label(row.get('board_token')), availability='Неизвестно')
+        # verified_at is intentionally not relabeled as an availability check date.
+        row['availability_checked_at'] = None
+        rows.append(row)
+    return dict(schema_version=1, state='live',
+        meta=dict(domain='greenhouse', filters=dict(candidate_id=snapshot.candidate_id,
+                  discovered_from=filters.date_from.isoformat(), discovered_to=filters.date_to.isoformat(),
+                  board=filters.board or '', availability=filters.availability or ''),
+                  timezone='Europe/Moscow', fetched_at=snapshot.fetched_at.isoformat(), selection_required=required,
+                  unknown_board=snapshot.unknown_board, unscored=snapshot.unscored),
+        filters=[dict(key='candidate_id', label='Кандидат', kind='select', value=snapshot.candidate_id or '',
+                      options=[dict(value='', label='Выберите кандидата')] + [dict(value=c['candidate_id'], label=c['name']) for c in snapshot.candidates]),
+                 dict(key='discovered_from', label='Обнаружены с', kind='date', value=filters.date_from.isoformat()),
+                 dict(key='discovered_to', label='Обнаружены по', kind='date', value=filters.date_to.isoformat()),
+                 dict(key='board', label='Борд', kind='select', value=filters.board or '',
+                      options=[dict(value='', label='Все борды')] + [dict(value=b, label=label(b)) for b in snapshot.board_options]),
+                 dict(key='availability', label='Доступность', kind='select', value=filters.availability or '',
+                      options=[dict(value='', label='Все'), dict(value='unknown', label='Неизвестно')])],
+        kpis=[dict(label='Борды с вакансиями', value='—' if required else str(known_boards), sub=f'Борд не определён: {snapshot.unknown_board}'),
+              dict(label='Подтверждены при проверке', value='Нет данных'),
+              dict(label='В среднем новых в день', value='—' if required else f'{snapshot.total_rows / days:.2f}'.rstrip('0').rstrip('.').replace('.', ','),
+                   element=dict(kind='line', data=daily, tip='Впервые обнаружены по календарным дням')),
+              dict(label='Средний срок жизни', value='Нет данных')],
+        charts=dict(specs=[dict(id='timeline', title='Обнаруженные по дням', encoding='bar', unit='qty', primary=True),
+                          dict(id='fit', title='Распределение по фиту', encoding='pie', unit='qty'),
+                          dict(id='boards', title='Вакансии по бордам', encoding='bar', unit='qty'),
+                          dict(id='dates', title='Дата обнаружения и фит', encoding='date-scatter', yMin=0, yMax=100,
+                               xLabel='Дата обнаружения', yLabel='Фит', caption=f'Не оценено: {snapshot.unscored}')], chart_series=series),
+        table=dict(columns=[dict(key=key, label=title, kind=kind, **({'href_key': 'url'} if key == 'title' else {}))
+                   for key, title, kind in [('title', 'Вакансия', 'link'), ('company', 'Компания', 'text'), ('board_token', 'Борд', 'text'),
+                    ('location', 'Локация', 'text'), ('work_mode', 'Формат', 'text'), ('discovered_at', 'Обнаружена', 'datetime'),
+                    ('availability', 'Доступность', 'text'), ('availability_checked_at', 'Проверена', 'datetime'),
+                    ('fit_score', 'Фит', 'number'), ('fit_band', 'Группа фита', 'text'), ('fit_score_version', 'Версия фита', 'text')]],
+                   rows=rows, total_rows=snapshot.total_rows, page=table_page.page, page_size=100))

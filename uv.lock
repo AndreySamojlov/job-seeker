@@ -213,6 +213,24 @@ wheels = [
 ]
 
 [[package]]
+name = "cockpit-engine"
+version = "0.2.0a1"
+source = { path = "vendor/cockpit_engine-0.2.0a1-py3-none-any.whl" }
+dependencies = [
+    { name = "psycopg", extra = ["binary"] },
+    { name = "python-dotenv" },
+]
+wheels = [
+    { filename = "cockpit_engine-0.2.0a1-py3-none-any.whl", hash = "sha256:73de9d3e18962982f22106debf48b44ee558e05c06638776a4cbb41999712c44" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "psycopg", extras = ["binary"], specifier = ">=3.1" },
+    { name = "python-dotenv", specifier = ">=1.0" },
+]
+
+[[package]]
 name = "colorama"
 version = "0.4.6"
 source = { registry = "https://pypi.org/simple" }
@@ -439,6 +457,11 @@ dependencies = [
 ]
 
 [package.dev-dependencies]
+board = [
+    { name = "cockpit-engine" },
+    { name = "fastapi" },
+    { name = "uvicorn" },
+]
 dev = [
     { name = "pypdf" },
     { name = "pytest" },
@@ -469,6 +492,11 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
+board = [
+    { name = "cockpit-engine", path = "vendor/cockpit_engine-0.2.0a1-py3-none-any.whl" },
+    { name = "fastapi", specifier = ">=0.110" },
+    { name = "uvicorn", specifier = ">=0.29" },
+]
 dev = [
     { name = "pypdf", specifier = ">=6.14.2" },
     { name = "pytest", specifier = ">=8.0" },
