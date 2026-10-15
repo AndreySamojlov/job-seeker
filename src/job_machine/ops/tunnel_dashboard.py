@@ -25,8 +25,8 @@ class TunnelDashboardClient(RuntimeClient):
         self.tunnel_status = tunnel_status
 
     def data(self, view, limit=20, **kwargs):
-        if view not in {'summary','blockers','ready'}:
-            raise ValueError('Tunnel dashboard supports only summary, blockers and ready')
+        if view not in {'summary','blockers','ready','observations'}:
+            raise ValueError('Unsupported read-only dashboard view')
         sql, params = query({'view':view, 'limit':limit})
         status = self.tunnel_status()
         if not status.get('desired'):

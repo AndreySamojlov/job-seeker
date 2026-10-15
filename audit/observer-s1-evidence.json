@@ -1,0 +1,110 @@
+{
+  "imported_files_checked": 506,
+  "mismatches": [],
+  "baseline_manifest_changed": false,
+  "reason": "Modified ops code/tests are project-owned additions, not baseline imports.",
+  "live": {
+    "mutations": false,
+    "services": [
+      {
+        "name": "/greenhouse-runtime-job-browser-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/greenhouse-runtime-job-discovery-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/greenhouse-runtime-job-triage-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/greenhouse-runtime-job-resume-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/greenhouse-runtime-job-package-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/greenhouse-runtime-job-fill-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/greenhouse-runtime-job-submit-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/greenhouse-runtime-job-mail-1",
+        "status": "running",
+        "health": null
+      }
+    ],
+    "health": {
+      "browser": 200,
+      "discovery": 200,
+      "triage": 200,
+      "resume": 200,
+      "package": 200,
+      "fill": 200,
+      "submit": 200,
+      "mail": 200
+    },
+    "summary": {
+      "rows": 17
+    },
+    "blockers": {
+      "rows": 13
+    },
+    "ready": {
+      "rows": 20
+    },
+    "observations": {
+      "rows": 2,
+      "kinds_available": [
+        "latest_event",
+        "latest_result"
+      ]
+    },
+    "log_check": {
+      "service": "submit",
+      "lines_read": 2
+    }
+  },
+  "live-http": {
+    "http": 200,
+    "outcome": "live",
+    "event_visible": true,
+    "result_visible": true,
+    "timezone_visible": true,
+    "unknown_processing": true,
+    "no_store": true,
+    "mutations": false,
+    "scope": "in-process HTTP acceptance against read-only lab-do, not port18766 replacement"
+  },
+  "browser": {
+    "live": {
+      "http": 200,
+      "outcome": "live"
+    },
+    "partial": {
+      "http": 200,
+      "outcome": "partial"
+    },
+    "stale": {
+      "http": 200,
+      "outcome": "stale"
+    },
+    "unavailable": {
+      "http": 503,
+      "outcome": "unavailable"
+    }
+  }
+}

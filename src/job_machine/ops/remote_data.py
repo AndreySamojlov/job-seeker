@@ -8,7 +8,10 @@ import os
 from pathlib import Path
 import uuid
 
-VIEWS = {'summary', 'applications', 'vacancies', 'triage', 'events', 'artifacts', 'activity', 'ready', 'blockers'}
+VIEWS = {'summary', 'applications', 'vacancies', 'triage', 'events', 'artifacts', 'activity', 'ready', 'blockers', 'observations'}
+
+USEFUL_EVENTS = ('vacancy.discovered', 'vacancy.verified',
+                 'application.package_ready', 'application.pre_submit_ready')
 
 def query(request):
     view = request['view']
@@ -19,6 +22,15 @@ def query(request):
         raise ValueError('Invalid view or limit')
     if application:
         application = str(uuid.UUID(application))
+    if view == 'observations':
+        fields = 'event_id,event_type,created_at'
+        order = ' order by created_at desc nulls last,event_id desc limit 1'
+        return (
+            "select 'latest_event' as kind,e.* from (select " + fields +
+            ' from event where created_at is not null' + order + ') e union all ' +
+            "select 'latest_result' as kind,r.* from (select " + fields +
+            ' from event where created_at is not null and event_type in (%s,%s,%s,%s)' + order + ') r',
+            USEFUL_EVENTS)
     if view == 'summary':
         return ("select 'vacancy' as entity,state,count(*) as count from vacancy group by state "
                 "union all select 'application',state,count(*) from application group by state "

@@ -38,7 +38,7 @@ def test_container_status_failure_keeps_live_application_data(caplog):
         assert 'Статус контейнеров недоступен' in response.text
         assert 'SSH unavailable' in caplog.text
 
-@pytest.mark.parametrize('failures,expected', [(1,200),(2,503)])
+@pytest.mark.parametrize('failures,expected', [(1,'live'),(2,'partial')])
 def test_transient_connection_failure_has_one_read_retry(failures, expected):
     from job_machine.ops.client import TransientTransportError
     from job_machine.ops.dashboard import create_app
@@ -53,7 +53,9 @@ def test_transient_connection_failure_has_one_read_retry(failures, expected):
         def status(self): return []
     runtime = Flaky()
     with TestClient(create_app(runtime)) as client:
-        assert client.get('/').status_code == expected
+        response = client.get('/')
+        assert response.status_code == 200
+        assert response.headers['X-Job-Machine-Data'] == expected
     assert runtime.calls == 2
 
 def test_live_dashboard_adapter_is_read_only_and_keeps_unknowns():
@@ -65,6 +67,7 @@ def test_live_dashboard_adapter_is_read_only_and_keeps_unknowns():
                 return [{'entity':'application','state':'submit_unknown','count':23}]
             if view == 'blockers': return []
             if view == 'ready': return [{'candidate_id':'candidate','company':'<script>', 'role':'QA','url':'https://example.test'}]
+            return []
         def status(self): return []
     with TestClient(create_app(Fake())) as client:
         response = client.get('/')
@@ -79,6 +82,7 @@ def test_failure_is_visible_not_empty_funnel():
     from job_machine.ops.dashboard import create_app
     class Unavailable:
         def data(self, *args, **kwargs): raise RuntimeError('remote unavailable')
+        def status(self): raise RuntimeError('remote unavailable')
     with TestClient(create_app(Unavailable())) as client:
         assert client.get('/').status_code == 503
 
@@ -94,8 +98,11 @@ def test_failure_logs_stage_without_credentials_and_next_request_recovers(caplog
         def status(self): return []
     with TestClient(create_app(Flaky())) as client:
         response = client.get('/')
-        assert response.status_code == 503
+        assert response.status_code == 200
+        assert response.headers['X-Job-Machine-Data'] == 'partial'
         assert 'blockers' in caplog.text
         assert 'SSH failure' in caplog.text
         assert 'private-value' not in caplog.text + response.text
-        assert client.get('/').status_code == 200
+        recovered = client.get('/')
+        assert recovered.status_code == 200
+        assert recovered.headers['X-Job-Machine-Data'] == 'live'

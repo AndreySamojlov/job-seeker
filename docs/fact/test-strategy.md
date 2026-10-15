@@ -13,6 +13,8 @@
 | Повреждение истории/материалов | Проверка schema clean/upgrade с сохранением данных, metadata compare, artifact hash/path reconciliation и backup/restore; E3 открыт |
 | Ошибка управления lab-do | Fake transport для mutations/image drift/identity/interruption; read-only status/health/data/logs на реальном инстансе |
 | Ложная успешная панель или скрытый отказ | HTTP render/escape, bounded stale TTL/expiry/recovery, redaction, отдельный отказ status, реальный MCP stdio |
+| Неверные свидетельства активности OBS.S1 | Исполнение synthetic event-query и read-only PostgreSQL сверка; полезный результат ищется до LIMIT независимо от последнего события; failed/refiled не становится ошибкой; naive/invalid timestamp отклонён |
+| Потеря частичных данных и откат снимка | Отказ каждого источника с продолжением других чтений, точная HTTP/header матрица, пустой успех после непустого, TTL300/expiry/recovery, конкурентное завершение старого чтения, Docker-only не даёт200 |
 
 ## Среды и команды
 
@@ -31,3 +33,5 @@ Browser tests используют локальный headless Chromium, tempora
 Допуск новой сборки к live требует закрытых E2.S3/E3, согласованной политики отправки, определённого задания на delivery и проверки восстановления. Текущее состояние — E2.S2 принят локально, E2.S3/E3 открыты. При повторных дефектах/недоступности панели усиливаются отказные проверки и наблюдаемость; формальный зелёный suite не отменяет жалобу пользователя.
 
 Перед закрытием Story проверить согласованность затронутых FACT, next backlog и evidence links. Старые counts не дописываются в актуальную стратегию; каждый отчёт привязан к scope/ревизии и ограничениям. Отсутствующие E2E/backup checks нельзя обозначать как пройденные.
+
+OBS.S1: synthetic browser acceptance проверяет четыре HTTP исхода, отсутствие page errors, keyboard details и narrow viewport. Её production-данные не используются; fixture-процесс занимает свободный18767 и закрывается агентом. Live acceptance новой локальной сборки — только разрешённые чтения, не DB-suite и не замена действующего процесса18766. Результаты — [audit](../../audit/observer-s1.md).

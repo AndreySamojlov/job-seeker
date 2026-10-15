@@ -27,6 +27,19 @@ def test_stopped_daemon_tunnel_is_not_started_or_bypassed(tmp_path):
     with pytest.raises(RuntimeError): client.data('summary')
     connect.assert_not_called()
 
+
+def test_observations_use_fixed_read_only_database(tmp_path):
+    from job_machine.ops.tunnel_dashboard import TunnelDashboardClient
+    config = tmp_path / '.env'
+    config.write_text('TUNNEL_DAEMON_PG_PASSWORD=synthetic\n')
+    connection = MagicMock()
+    connection.return_value.__enter__.return_value.execute.return_value.fetchall.return_value = []
+    client = TunnelDashboardClient(config_path=config, connect=connection,
+        tunnel_status=lambda: dict(state='healthy', desired=True, local_port=15433, remote_port=5432))
+    assert client.data('observations') == []
+    assert connection.call_args.kwargs['dbname'] == 'job_machine'
+    assert 'default_transaction_read_only=on' in connection.call_args.kwargs['options']
+
 def test_database_error_does_not_leak_credentials(tmp_path):
     import psycopg
     from job_machine.ops.tunnel_dashboard import TunnelDashboardClient
