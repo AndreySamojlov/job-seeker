@@ -41,3 +41,9 @@ Review accepted ops with OSError normalization regression and cache expiry/recov
 ## E2.S2 closure
 
 Imported tests first:13 failed/1129 passed; after source import1142 passed. Added independent server readiness, state/session CAS, row ownership before DOM, verified manifest answer context, retryable timeout cleanup and stale resume handling. Review findings reproduced red, then fixed; final independent review no blocking E2.S2 findings. Final1150 unit/344 DB;112 browser before final lifecycle-only changes. Existing Starlette warning remains. No production mutations/deploy/submissions. Local dashboard refreshed hidden/detached PID41132; live HTTP200/X-Job-Machine-Data:live through authorized daemon credential. First refresh approval timed out; allowed one retry succeeded. Source32-file diff and adapted baseline provenance recorded. E2.S3 and E3 remain open.
+
+## Documentation review and E2.S3 start
+
+User requested review, next backlog/result and start. Independent review found five important documentation gaps; all reconciled with current code and da55881 evidence. Seven FACT owners rewritten as conceptual models/contracts, README and current backlog reconciled, accepted spec marked as historical Intent, current Trust/Observations/Lessons separated. Local links12 documents checked:0 missing. Report audit/documentation-review-2026-10-15.json. No product code/runtime changes in documentation review.
+
+Next E2.S3: prove actual approved content and no repeat after unknown. Decomposed exactly one level into T1 package integrity, T2 live form evidence, T3 synthetic E2E/recovery. Start ready T1 inline; T2 technical protocol remains design work. Ruling: do not repeat Designing/approval of two fill paths — accepted Intent already binds them; cost if wrong: narrow technical annex must be revised before T2. No live submit/deploy/migration.

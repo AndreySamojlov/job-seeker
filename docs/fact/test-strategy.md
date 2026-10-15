@@ -1,19 +1,33 @@
 # Test Strategy — FACT
 
-`scripts/check_baseline.py unit` запускает весь набор, исключая db/browser. Последний полный результат после исправлений review и SSH stdin: **1113 passed, 423 deselected**, один warning Starlette/httpx. Исходная база — 1094 passed; 19 дополнительных тестов относятся к runner/ops. Frozen install выполнен в новом `.venv`, Python 3.12.10; lock не менялся.
+Область: локальная восстановленная сборка и разрешённые read-only проверки lab-do. Политика качества применяется ко всему продукту; успешные unit не доказывают целостность pipeline. Результаты прогонов и дефекты хранятся в [audit](../../audit/baseline/agent-integration-checks.json) и [execution ledger](../../audit/execution-ledger.md), решения/уроки — [Project Knowledge](../project-knowledge.md).
 
-Runner очищает прикладное environment, запрещает live DATABASE_URL/SUBMIT_MODE и корневой `.env`, задаёт `PYTHON_DOTENV_DISABLED=1`. Реальный subprocess regression подтверждает, что родительский `.env` не возвращает worker URL. Это защита конфигурации, не сетевой запрет.
+## Критичные риски и методы
 
-Ops regression: whitelist/injection, bounded queries, отсутствие чтения Docker Env, редактирование секретов в логах, image drift, container identity, explicit interruption до SSH, HTTP unavailable/escape/read-only. Service mutations проверяются fake transport, не на production.
+| Риск | Обязательное доказательство |
+|---|---|
+| Подмена фактов, кандидата, пакета, назначения или резюме | Unit на canonical hashes/guards, DB ownership/scoping, отрицательные synthetic интеграционные сценарии |
+| Несогласованное содержимое формы перед click | Browser evidence и отказ при drift/unknown content; E2.S3 ещё открыт |
+| Повторная отправка после неизвестного исхода | DB claim/lease/reservation, одновременные workers, timeout/restart до и после clicking; без второго клика после unknown |
+| Потеря/подмена browser session | CAS state+session, повтор resume до DOM, timeout/reopen cleanup, browser restart и недоступность release |
+| Повреждение истории/материалов | Проверка schema clean/upgrade с сохранением данных, metadata compare, artifact hash/path reconciliation и backup/restore; E3 открыт |
+| Ошибка управления lab-do | Fake transport для mutations/image drift/identity/interruption; read-only status/health/data/logs на реальном инстансе |
+| Ложная успешная панель или скрытый отказ | HTTP render/escape, bounded stale TTL/expiry/recovery, redaction, отдельный отказ status, реальный MCP stdio |
 
-`audit/verify_live.py` — read-only live health всех восьми сервисов, выборки и artifact checks. `audit/verify_interfaces.py` — настоящий MCP stdio и HTTP; отчёты в audit/baseline. Локальные временные логи находятся в `.runtime` и не коммитятся. На Windows нормальный запуск с разрешениями прошёл; ограниченный subprocess harness ранее зависал, это не считалось успешным тестом.
+## Среды и команды
 
-DB/browser/E2E, отказные сценарии полного pipeline и backup/restore обязательны для следующих срезов; 423 deselected не выдаются за прошедшие тесты.
+Агент выполняет frozen install из lock. `scripts/check_baseline.py unit|smoke` очищает прикладное environment, запрещает live DSN/submit и корневой .env, отключает dotenv. Это изоляция конфигурации, не сетевой sandbox.
 
-## Актуализация после daemon/schema интеграции
+`scripts/check_schema.py regression|db` допускает только loopback25439/job_machine_recovery_test и workspace .runtime/pg-recovery; проверяет actual database/port/data_directory до pytest. Отдельный локальный PostgreSQL18.1 запускается/останавливается агентом. Production15.17 используется только для metadata read; полная suite наPG15 не выполнена.
 
-Unit1126 passed/425 deselected; smoke50 passed; DB327 passed (все db and not browser), один прежний Starlette warning. DB-runner жёстко фиксирует отдельный cluster и имеет три negative checks (имя/порт/data_directory). Browser/E2E и backup/restore пока не проверены. Три SQL импортированы неизменёнными, две baseline parity фикстуры адаптированы с provenance. Review принят; actual stdio MCP и live dashboard HTTP200 повторены. Эти результаты заменяют исходные counts выше, сохраняя их как историю.
+Browser tests используют локальный headless Chromium, temporary artifact root и synthetic file/HTTP fixtures. Прикладные worker URLs/CDP/live credentials не наследуются. Full browser suite — tests/browser с marker browser; невыбранные tests не считаются прошедшими. E2E использует только synthetic candidate/data/targets, не реальные сайты откликов.
 
-## E2.S2
+`audit/verify_live.py` выполняет read-only health/data/artifact sample; `audit/verify_interfaces.py` — MCP stdio и loopback HTTP. Lifecycle mutations не проверяются рестартом здорового production worker. Новые API проверяются на целевой локальной сборке, не считаются доступными в старых live-образах.
 
-Итог:1150 unit passed/457 deselected;344 DB passed/1263 deselected;112 browser passed/74 deselected. Один прежний Starlette/httpx warning. Browser suite использовала локальный Chromium и synthetic fixtures без CDP; финальные lifecycle-only изменения после неё проверены полной DB/unit suite. Red воспроизвёл stale tokens, closing submitting session, unchecked ARIA-required, release failure/404, повтор resume и reopened cleanup. Review принят после устранения этих случаев. Full submit E2E и backup/restore ещё открыты.
+## Приёмка и реакция на деградацию
+
+Для изменения нужны проверки значимого поведения и связанных рисков. Исправление дефекта подтверждается воспроизведением red→green; проверки, зеркалящие код, не заменяют поведения. После релевантных проверок — независимый review по масштабу, устранение важных findings, актуализация FACT и source provenance.
+
+Допуск новой сборки к live требует закрытых E2.S3/E3, согласованной политики отправки, определённого задания на delivery и проверки восстановления. Текущее состояние — E2.S2 принят локально, E2.S3/E3 открыты. При повторных дефектах/недоступности панели усиливаются отказные проверки и наблюдаемость; формальный зелёный suite не отменяет жалобу пользователя.
+
+Перед закрытием Story проверить согласованность затронутых FACT, next backlog и evidence links. Старые counts не дописываются в актуальную стратегию; каждый отчёт привязан к scope/ревизии и ограничениям. Отсутствующие E2E/backup checks нельзя обозначать как пройденные.
