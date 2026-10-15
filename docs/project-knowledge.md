@@ -19,9 +19,9 @@
 
 | ID | Предмет | Следующий владелец |
 |---|---|---|
-| K1 | Agent-fill и production-only migrations отсутствуют в объединённой новой сборке | E2 |
+| K1 | Agent-fill и миграции интегрированы; общая граница отправки E2.S3 открыта | E2 |
 | K2 | Исторические missing/hash mismatch/outside references; неоднозначные подтверждения submitted | E3, reconciliation без повторной отправки |
-| K3 | DB/browser/synthetic E2E и backup/restore не проверены | E2/E3 |
+| K3 | DB/browser проверены локально; synthetic E2E обоих submit-путей и backup/restore открыты | E2/E3 |
 | K4 | Lifecycle проверен на fake transport; гарантий graceful drain нет | Эксплуатация, конкретный recovery сценарий |
 | K5 | Starlette предупреждает об устаревшем httpx TestClient | Зависимости, отдельное обоснованное обновление |
 
@@ -44,3 +44,7 @@ SSH-демон уже существовал; новые прямые ssh-про
 Журнал после инцидента выявил SSH connection timeout; позднее daemon/БД тоже кратко недоступны. Поэтому отказ контейнерного status отделён от очереди, read transient retry ограничен одной попыткой, введён явно stale HTML snapshot<=300sec. Это устойчивость отображения, не обещание отсутствия сетевых сбоев. Review принял логику, expiry/recovery regression прошёл.
 
 E2.S1: три миграции извлечены неизменёнными; clean/upgrade regression прошёл. Первый DB-прогон:326 passed +1 stale fixture. Fixture обновлён из фактического production metadata, а не подогнан под код. NOT NULL проверяется через columns.attnotnull, дополнительный PG18 catalog contype n не дублируется. Повторная suite327passed. Каталог516 объектов совпал, remote-only reconcile_snapshot_20260806 зафиксирован, функции/views вне описанного покрытия. Полная проверка на версии PG15 не выполнялась (локально18.1, remote15.17).
+
+## E2.S2: опыт и Trust
+
+Первичный перенос прошёл1142 unit, но независимый review выявил непокрытые ошибки: questions вместо answers; потеря cleanup token; release404; входная гонка pending; повтор resume закрывал победившую страницу; reopen сохранял неочищаемый token; unchecked ARIA checkbox считался заполненным. Все воспроизведены и исправлены. Вывод: количество тестов не заменяет проверку межкомпонентных контрактов и владельца сессии. Финальные1150 unit/344 DB/112 browser и review подтверждают E2.S2 локально, не E2.S3 и не production.

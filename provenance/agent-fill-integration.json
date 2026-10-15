@@ -1,0 +1,199 @@
+{
+  "source_repository": "C:\\Users\\samoj\\Documents\\Claude\\Projects\\Поиск работы",
+  "source_base": "b049837f6a61af3d4b505af0d15660e610e020ce",
+  "source_commit": "b174ad6d5f262fd27a509b5546197d220f20b81f",
+  "files": [
+    {
+      "path": "src/job_machine/browser/Dockerfile",
+      "source_sha256": "2c3a390c1de9a26bec93e34c12147346ee2afeea2a511debeded90b114b813aa",
+      "target_sha256": "2c3a390c1de9a26bec93e34c12147346ee2afeea2a511debeded90b114b813aa",
+      "adaptation": null
+    },
+    {
+      "path": "src/job_machine/browser/app.py",
+      "source_sha256": "f9bfe028ef4a41c610313a20c0d769f0c02b24937fe1e9279eee6128cbdd0b3e",
+      "target_sha256": "5000a52550d957b56630cacf90e2d6149534b20959938f05508eec5cf9a83dbd",
+      "adaptation": "E2.S2 ownership, package context, readiness and regressions; see plan/ledger"
+    },
+    {
+      "path": "src/job_machine/browser/entrypoint.sh",
+      "source_sha256": "238798c56ac3361b30e7c91ab691d5e4935352364e0b2ab1eea180cd72137a63",
+      "target_sha256": "238798c56ac3361b30e7c91ab691d5e4935352364e0b2ab1eea180cd72137a63",
+      "adaptation": null
+    },
+    {
+      "path": "src/job_machine/browser/fill.py",
+      "source_sha256": "bce3b832a2f2ff2f1558ccb72dbd9adc38c185a5832a88fa04255d9d49942b86",
+      "target_sha256": "bce3b832a2f2ff2f1558ccb72dbd9adc38c185a5832a88fa04255d9d49942b86",
+      "adaptation": null
+    },
+    {
+      "path": "src/job_machine/browser/fixtures/greenhouse_all_required_checkbox_group_delayed_form.html",
+      "source_sha256": "5d4b84162f7dc721a5a9b2ec9f5d1dbcd168682d70611ceb9931bcd6918aecae",
+      "target_sha256": "5d4b84162f7dc721a5a9b2ec9f5d1dbcd168682d70611ceb9931bcd6918aecae",
+      "adaptation": null
+    },
+    {
+      "path": "src/job_machine/browser/fixtures/greenhouse_all_required_checkbox_group_form.html",
+      "source_sha256": "ffe3e5530246b38c587fa34a1d5c047edc14a5eb44286bfe8f270f4466de1a4f",
+      "target_sha256": "ffe3e5530246b38c587fa34a1d5c047edc14a5eb44286bfe8f270f4466de1a4f",
+      "adaptation": null
+    },
+    {
+      "path": "src/job_machine/browser/fixtures/submit_delayed_confirmation_form.html",
+      "source_sha256": "5f91be81a7122917e6e8679e3ce8a9b8494409ff723faa33090a48b7aaf11319",
+      "target_sha256": "5f91be81a7122917e6e8679e3ce8a9b8494409ff723faa33090a48b7aaf11319",
+      "adaptation": null
+    },
+    {
+      "path": "src/job_machine/browser/fixtures/submit_email_verification.html",
+      "source_sha256": "442c044c29bc4dbe279b67abeb447ebbc6572a96e03b36bf8ff10710584d17e6",
+      "target_sha256": "442c044c29bc4dbe279b67abeb447ebbc6572a96e03b36bf8ff10710584d17e6",
+      "adaptation": null
+    },
+    {
+      "path": "src/job_machine/browser/fixtures/submit_email_verification_form.html",
+      "source_sha256": "b52cff03b22f6baa97383a8897256ccdc7ba59ff0d56c40e1277b53e8bcc0e12",
+      "target_sha256": "b52cff03b22f6baa97383a8897256ccdc7ba59ff0d56c40e1277b53e8bcc0e12",
+      "adaptation": null
+    },
+    {
+      "path": "src/job_machine/browser/session.py",
+      "source_sha256": "44b31965879ce279418da44133d14c5fe61356b99f69e90fc30771751b0aac59",
+      "target_sha256": "44b31965879ce279418da44133d14c5fe61356b99f69e90fc30771751b0aac59",
+      "adaptation": null
+    },
+    {
+      "path": "src/job_machine/fill/adapter.py",
+      "source_sha256": "3dda57e7d8879f0c310affe0d232c1e24bdcec6658ddea48b9b64d1c326a5bc3",
+      "target_sha256": "3dda57e7d8879f0c310affe0d232c1e24bdcec6658ddea48b9b64d1c326a5bc3",
+      "adaptation": null
+    },
+    {
+      "path": "src/job_machine/fill/browser_client.py",
+      "source_sha256": "b0ad036d1df0c6ea3741482194664603f5eb142dbbbc85dfea5290417196b79f",
+      "target_sha256": "8834472474205a9f63987ff0dfad9e464087967958bc3312cdbfb59769aad5e5",
+      "adaptation": "E2.S2 ownership, package context, readiness and regressions; see plan/ledger"
+    },
+    {
+      "path": "src/job_machine/fill/models.py",
+      "source_sha256": "543dbc45e9f4a787a496b0ef90f5f49bc7f63c925454c14a5d65c06839d4ab47",
+      "target_sha256": "543dbc45e9f4a787a496b0ef90f5f49bc7f63c925454c14a5d65c06839d4ab47",
+      "adaptation": null
+    },
+    {
+      "path": "src/job_machine/fill/service.py",
+      "source_sha256": "616222a937fde99f864bc9b6cc5dea61ff5b466ec50ba0c90d161111c31ad910",
+      "target_sha256": "48a67d83127a97442d6b50a123c7c22c05ba97982fd43512916099feaab7cd73",
+      "adaptation": "E2.S2 ownership, package context, readiness and regressions; see plan/ledger"
+    },
+    {
+      "path": "src/job_machine/fill/store.py",
+      "source_sha256": "878eb0bfd40f4804ca78faadbea534ce603ea324c7c34ed49e5420d354327308",
+      "target_sha256": "59c4bc495b5cd6fe74bb01888696f2a8888816c253a9724ad6ffe5d5f8f75f75",
+      "adaptation": "E2.S2 ownership, package context, readiness and regressions; see plan/ledger"
+    },
+    {
+      "path": "src/job_machine/mcp/agent_fill_store.py",
+      "source_sha256": "5dbd06187bb894d839161f2ea5d76b40d06198db7d815d863a9c576b471d048b",
+      "target_sha256": "808842d91c0897df0d61fc7d85322705a854b3fd8a96766ee612ddda4856e7ff",
+      "adaptation": "E2.S2 ownership, package context, readiness and regressions; see plan/ledger"
+    },
+    {
+      "path": "src/job_machine/mcp/server.py",
+      "source_sha256": "761fe811bd5098e00ee8d3f7b665306ab3c1b8eab49f9640ee6907707b9bac17",
+      "target_sha256": "f010aa003d3102714943a459dc211ce6f0eeeed3ca307cbc9f199dd5b19cd0bc",
+      "adaptation": "E2.S2 reviewed integration; source snapshot preserved, target updated"
+    },
+    {
+      "path": "src/job_machine/mcp/tools.py",
+      "source_sha256": "04b4d3920d41db4bfd8a232b7fb5a2287e8cd63ac7f0b35c5def015080e3701d",
+      "target_sha256": "970e2caf0dc3eda339de87d24b781721ad1e958683c0831089df2ecf23fc1740",
+      "adaptation": "E2.S2 reviewed integration; source snapshot preserved, target updated"
+    },
+    {
+      "path": "src/job_machine/state_machine/regen.py",
+      "source_sha256": "6ff022e83d12361ec4b4919f2ed5daedb799ba0d76315feca4ef4ca8d27e778c",
+      "target_sha256": "6ff022e83d12361ec4b4919f2ed5daedb799ba0d76315feca4ef4ca8d27e778c",
+      "adaptation": null
+    },
+    {
+      "path": "src/job_machine/state_machine/states.py",
+      "source_sha256": "b37dd77396bc8f5866fe3e88f2a5a6334859d3fe6348d3cf4cc28ccdd0fbf770",
+      "target_sha256": "b37dd77396bc8f5866fe3e88f2a5a6334859d3fe6348d3cf4cc28ccdd0fbf770",
+      "adaptation": null
+    },
+    {
+      "path": "src/job_machine/state_machine/transitions.py",
+      "source_sha256": "7931a4f7677f3c1b223527a605757a30219a3acf172d5037d1daa6083d66f094",
+      "target_sha256": "7931a4f7677f3c1b223527a605757a30219a3acf172d5037d1daa6083d66f094",
+      "adaptation": null
+    },
+    {
+      "path": "src/job_machine/submit/service.py",
+      "source_sha256": "f7db55754036d31c0519a21f5620447074ff0036433ab746fadb3e81f60d6405",
+      "target_sha256": "f7db55754036d31c0519a21f5620447074ff0036433ab746fadb3e81f60d6405",
+      "adaptation": null
+    },
+    {
+      "path": "src/job_machine/submit/store.py",
+      "source_sha256": "c9e169582ca224a336ef9b92c76ced905918f8fd43441eaba2a2026fd56d0717",
+      "target_sha256": "c9e169582ca224a336ef9b92c76ced905918f8fd43441eaba2a2026fd56d0717",
+      "adaptation": null
+    },
+    {
+      "path": "tests/browser/test_api.py",
+      "source_sha256": "e9beb11582313713e75c6a80c0a39693bd47dcc897044737a700443dde45453c",
+      "target_sha256": "e9beb11582313713e75c6a80c0a39693bd47dcc897044737a700443dde45453c",
+      "adaptation": null
+    },
+    {
+      "path": "tests/browser/test_handoff_session.py",
+      "source_sha256": "8e5cb53d4c021c9f88256f78271d346156865f2353f7cb0ef81de9af7758d4b9",
+      "target_sha256": "8e5cb53d4c021c9f88256f78271d346156865f2353f7cb0ef81de9af7758d4b9",
+      "adaptation": null
+    },
+    {
+      "path": "tests/browser/test_submit.py",
+      "source_sha256": "d65077569a503ea3c6392bc8cfd71019ee3d94b6a0eb4cbde323445e050da311",
+      "target_sha256": "d65077569a503ea3c6392bc8cfd71019ee3d94b6a0eb4cbde323445e050da311",
+      "adaptation": null
+    },
+    {
+      "path": "tests/fill/test_adapter.py",
+      "source_sha256": "bd718c20b63de1914fb73b58ef1e7e3c561fa1084b67aacf42d21773db94a749",
+      "target_sha256": "bd718c20b63de1914fb73b58ef1e7e3c561fa1084b67aacf42d21773db94a749",
+      "adaptation": null
+    },
+    {
+      "path": "tests/fill/test_browser_client.py",
+      "source_sha256": "34cc7792658ab12b2561e5ad64196d886751c431e2a320fcdeee5fc3d13130f5",
+      "target_sha256": "34cc7792658ab12b2561e5ad64196d886751c431e2a320fcdeee5fc3d13130f5",
+      "adaptation": null
+    },
+    {
+      "path": "tests/fill/test_service.py",
+      "source_sha256": "e95490666c10e12af029947ae46002a62d41e84f24c66ec08dec4b2958e71cfa",
+      "target_sha256": "37f62ece99bd68eba3e7abaa88136e44f41129d14074d8c25baaaa3e115ddc93",
+      "adaptation": "E2.S2 ownership, package context, readiness and regressions; see plan/ledger"
+    },
+    {
+      "path": "tests/mcp/test_agent_fill.py",
+      "source_sha256": "afb47ac815f2a7d4a6dae8b59c8da6cdbc33dd6855aba83706a99ed14a4828b1",
+      "target_sha256": "6a198efc4602665567893a0bee6b88ad9d49fda45d9ca2457a84d1a2430dda6c",
+      "adaptation": "E2.S2 reviewed integration; source snapshot preserved, target updated"
+    },
+    {
+      "path": "tests/mcp/test_tools_pipeline.py",
+      "source_sha256": "1c8a250ab67dcc5c6c8ab92396d3ea9bda2b767b8a207aaec90fa7bdbcf2cd23",
+      "target_sha256": "1c8a250ab67dcc5c6c8ab92396d3ea9bda2b767b8a207aaec90fa7bdbcf2cd23",
+      "adaptation": null
+    },
+    {
+      "path": "tests/test_schema_state.py",
+      "source_sha256": "2d8fc2755f33621190fb801fe162898777c61245ba84a4e912e4a3972d9d3cb0",
+      "target_sha256": "2d8fc2755f33621190fb801fe162898777c61245ba84a4e912e4a3972d9d3cb0",
+      "adaptation": null
+    }
+  ]
+}

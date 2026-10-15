@@ -31,6 +31,9 @@ class FakeManager:
     async def dispose_session(self, sid):
         self._ids.discard(sid)
 
+    def retain(self, sid):
+        return sid in self._ids
+
     def artifact_path(self, sid, suffix):
         return f"/tmp/{sid}_{suffix}"
 
@@ -46,6 +49,22 @@ def test_session_lifecycle_over_http():
         assert client.get("/session/missing").status_code == 404
         assert client.delete(f"/session/{sid}").json()["status"] == "disposed"
         assert client.get(f"/session/{sid}").status_code == 404
+
+
+def test_retain_session_over_http():
+    app = create_app(manager=FakeManager())
+    with TestClient(app) as client:
+        sid = client.post("/session").json()["session_id"]
+        resp = client.post(f"/session/{sid}/retain")
+        assert resp.status_code == 200
+        assert resp.json() == {"status": "retained", "session_id": sid}
+
+
+def test_retain_missing_session_returns_404():
+    app = create_app(manager=FakeManager())
+    with TestClient(app) as client:
+        resp = client.post("/session/missing/retain")
+        assert resp.status_code == 404
 
 
 def test_submit_route_exists():

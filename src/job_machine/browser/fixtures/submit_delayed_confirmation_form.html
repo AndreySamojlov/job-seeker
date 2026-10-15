@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Sample Application (delayed confirmation)</title></head>
+<body>
+  <h1>Apply: Sample Role</h1>
+  <!-- Живой Greenhouse (OKX, 08.08.2026): исход подачи появляется НЕ мгновенно.
+       Наблюдение живой страницы раз в 1.5с показало, что после клика кнопка
+       ещё ~9 секунд оставалась обычной («Submit application», активна), и лишь
+       потом ушла в спиннер — то есть XHR стартовал сильно позже клика.
+
+       wait_for_load_state("networkidle") такой исход не ловит: в момент вызова
+       на странице ещё ничего не летит, и он возвращается сразу. Вердикт,
+       снятый в этот момент, видит форму на месте и объявляет подачу
+       недоказанной, хотя она только начинается. Здесь та же форма провала,
+       ужатая по времени. -->
+  <form id="application" method="post" action="/submitted">
+    <label for="full_name">Full name</label>
+    <input id="full_name" name="full_name" type="text" required>
+
+    <button type="submit">Submit Application</button>
+  </form>
+  <script>
+    document.getElementById('application').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var form = e.target;
+      setTimeout(function () {
+        var done = document.createElement('div');
+        done.innerHTML =
+          '<h1>Thank you for applying</h1>' +
+          '<p>Your application has been submitted.</p>';
+        form.replaceWith(done);
+      }, 3000);
+    });
+  </script>
+</body>
+</html>

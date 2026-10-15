@@ -10,7 +10,7 @@ import uuid
 
 import httpx
 
-from job_machine.mcp import store, funnel, handoff_store
+from job_machine.mcp import store, funnel, handoff_store, agent_fill_store
 from job_machine.mcp import store as mcp_store
 from job_machine.approval import service as approval_service
 from job_machine.approval import store as approval_store
@@ -321,6 +321,105 @@ def resume_fill(conn, fill_worker, application_id: str) -> dict:
     return fill_worker.resume_after_handoff(application_id, session_id)
 
 
+def agent_fill_start(conn, application_id: str, fill_worker) -> dict:
+    """Выдать агенту живую страницу заявки для дозаполнения.
+
+    Заявка ждёт агента в state='agent_fill_pending' (код не сопоставил часть
+    required-полей, но браузерная сессия жива — fill/service.py уже сделал
+    browser.retain). Отдаём агенту всё, что нужно, чтобы присоединиться к той
+    же вкладке по CDP и дозаполнить честно, без вымысла.
+
+    Читает состояние и проверенные значения пакета через fill worker.
+    Этот вызов не нажимает submit; доступ через CDP сам по себе не ограничен.
+
+    ok=False с error="not_agent_fill_pending" — заявка не в agent_fill_pending
+    (или уже обработана: агент/владелец её закрыл раньше).
+    """
+    live = agent_fill_store.load_agent_fill(conn, application_id)
+    if live is None:
+        return {"ok": False, "error": "not_agent_fill_pending",
+                "application_id": application_id}
+
+    context = fill_worker.agent_context(application_id, live["session_id"])
+    if not context.get("ok"):
+        return context
+    answers = context["answers"]
+    instructions = (
+        "Присоединись к CDP-эндпоинту браузер-воркера и выбери вкладку с page_url "
+        f"({live['page_url']}). Дозаполни поля, перечисленные в unmatched, значениями "
+        "ТОЛЬКО из answers — ничего не выдумывай, чего нет в answers, не заполняй. "
+        "Новых вкладок не открывай. Финальную кнопку (submit) НЕ нажимай ни при каких "
+        "условиях — это отдельный шаг, требующий одобрения владельца. По готовности "
+        "заново инспектируй форму и вызови agent_fill_done с session_id и фактическим остатком "
+        "несопоставленных полей (пустой список — если форма готова целиком). Если "
+        "честно добить форму нельзя (недостающий факт, CAPTCHA, MFA, требуется "
+        "создание аккаунта, таймаут) — вызови agent_fill_blocked с session_id и причиной."
+    )
+    return {
+        "ok": True,
+        "application_id": application_id,
+        "session_id": live["session_id"],
+        "page_url": live["page_url"],
+        "unmatched": live["unmatched"],
+        "answers": answers,
+        "instructions": instructions,
+    }
+
+
+def agent_fill_done(conn, browser, application_id: str, inspect_unmatched,
+                    session_id: str | None = None) -> dict:
+    """Accept current-session results only after independent live form inspection.
+
+    Retain the page for the separate approval/submit flow. Structural readiness
+    does not prove that answers match facts or an approved package.
+    """
+    live = agent_fill_store.load_agent_fill(conn, application_id)
+    if live is None:
+        return {"ok": False, "error": "not_agent_fill_pending",
+                "application_id": application_id}
+    if not session_id or session_id != live["session_id"]:
+        return {"ok": False, "error": "stale_session"}
+    if inspect_unmatched:
+        return {"ok": False, "error": "still_unmatched", "unmatched": inspect_unmatched}
+    try:
+        evidence = browser.readiness(session_id)
+    except httpx.HTTPError:
+        return {"ok": False, "error": "readiness_unavailable"}
+    if not live.get("page_url") or evidence.get("url") != live["page_url"]:
+        return {"ok": False, "error": "destination_changed"}
+    if evidence.get("ready") is not True or evidence.get("blocker"):
+        return {"ok": False, "error": "form_not_ready", "blocker": evidence.get("blocker")}
+    if not agent_fill_store.record_agent_fill_done(conn, application_id, session_id):
+        return {"ok": False, "error": "stale_session"}
+    conn.commit()
+    return {"ok": True, "status": "pre_submit_ready", "application_id": application_id,
+            "session_id": session_id}
+
+
+def agent_fill_blocked(conn, browser, application_id: str, reason: str,
+                       session_id: str | None = None) -> dict:
+    """Block only the current pending session; never release a replacement."""
+    live = agent_fill_store.load_agent_fill(conn, application_id)
+    if live is None:
+        return {"ok": False, "error": "not_agent_fill_pending",
+                "application_id": application_id}
+    if not session_id or session_id != live["session_id"]:
+        return {"ok": False, "error": "stale_session"}
+    if reason not in {"missing_fact", "captcha", "mfa", "account_required", "timeout"}:
+        return {"ok": False, "error": "invalid_reason"}
+    if not agent_fill_store.record_agent_fill_blocked(conn, application_id, reason, session_id):
+        return {"ok": False, "error": "stale_session"}
+    conn.commit()
+    cleanup_pending = False
+    try:
+        browser.release(session_id)
+    except httpx.HTTPError as exc:
+        cleanup_pending = not (isinstance(exc, httpx.HTTPStatusError) and exc.response.status_code == 404)
+    # Keep the session reference for idempotent sweep, including failed releases.
+    return {"ok": True, "status": "fill_blocked", "reason": reason,
+            "application_id": application_id, "cleanup_pending": cleanup_pending}
+
+
 def run_pipeline(conn, greenhouse_client, fill_worker=None, package_worker=None,
                  boards=None, max_boards: int = 3, offset: int = 0, limit: int = 10,
                  base_dir: str = "applications",
@@ -389,6 +488,7 @@ def run_fill(fill_worker, limit: int = 10, candidate_id: str | None = None) -> d
     """Заполнить формы до `limit` заявок через job-fill воркер (HTTP; скоуп по candidate_id)."""
     result = fill_worker.run_fill(limit, candidate_id)
     return {"pulled": result.pulled, "pre_submit_ready": result.pre_submit_ready,
+            "agent_fill_pending": result.agent_fill_pending,
             "blocked": result.blocked, "errors": result.errors}
 
 

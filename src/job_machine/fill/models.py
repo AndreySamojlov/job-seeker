@@ -22,5 +22,6 @@ class FillRunSummary(BaseModel):
     """Сводка прогона run_fill."""
     pulled: int = 0
     pre_submit_ready: int = 0
+    agent_fill_pending: int = 0
     blocked: int = 0
     errors: int = 0

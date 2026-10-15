@@ -13,3 +13,7 @@ DB/browser/E2E, отказные сценарии полного pipeline и bac
 ## Актуализация после daemon/schema интеграции
 
 Unit1126 passed/425 deselected; smoke50 passed; DB327 passed (все db and not browser), один прежний Starlette warning. DB-runner жёстко фиксирует отдельный cluster и имеет три negative checks (имя/порт/data_directory). Browser/E2E и backup/restore пока не проверены. Три SQL импортированы неизменёнными, две baseline parity фикстуры адаптированы с provenance. Review принят; actual stdio MCP и live dashboard HTTP200 повторены. Эти результаты заменяют исходные counts выше, сохраняя их как историю.
+
+## E2.S2
+
+Итог:1150 unit passed/457 deselected;344 DB passed/1263 deselected;112 browser passed/74 deselected. Один прежний Starlette/httpx warning. Browser suite использовала локальный Chromium и synthetic fixtures без CDP; финальные lifecycle-only изменения после неё проверены полной DB/unit suite. Red воспроизвёл stale tokens, closing submitting session, unchecked ARIA-required, release failure/404, повтор resume и reopened cleanup. Review принят после устранения этих случаев. Full submit E2E и backup/restore ещё открыты.

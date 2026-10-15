@@ -73,6 +73,32 @@ class _FakeManager:
         return b"%PDF"
 
 
+def test_submit_form_stops_waiting_when_page_cannot_be_read():
+    """Ожидание исхода после клика существует ради страниц, которые ещё не
+    начали отправку (живой OKX 08.08.2026). Но если страницу вообще не удаётся
+    прочитать — снимок не снимается ни разу — ждать нечего: исход так и не
+    станет наблюдаемым, а вызывающий (submit-воркер, его HTTP-клиент) всё это
+    время висит. Терпим короткую слепоту (навигация читается как ошибка чтения
+    и проходит за доли секунды) и выходим, а не выжидаем весь бюджет."""
+    import asyncio
+    import time as _time
+
+    from job_machine.browser.fill import submit_form
+
+    class _UnreadablePage(_FakePage):
+        async def evaluate(self, js, *args):
+            if args:                      # снимок страницы — читать нечем
+                raise RuntimeError("page unreadable")
+            return await super().evaluate(js)
+
+    started = _time.monotonic()
+    result = asyncio.run(submit_form(_UnreadablePage(), {"first_name": "Andrey"}))
+    elapsed = _time.monotonic() - started
+
+    assert result.click_performed is True
+    assert elapsed < 20.0, f"ждали {elapsed:.1f}s вместо короткой слепоты"
+
+
 def test_submit_route_exists_and_reports_click_outcome():
     """Маршрут жив и возвращает исход клика. Вердикт `submitted` браузер-воркер
     не выставляет вовсе — он сообщает наблюдения, а порог доказательства держит
@@ -451,6 +477,138 @@ def test_submit_form_ignores_unrelated_invalid_field_outside_form(tmp_path):
     assert result.failure_signal is None
     assert result.click_performed is True
     assert result.screenshot_path is not None
+
+
+@pytest.mark.browser
+def test_submit_form_ignores_answered_all_required_checkbox_group(tmp_path):
+    """Real Chromium: Greenhouse renders a required checkbox group by putting
+    `required` on EVERY checkbox and never clearing it once one is picked —
+    verified on the live OKX posting 08.08.2026, where checking "English" left
+    the remaining 30 boxes `:invalid` permanently. Native validation does not
+    block that form (the submit button preventDefaults on click and Greenhouse
+    submits by its own XHR), so those `:invalid` boxes say nothing about the
+    outcome. A blanket `:invalid` count therefore reports native_invalid on
+    every such form, which makes errors_absent — and with it any confirmed
+    submission — unreachable while the form is on screen. Two live OKX attempts
+    (14:02 and 15:18 UTC, 08.08.2026) died exactly this way.
+
+    The group here is answered (one box checked), so the question IS answered
+    and the submission must be allowed to prove itself."""
+    import asyncio
+
+    from job_machine.browser.fill import submit_form
+    from job_machine.browser.session import SessionManager
+
+    async def run():
+        mgr = SessionManager(headless=True, artifact_dir=str(tmp_path))
+        await mgr.start()
+        try:
+            sid = await mgr.create_session()
+            page = mgr.get_page(sid)
+            fixture = (
+                Path(__file__).parent.parent.parent
+                / "src" / "job_machine" / "browser" / "fixtures"
+                / "greenhouse_all_required_checkbox_group_form.html"
+            ).resolve()
+            await page.goto(f"file://{fixture}")
+            shot = str(tmp_path / "confirm.png")
+            return await submit_form(page, {"full_name": "Andrey"},
+                                     screenshot_path=shot)
+        finally:
+            await mgr.shutdown()
+
+    result = asyncio.run(run())
+    assert result.failure_signal is None
+    assert result.errors_absent is True
+    assert result.form_absent is True
+    assert result.confirmation_signal == "thank_you_text"
+
+
+@pytest.mark.browser
+def test_submit_form_waits_out_answered_checkbox_group_for_delayed_confirmation(tmp_path):
+    """Real Chromium: the live OKX shape in full — an answered all-required
+    checkbox group AND an outcome that arrives late. Each half is covered
+    separately; together they produce a refusal neither shows alone.
+
+    While the form is still on the page its permanently `:invalid` sibling
+    checkboxes read as "the page is showing errors", so the wait for an outcome
+    treats the very first poll as terminal, records errors_present, and the
+    confirmation that is about to appear is never seen. That is the third live
+    attempt (17:17 UTC 08.08.2026): failure_signal moved off native_invalid but
+    errors_absent stayed false and the verdict landed 9 seconds after the click
+    anyway. The `:invalid` rule has to read the same way in both places that
+    apply it."""
+    import asyncio
+
+    from job_machine.browser.fill import submit_form
+    from job_machine.browser.session import SessionManager
+
+    async def run():
+        mgr = SessionManager(headless=True, artifact_dir=str(tmp_path))
+        await mgr.start()
+        try:
+            sid = await mgr.create_session()
+            page = mgr.get_page(sid)
+            fixture = (
+                Path(__file__).parent.parent.parent
+                / "src" / "job_machine" / "browser" / "fixtures"
+                / "greenhouse_all_required_checkbox_group_delayed_form.html"
+            ).resolve()
+            await page.goto(f"file://{fixture}")
+            shot = str(tmp_path / "confirm.png")
+            return await submit_form(page, {"full_name": "Andrey"},
+                                     screenshot_path=shot)
+        finally:
+            await mgr.shutdown()
+
+    result = asyncio.run(run())
+    assert result.failure_signal is None
+    assert result.errors_absent is True
+    assert result.form_absent is True
+    assert result.confirmation_signal == "thank_you_text"
+
+
+@pytest.mark.browser
+def test_submit_form_waits_for_delayed_confirmation(tmp_path):
+    """Real Chromium: the outcome of a click is not there the instant the click
+    returns. On the live OKX posting (08.08.2026) the submit button stayed
+    ordinary and enabled for ~9 seconds after the click and only then went into
+    its spinner — the site's JS had not even started its request yet.
+    `wait_for_load_state("networkidle")` returns immediately in that window
+    (nothing is in flight), so the verdict was read before any outcome existed,
+    the form was still on screen, and a real submission was recorded as
+    undetermined.
+
+    This fixture compresses that shape: the confirmation replaces the form 3
+    seconds after the click. submit_form must wait for a terminal outcome
+    instead of snapping the verdict straight away."""
+    import asyncio
+
+    from job_machine.browser.fill import submit_form
+    from job_machine.browser.session import SessionManager
+
+    async def run():
+        mgr = SessionManager(headless=True, artifact_dir=str(tmp_path))
+        await mgr.start()
+        try:
+            sid = await mgr.create_session()
+            page = mgr.get_page(sid)
+            fixture = (
+                Path(__file__).parent.parent.parent
+                / "src" / "job_machine" / "browser" / "fixtures"
+                / "submit_delayed_confirmation_form.html"
+            ).resolve()
+            await page.goto(f"file://{fixture}")
+            shot = str(tmp_path / "confirm.png")
+            return await submit_form(page, {"full_name": "Andrey"},
+                                     screenshot_path=shot)
+        finally:
+            await mgr.shutdown()
+
+    result = asyncio.run(run())
+    assert result.form_absent is True
+    assert result.errors_absent is True
+    assert result.confirmation_signal == "thank_you_text"
 
 
 @pytest.mark.browser
@@ -1097,3 +1255,24 @@ def test_submit_form_reports_no_click_when_field_unmatched(tmp_path):
     assert result.errors_absent is False
     assert result.confirmation_signal is None
     assert "click_performed" in submission_proof_missing(result)
+
+
+@pytest.mark.browser
+def test_submit_form_reports_email_verification_required(tmp_path):
+    """[SAFETY] Real Chromium, живой инцидент 08-09.08.2026 (GitLab, Greenhouse
+    job-boards.greenhouse.io/gitlab/jobs/8586632002): клик по Submit не даёт ни
+    подтверждения, ни ошибки — ATS вставляет инлайн email-верификацию в ту же
+    форму ("A verification code was sent to ...", "resubmit your application"),
+    кнопка Submit остаётся на месте. Ни :invalid, ни aria-invalid, ни фраза
+    благодарности тут не срабатывают, и без явного различителя исход тонет в
+    generic failure_signal="no_confirmation" — неотличимо от любого другого
+    необъяснённого провала. Порог на переписывание сабмит-движка (CLAUDE.md §6,
+    5/10 попыток) не пройден (1/10 живых попыток на момент находки) — фикс
+    ограничен классификацией, retain-логику сессии (submit/service.py
+    _submit_claim) это не трогает."""
+    result = _submit_fixture(
+        "submit_email_verification_form.html", {"full_name": "Andrey"}, tmp_path)
+
+    assert result.click_performed is True
+    assert result.confirmation_signal is None
+    assert result.failure_signal == "email_verification_required"

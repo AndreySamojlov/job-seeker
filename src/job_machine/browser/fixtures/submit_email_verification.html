@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Apply: Sample Role</title></head>
+<body>
+  <!-- Живой инцидент 08-09.08.2026 (GitLab, Greenhouse): клик по Submit не
+       завершает подачу и не переходит на страницу подтверждения — ATS вставляет
+       инлайн email-верификацию прямо в ту же форму, кнопка Submit остаётся на
+       месте. Ни :invalid, ни aria-invalid, ни фраза благодарности не
+       срабатывают, и без этого различителя исход тонет в generic
+       "no_confirmation". -->
+  <h1>Apply: Sample Role</h1>
+  <form id="application" method="get" action="submit_email_verification.html">
+    <label for="full_name">Full name</label>
+    <input id="full_name" name="full_name" type="text" value="Andrey">
+
+    <p>A verification code was sent to andrey@example.com. To submit your
+    application, enter the 8-character code to confirm you're a human.</p>
+
+    <label for="verification_code">Verification code</label>
+    <input id="verification_code" name="verification_code" type="text">
+
+    <p>After you enter the code, resubmit your application.</p>
+
+    <button type="submit">Submit Application</button>
+  </form>
+</body>
+</html>

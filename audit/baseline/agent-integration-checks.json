@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-15",
+  "scope": "E2.S2 local integration",
+  "unit": {
+    "passed": 1150,
+    "deselected": 457
+  },
+  "db": {
+    "passed": 344,
+    "deselected": 1263
+  },
+  "browser": {
+    "passed": 112,
+    "deselected": 74,
+    "note": "Before final lifecycle-only changes; final DB/unit cover those"
+  },
+  "independent_review": "no remaining blocking E2.S2 findings",
+  "production_changes": false,
+  "dashboard_http": 200,
+  "dashboard_data": "live",
+  "source_hashes": {
+    "src/job_machine/browser/Dockerfile": "2c3a390c1de9a26bec93e34c12147346ee2afeea2a511debeded90b114b813aa",
+    "src/job_machine/browser/app.py": "5000a52550d957b56630cacf90e2d6149534b20959938f05508eec5cf9a83dbd",
+    "src/job_machine/browser/entrypoint.sh": "238798c56ac3361b30e7c91ab691d5e4935352364e0b2ab1eea180cd72137a63",
+    "src/job_machine/browser/fill.py": "bce3b832a2f2ff2f1558ccb72dbd9adc38c185a5832a88fa04255d9d49942b86",
+    "src/job_machine/browser/fixtures/greenhouse_all_required_checkbox_group_delayed_form.html": "5d4b84162f7dc721a5a9b2ec9f5d1dbcd168682d70611ceb9931bcd6918aecae",
+    "src/job_machine/browser/fixtures/greenhouse_all_required_checkbox_group_form.html": "ffe3e5530246b38c587fa34a1d5c047edc14a5eb44286bfe8f270f4466de1a4f",
+    "src/job_machine/browser/fixtures/submit_delayed_confirmation_form.html": "5f91be81a7122917e6e8679e3ce8a9b8494409ff723faa33090a48b7aaf11319",
+    "src/job_machine/browser/fixtures/submit_email_verification.html": "442c044c29bc4dbe279b67abeb447ebbc6572a96e03b36bf8ff10710584d17e6",
+    "src/job_machine/browser/fixtures/submit_email_verification_form.html": "b52cff03b22f6baa97383a8897256ccdc7ba59ff0d56c40e1277b53e8bcc0e12",
+    "src/job_machine/browser/readiness.py": "39d976bd4668d2ca4b55da343141e0ace4a951a50fb73d27561b40beee94d8af",
+    "src/job_machine/browser/session.py": "44b31965879ce279418da44133d14c5fe61356b99f69e90fc30771751b0aac59",
+    "src/job_machine/fill/adapter.py": "3dda57e7d8879f0c310affe0d232c1e24bdcec6658ddea48b9b64d1c326a5bc3",
+    "src/job_machine/fill/app.py": "450baf0f9856af239848ed1a5d5c528c9540b834e4529484e6cca8fc736af9f5",
+    "src/job_machine/fill/browser_client.py": "8834472474205a9f63987ff0dfad9e464087967958bc3312cdbfb59769aad5e5",
+    "src/job_machine/fill/models.py": "543dbc45e9f4a787a496b0ef90f5f49bc7f63c925454c14a5d65c06839d4ab47",
+    "src/job_machine/fill/service.py": "48a67d83127a97442d6b50a123c7c22c05ba97982fd43512916099feaab7cd73",
+    "src/job_machine/fill/store.py": "59c4bc495b5cd6fe74bb01888696f2a8888816c253a9724ad6ffe5d5f8f75f75",
+    "src/job_machine/mcp/agent_fill_store.py": "808842d91c0897df0d61fc7d85322705a854b3fd8a96766ee612ddda4856e7ff",
+    "src/job_machine/mcp/fill_worker_client.py": "6e7f210de73286096844a9d82d86f5bb4e658d1f1bd12a66aabd5c5ea23eb394",
+    "src/job_machine/mcp/server.py": "f010aa003d3102714943a459dc211ce6f0eeeed3ca307cbc9f199dd5b19cd0bc",
+    "src/job_machine/mcp/tools.py": "970e2caf0dc3eda339de87d24b781721ad1e958683c0831089df2ecf23fc1740",
+    "src/job_machine/state_machine/regen.py": "6ff022e83d12361ec4b4919f2ed5daedb799ba0d76315feca4ef4ca8d27e778c",
+    "src/job_machine/state_machine/states.py": "b37dd77396bc8f5866fe3e88f2a5a6334859d3fe6348d3cf4cc28ccdd0fbf770",
+    "src/job_machine/state_machine/transitions.py": "7931a4f7677f3c1b223527a605757a30219a3acf172d5037d1daa6083d66f094",
+    "src/job_machine/submit/service.py": "f7db55754036d31c0519a21f5620447074ff0036433ab746fadb3e81f60d6405",
+    "src/job_machine/submit/store.py": "c9e169582ca224a336ef9b92c76ced905918f8fd43441eaba2a2026fd56d0717",
+    "tests/browser/test_api.py": "e9beb11582313713e75c6a80c0a39693bd47dcc897044737a700443dde45453c",
+    "tests/browser/test_handoff_session.py": "8e5cb53d4c021c9f88256f78271d346156865f2353f7cb0ef81de9af7758d4b9",
+    "tests/browser/test_readiness.py": "ded5ddab244684a0282329a051acb3327ca1b6209c9d8122fbf188bc1bcaa753",
+    "tests/browser/test_submit.py": "d65077569a503ea3c6392bc8cfd71019ee3d94b6a0eb4cbde323445e050da311",
+    "tests/fill/test_adapter.py": "bd718c20b63de1914fb73b58ef1e7e3c561fa1084b67aacf42d21773db94a749",
+    "tests/fill/test_agent_context.py": "ff30ea79ed1b601bba69f34c21dff8c01a0f99935c7306dcef10e5c616c54b32",
+    "tests/fill/test_browser_client.py": "34cc7792658ab12b2561e5ad64196d886751c431e2a320fcdeee5fc3d13130f5",
+    "tests/fill/test_service.py": "37f62ece99bd68eba3e7abaa88136e44f41129d14074d8c25baaaa3e115ddc93",
+    "tests/mcp/test_agent_fill.py": "6a198efc4602665567893a0bee6b88ad9d49fda45d9ca2457a84d1a2430dda6c",
+    "tests/mcp/test_agent_fill_safety.py": "0722c485496bcbd037197b6ce638ea049e5581aee8526f9c2913941435422ef4",
+    "tests/mcp/test_tools_pipeline.py": "1c8a250ab67dcc5c6c8ab92396d3ea9bda2b767b8a207aaec90fa7bdbcf2cd23",
+    "tests/test_schema_state.py": "2d8fc2755f33621190fb801fe162898777c61245ba84a4e912e4a3972d9d3cb0"
+  }
+}

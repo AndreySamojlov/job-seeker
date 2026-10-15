@@ -69,7 +69,7 @@ def _claim(conn, worker_id: str, lease_seconds: int,
     with conn.cursor() as cur:
         cur.execute(
             "select a.application_id, a.payload_hash, a.resume_artifact_id, "
-            "       v.ats_family, appr.approval_id "
+            "       v.ats_family, appr.approval_id, a.agent_fill_session_id "
             "from application a "
             "join vacancy v on v.vacancy_id=a.vacancy_id "
             "join approval appr on appr.application_id=a.application_id "
@@ -85,7 +85,8 @@ def _claim(conn, worker_id: str, lease_seconds: int,
         head = cur.fetchone()
         if head is None:
             return None
-        aid, payload_hash, resume_artifact_id, ats_family, approval_id = head
+        (aid, payload_hash, resume_artifact_id, ats_family, approval_id,
+         agent_fill_session_id) = head
         cur.execute(
             "insert into submission_attempt (application_id, approval_id, status, "
             "worker_id, lease_until) "
@@ -134,6 +135,10 @@ def _claim(conn, worker_id: str, lease_seconds: int,
         "ats_family": ats_family,
         "manifest_path": manifest_path,
         "resume": resume,
+        # Живая сессия агента, если заявку доводил он. Клик обязан идти именно в
+        # неё: работа агента существует только на этой странице, а новая навигация
+        # её стёрла бы.
+        "agent_fill_session_id": agent_fill_session_id,
     }
 
 

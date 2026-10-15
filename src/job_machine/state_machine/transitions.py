@@ -8,7 +8,10 @@ from job_machine.state_machine.states import VacancyState as V
 ALLOWED = {
     ("application", A.NEEDS_PACKAGE): {A.PACKAGE_READY, A.FAILED},
     ("application", A.PACKAGE_READY): {A.FORM_INSPECTED, A.NEEDS_PACKAGE, A.FAILED},
-    ("application", A.FORM_INSPECTED): {A.PRE_SUBMIT_READY, A.FILL_BLOCKED, A.FAILED},
+    ("application", A.FORM_INSPECTED): {A.PRE_SUBMIT_READY, A.AGENT_FILL_PENDING,
+                                        A.FILL_BLOCKED, A.FAILED},
+    ("application", A.AGENT_FILL_PENDING): {A.PRE_SUBMIT_READY, A.FILL_BLOCKED,
+                                            A.NEEDS_PACKAGE, A.FAILED},
     ("application", A.FILL_BLOCKED): {A.FORM_INSPECTED, A.NEEDS_PACKAGE, A.FAILED},
     ("application", A.PRE_SUBMIT_READY): {A.AWAITING_APPROVAL, A.FAILED},
     ("application", A.AWAITING_APPROVAL): {A.APPROVED, A.FAILED},
@@ -22,6 +25,14 @@ ALLOWED = {
 }
 
 # (entity_type, from_state, to_state) -> список имён guards (порядок = порядок прогона).
+# Переходы через AGENT_FILL_PENDING (FORM_INSPECTED -> AGENT_FILL_PENDING и обратно
+# в PRE_SUBMIT_READY/FILL_BLOCKED/NEEDS_PACKAGE) сознательно БЕЗ записи здесь: код
+# fill/service.py::_process_fill прогоняет NoFillBeforeDisclosedSummary и
+# NoResumeUploadWithoutHashMatch (gate.check_fill_gate) ДО inspect/fill — до того,
+# как мог бы возникнуть unmatched_required — так что к моменту передачи страницы
+# агенту эти гарды уже CONTINUE. (Замечание также: fill/store.py пишет состояние
+# raw SQL, не через attempt_transition, — эта таблица тут декларативна, actual
+# runtime enforcement идёт через gate.check_fill_gate внутри _process_fill.)
 GUARDS = {
     ("application", A.FORM_INSPECTED, A.PRE_SUBMIT_READY): [
         "NoFillBeforeDisclosedSummary",

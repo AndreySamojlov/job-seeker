@@ -172,3 +172,32 @@ def test_name_exact_match_does_not_override_label_semantic_match():
     ])
     m = map_fields(_answers(), [], schema, "greenhouse")
     assert m.fields["job_application[first_name]"] == "Andrey"
+
+
+def test_unnamed_required_field_is_reported_unmatched():
+    """Живой слепок Greenhouse 06.08: 15 required-полей вида field_N с пустым label.
+    Они обязаны попасть в unmatched_required — иначе гард mandatory_unknown слеп
+    и submit доходит до необратимого клика (ноль подач из 26)."""
+    schema = FormSchema(
+        url="https://job-boards.greenhouse.io/remotecom/jobs/7331443003",
+        fields=[
+            FormField(name="field_4", field_type="text", label="", required=True),
+            FormField(name="field_11", field_type="text", label=None, required=True),
+        ],
+    )
+
+    res = map_fields([], [], schema, "greenhouse")
+
+    assert res.unmatched_required == ["field_4", "field_11"]
+
+
+def test_unnamed_optional_field_is_not_reported():
+    """Необязательное безымянное поле блокером не является."""
+    schema = FormSchema(
+        url="https://job-boards.greenhouse.io/x/jobs/1",
+        fields=[FormField(name="field_7", field_type="text", label="", required=False)],
+    )
+
+    res = map_fields([], [], schema, "greenhouse")
+
+    assert res.unmatched_required == []

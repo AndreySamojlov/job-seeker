@@ -9,3 +9,7 @@ Runtime compose: `/root/job-machine-canon/deploy/greenhouse-runtime/compose.yaml
 Решения и ограничения — Project Knowledge; схема данных — Data Architecture; намерения не дублируются здесь.
 
 Из baseline адаптированы два schema-parity test/fixture файла: актуальный production snapshot и нормализация NOT NULL PG15/18. Source/target hashes сохранены в provenance/baseline.json; три добавленные SQL — provenance/schema-integration.json.
+
+## E2.S2: объединённый fill
+
+Выборочно перенесён diff b049837..b174ad6 (32 src/tests файла); baseline и integration provenance содержат source/target SHA-256. Локальные адаптации: ownership до DOM, CAS state+session, readonly readiness endpoint, проверенный контекст ответов из manifest через fill worker, retryable cleanup. Fill worker читает /data; MCP не пытается читать контейнерный путь на Windows. API done/blocked требует session_id. Production на прежних образах.

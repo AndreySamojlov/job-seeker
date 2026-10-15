@@ -1,4 +1,5 @@
 import httpx
+import pytest
 
 from job_machine.fill.browser_client import BrowserClient
 
@@ -86,6 +87,29 @@ def test_dispose_calls_delete():
     bc.dispose("s1")
     assert seen["method"] == "DELETE"
     assert seen["path"] == "/session/s1"
+
+
+def test_retain_posts_to_correct_path():
+    seen = {}
+
+    def handler(req):
+        seen["method"] = req.method
+        seen["path"] = req.url.path
+        return httpx.Response(200, json={"status": "retained", "session_id": "s1"})
+
+    bc = _client(handler)
+    bc.retain("s1")
+    assert seen["method"] == "POST"
+    assert seen["path"] == "/session/s1/retain"
+
+
+def test_retain_raises_on_missing_session():
+    def handler(req):
+        return httpx.Response(404, json={"detail": "no such session"})
+
+    bc = _client(handler)
+    with pytest.raises(httpx.HTTPStatusError):
+        bc.retain("nope")
 
 
 def test_handoff_posts_url_returns_result():

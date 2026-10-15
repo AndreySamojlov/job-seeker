@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Sample Application (all-required checkbox group)</title></head>
+<body>
+  <h1>Apply: Sample Role</h1>
+  <!-- Живой Greenhouse (OKX, job-boards.greenhouse.io/okx/jobs/7739163003,
+       снято 08.08.2026): чекбокс-группа "What language(s) are you fluent in?"
+       рендерится так, что required стоит на КАЖДОМ чекбоксе по отдельности и
+       НЕ снимается, когда один выбран. Проверено на живой пустой форме:
+       отмечаешь English — оставшиеся 30 чекбоксов остаются :invalid навсегда.
+
+       Нативная валидация при этом отправку не блокирует: кнопка submit несёт
+       собственный click-обработчик с preventDefault, и Greenhouse валидирует и
+       отправляет форму сам, своим XHR. Значит :invalid здесь — состояние, не
+       имеющее отношения к исходу подачи. -->
+  <form id="application" method="post" action="/submitted">
+    <label for="full_name">Full name</label>
+    <input id="full_name" name="full_name" type="text" required>
+
+    <fieldset>
+      <legend>What language(s) are you fluent in?</legend>
+      <label><input type="checkbox" name="languages[]" value="en" required checked> English</label>
+      <label><input type="checkbox" name="languages[]" value="de" required> German</label>
+      <label><input type="checkbox" name="languages[]" value="fr" required> French</label>
+      <label><input type="checkbox" name="languages[]" value="ru" required> Russian</label>
+    </fieldset>
+
+    <button type="submit" id="submit-button">Submit Application</button>
+  </form>
+  <script>
+    // preventDefault на click, а не на submit: нативная валидация до обработчика
+    // не доходит — ровно как на живом Greenhouse.
+    document.getElementById('submit-button').addEventListener('click', function (e) {
+      e.preventDefault();
+      var done = document.createElement('div');
+      done.innerHTML =
+        '<h1>Thank you for applying</h1>' +
+        '<p>Your application has been submitted.</p>';
+      document.getElementById('application').replaceWith(done);
+    });
+  </script>
+</body>
+</html>

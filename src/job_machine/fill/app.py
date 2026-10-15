@@ -62,6 +62,14 @@ def create_app(conn_factory=connect, browser_factory=_default_browser) -> FastAP
                 close()
             conn.close()
 
+    @app.post("/fill/agent-context")
+    def agent_context(body: ResumeRequest):
+        conn = conn_factory()
+        try:
+            return service.agent_fill_context(conn, body.application_id, body.session_id)
+        finally:
+            conn.close()
+
     return app
 
 

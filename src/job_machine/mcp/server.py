@@ -311,6 +311,55 @@ def resume_fill(application_id: str) -> dict:
 
 
 @mcp.tool()
+def agent_fill_start(application_id: str) -> dict:
+    """Выдать агенту живую страницу заявки (state=agent_fill_pending) для дозаполнения
+    через CDP: session_id, page_url, несопоставленные код-полем поля, disclosed answers.
+
+    Ответы читаются из проверенного пакета на fill worker. CDP не является
+    техническим ограничением submit; разрешение отправки проверяется отдельно.
+    """
+    conn = connect()
+    fill_worker = FillWorkerClient(base_url=_FILL_WORKER_URL)
+    try:
+        return tools.agent_fill_start(conn, application_id, fill_worker)
+    finally:
+        fill_worker.close()
+        conn.close()
+
+
+@mcp.tool()
+def agent_fill_done(application_id: str, unmatched_after_fill: list[str], session_id: str) -> dict:
+    """Агент сообщает о завершении дозаполнения. unmatched_after_fill — результат
+    повторной инспекции живой страницы (не слово агента): непустой список → отказ,
+    сессия НЕ освобождается. Пустой список требует независимой проверки страницы; сессия сохраняется.
+    """
+    conn = connect()
+    browser = BrowserClient(base_url=_BROWSER_URL)
+    try:
+        return tools.agent_fill_done(conn, browser, application_id, unmatched_after_fill, session_id)
+    finally:
+        close = getattr(browser, "close", None)
+        if callable(close):
+            close()
+        conn.close()
+
+
+@mcp.tool()
+def agent_fill_blocked(application_id: str, reason: str, session_id: str) -> dict:
+    """Агент честно не может добить форму (missing_fact/captcha/mfa/account_required/
+    timeout) — терминальный стоп fill_blocked, сессия освобождается."""
+    conn = connect()
+    browser = BrowserClient(base_url=_BROWSER_URL)
+    try:
+        return tools.agent_fill_blocked(conn, browser, application_id, reason, session_id)
+    finally:
+        close = getattr(browser, "close", None)
+        if callable(close):
+            close()
+        conn.close()
+
+
+@mcp.tool()
 def prepare_application_answers(application_id: str) -> list[dict]:
     """Неотвеченные required вопросы формы заявки (для показа владельцу в меню)."""
     conn = connect()

@@ -59,6 +59,16 @@ class BrowserClient:
         except httpx.HTTPError as exc:
             log.warning("dispose сессии %s не удался: %s", session_id, exc)
 
+    def retain(self, session_id: str) -> None:
+        """Защитить сессию от dispose: страница переживает fill и ждёт агента."""
+        resp = self._http.post(f"/session/{session_id}/retain")
+        resp.raise_for_status()
+
+    def readiness(self, session_id: str) -> dict:
+        resp = self._http.get(f"/session/{session_id}/readiness")
+        resp.raise_for_status()
+        return resp.json()
+
     def handoff(self, url: str) -> HandoffResult:
         """Запросить создание persist-сессии и навигацию к URL (для CAPTCHA/MFA)."""
         resp = self._http.post("/handoff", json={"url": url})

@@ -22,11 +22,6 @@ from job_machine.fill.models import MappingResult
 _GH_FIRST = ("[first_name]", "first_name")
 _GH_LAST = ("[last_name]", "last_name")
 
-# Fallback names assigned by inspect.py when an element has no name/id attribute.
-# These are JS-managed widget internals (e.g. ITI dial-code, Greenhouse answer mirrors)
-# that cannot be targeted by [name=] selectors — skip them from required checks.
-_AUTO_FIELD_RE = re.compile(r"^field_\d+$")
-
 # "Which is your preferred location for this role?" style company-custom checkbox
 # groups (владелец, 2026-07-24) — узкий allowlist по question-level group_label, не
 # fuzzy: шире значило бы риск подставить дефолт не туда, где реально спрашивают локацию.
@@ -254,7 +249,19 @@ def map_fields(answers, consents, schema: FormSchema, ats_family=None) -> Mappin
             continue
         value = _candidate_value(field, idx)
         if value is None:
-            if field.required and not _AUTO_FIELD_RE.match(field.name):
+            if field.required:
+                # field_N — автоимя, которое inspect.py присваивает элементу без
+                # name/id (внутренности JS-виджетов: зеркала ITI dial-code,
+                # Greenhouse answer mirrors) — селектором [name=] такое поле не
+                # адресовать. Раньше _AUTO_FIELD_RE молча выпускала эти поля из
+                # unmatched_required — на живом Greenhouse 06.08 это ослепило
+                # гард mandatory_unknown на 15 из 16 required-полей, submit дошёл
+                # до необратимого клика и упал на :invalid (0 подач из 26).
+                # Сейчас такое поле репортится в unmatched_required и через
+                # fill/service.py:160-164 останавливает заявку блокером
+                # mandatory_unknown (стоп владельцу) — подхват такого поля
+                # агентом вместо стопа это Task 3-4 этого плана, ещё не
+                # реализован на текущем HEAD.
                 res.unmatched_required.append(field.name)
             continue
         if field.field_type == "select":

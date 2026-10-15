@@ -36,3 +36,9 @@ class FillWorkerClient:
 
     def close(self) -> None:
         self._http.close()
+
+    def agent_context(self, application_id: str, session_id: str) -> dict:
+        resp = self._http.post('/fill/agent-context', json={
+            'application_id': application_id, 'session_id': session_id})
+        resp.raise_for_status()
+        return resp.json()

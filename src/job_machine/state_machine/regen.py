@@ -13,7 +13,14 @@ from job_machine import audit
 from job_machine.state_machine.controller import attempt_transition
 from job_machine.state_machine.states import ApplicationState as A
 
-_REOPENABLE = {A.FILL_BLOCKED.value, A.PACKAGE_READY.value, A.SUBMIT_BLOCKED.value}
+# AGENT_FILL_PENDING реопенабельно наравне с fill_blocked: это ПЕРЕХОДНОЕ состояние
+# ожидания агента, а не исход. Пока его здесь не было, заявку с агентской сессией
+# (в т.ч. уже мёртвой после рестарта воркера) нельзя было вернуть в очередь ничем,
+# кроме ожидания таймаут-свипа — обнаружено на живом прогоне 2026-08-07. Страницу
+# освобождает тот же свип, он ищет по agent_fill_session_id, а не по состоянию,
+# поэтому reopen её не осиротит.
+_REOPENABLE = {A.FILL_BLOCKED.value, A.PACKAGE_READY.value, A.SUBMIT_BLOCKED.value,
+               A.AGENT_FILL_PENDING.value}
 
 _HANDOFF_BLOCKER = "handoff_manual"
 

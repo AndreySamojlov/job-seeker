@@ -15,8 +15,14 @@ RUN pip install --no-cache-dir \
 
 # Xvfb для headful Chromium + VNC-мост (x11vnc + noVNC) для просмотра/takeover.
 USER root
+# socat — мост к CDP-эндпоинту Chromium. Chromium игнорирует
+# --remote-debugging-address и слушает только 127.0.0.1 внутри контейнера
+# (проверено на живом контейнере 2026-08-07: /proc/net/tcp даёт 127.0.0.1:9222),
+# поэтому опубликованный docker-порт до него не достаёт — трафик приходит на
+# eth0 контейнера и получает отказ. socat принимает на 0.0.0.0 и передаёт на
+# петлю. См. entrypoint.sh.
 RUN DEBIAN_FRONTEND=noninteractive apt-get update \
-    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends xvfb x11vnc novnc websockify \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends xvfb x11vnc novnc websockify socat \
     && rm -rf /var/lib/apt/lists/*
 
 COPY src/job_machine/__init__.py /app/job_machine/__init__.py

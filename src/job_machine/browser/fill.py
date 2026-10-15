@@ -9,7 +9,9 @@
 опцию и НЕ падает: несопоставленное поле уходит в FillResult.unmatched.
 """
 
+import asyncio
 import re
+import time
 from urllib.parse import urlsplit
 
 from job_machine.browser.schema import FillResult, SubmitResult
@@ -354,11 +356,21 @@ async def _invalid_fields_signal(scope_handle) -> str | None:
     Скоуп — сама отправленная <form> (handle снят ДО клика), не весь document:
     посторонний required-и-пустой виджет в другом месте страницы (чат-виджет,
     форма подписки на новости) не должен ложно провалить настоящий успех.
+
+    Что именно считается провалившим `:invalid` — в _BLOCKING_INVALID_JS: то же
+    правило читает и _PAGE_SNAPSHOT_JS, и разъезжаться им нельзя.
+
+    Живой OKX (08.08.2026) — почему правило вообще уточнялось: у группы «What
+    language(s) are you fluent in?» `required` стоял на всех 31 чекбоксе и не
+    снимался при выборе, так что сплошной подсчёт `:invalid` объявлял провал на
+    КАЖДОЙ попытке и делал errors_absent — а с ним и любое подтверждение —
+    недостижимым. Нативная валидация ту форму не блокировала: кнопка submit
+    делает preventDefault на click и отправляет собственный XHR.
     """
     try:
         return await scope_handle.evaluate(
-            "scope => {"
-            "  if (scope.querySelectorAll(':invalid').length) return 'native_invalid';"
+            "scope => {" + _BLOCKING_INVALID_JS +
+            "  if (blockingInvalid(scope).length) return 'native_invalid';"
             "  const ariaInvalid = Array.from(scope.querySelectorAll('[aria-invalid=\"true\"]'))"
             "    .some(el => el.offsetParent !== null);"
             "  return ariaInvalid ? 'aria_invalid' : null;"
@@ -431,6 +443,24 @@ _SUBMISSION_FAILURE_MARKERS = (
 )
 
 
+# Инлайн email-верификация после клика Submit (живой инцидент 08-09.08.2026,
+# GitLab/Greenhouse): ни :invalid, ни aria-invalid, ни фраза благодарности не
+# срабатывают — форма и кнопка Submit остаются на месте, просто внизу появляется
+# поле кода. Без этого различителя исход неотличимо тонет в generic
+# "no_confirmation" (submit/service.py::_submit_claim). Классификация ЧИСТО
+# статистическая (CLAUDE.md §6, порог 5/10 не пройден на 1/10 живых попыток) —
+# retain-логику сессии это не меняет.
+_EMAIL_VERIFICATION_MARKERS = (
+    "verification code was sent",
+    "resubmit your application",
+)
+
+
+def _looks_like_email_verification(text: str) -> bool:
+    norm = _page_norm(text or "")
+    return any(marker in norm for marker in _EMAIL_VERIFICATION_MARKERS)
+
+
 def _path_confirms(url: str) -> bool:
     """Есть ли в path отдельный токен страницы подтверждения. Токен, а не
     подстрока: "success" — да, "successfactors" — нет."""
@@ -495,8 +525,37 @@ scope => {
 # text-indent сдвигает только текст, коробка остаётся на месте. За пределами
 # документа = правее/ниже нуля с учётом скролла, поэтому текст ниже сгиба и
 # прокрученный вверх засчитываются нормально.
+# Единственное определение «что считается провалившим форму :invalid». Его
+# применяют ДВА независимых читателя — _invalid_fields_signal (по хендлу формы,
+# снятому до клика) и _PAGE_SNAPSHOT_JS (по живому документу после). Разъехавшись,
+# они дают ровно тот отказ, ради которого правило и уточнялось: одна проверка
+# отпускает подачу, вторая по-прежнему объявляет «на странице ошибки», и
+# доказательство не собирается (живой OKX, третья попытка 17:17 UTC 08.08.2026).
+#
+# Исключены две категории, ничего не говорящие об исходе:
+#   * чекбокс отвеченной группы — HTML применяет `required` к каждому варианту
+#     поштучно, но вопрос отвечен, как только выбран один; Greenhouse на это и
+#     рассчитывает и `required` с соседей не снимает (у OKX группа «What
+#     language(s) are you fluent in?» держала :invalid на 30 из 31 навсегда);
+#   * контейнеры <fieldset>/<form> — они :invalid производно, из-за вложенного
+#     контрола, который и так попадёт в список, если провален по-настоящему.
+# Неотвеченная группа и одиночный обязательный чекбокс согласия ловятся как прежде.
+_BLOCKING_INVALID_JS = """
+  const blockingInvalid = scope => {
+    const answered = new Set();
+    scope.querySelectorAll('input[type="checkbox"][name]').forEach(
+      cb => { if (cb.checked) answered.add(cb.name); });
+    return Array.from(scope.querySelectorAll(':invalid')).filter(el => {
+      if (el.tagName === 'FIELDSET' || el.tagName === 'FORM') return false;
+      if (el.type === 'checkbox' && el.name && answered.has(el.name)) return false;
+      return true;
+    });
+  };
+"""
+
 _PAGE_SNAPSHOT_JS = """
 sig => {
+""" + _BLOCKING_INVALID_JS + """
   const present = el => el.offsetParent !== null ||
     (el.getClientRects && el.getClientRects().length > 0);
   const sane = r => r.width > 2 && r.height > 2 &&
@@ -542,8 +601,7 @@ sig => {
   const forms = visibleForms.filter(sameForm);
   const ariaBad = Array.from(document.querySelectorAll('[aria-invalid="true"]'))
     .some(present);
-  const invalid = forms.some(
-    f => Array.from(f.querySelectorAll(':invalid')).some(present));
+  const invalid = forms.some(f => blockingInvalid(f).some(present));
   return {
     text: document.body ? document.body.innerText : '',
     anchors: Array.from(document.querySelectorAll(
@@ -638,6 +696,58 @@ def _confirmation_signal(snapshot, url_before: str, url_after: str) -> str | Non
     return "thank_you_text"
 
 
+# Сколько ждать исхода клика и как часто переспрашивать страницу. 45с выбраны с
+# запасом под медленный ATS и заведомо меньше и лизы попытки (600с), и таймаута
+# HTTP-клиента MCP (300с) — ожидание не может пережить вызывающего.
+_SUBMIT_OUTCOME_BUDGET_S = 45.0
+_SUBMIT_OUTCOME_POLL_S = 0.5
+# Сколько терпеть нечитаемую страницу. Снимок не снимается, пока идёт навигация —
+# это доли секунды. Если не читается дольше, исход не станет наблюдаемым вообще,
+# и выжидать весь бюджет значит держать вызывающего впустую.
+_SUBMIT_UNREADABLE_GRACE_S = 5.0
+
+
+async def _wait_for_submit_outcome(page, signature, url_before: str,
+                                   budget_s: float = _SUBMIT_OUTCOME_BUDGET_S,
+                                   poll_s: float = _SUBMIT_OUTCOME_POLL_S,
+                                   unreadable_grace_s: float = _SUBMIT_UNREADABLE_GRACE_S):
+    """Дождаться, пока у клика появится исход, и вернуть снимок страницы.
+
+    Живой инцидент 08.08.2026 (OKX, job-boards.greenhouse.io/okx/jobs/7739163003):
+    вердикт снимался сразу после `wait_for_load_state("networkidle")`, а тот
+    возвращался мгновенно — в момент вызова на странице ещё ничего не летело.
+    Наблюдение живой страницы раз в 1.5с показало, что кнопка оставалась
+    обычной и активной ~9 секунд после клика и лишь потом ушла в спиннер:
+    сайт стартовал свой XHR сильно позже. Воркер к тому времени уже записал
+    исход `unknown` и через секунду уничтожил страницу, оборвав отправку на
+    первой секунде. Две попытки подряд погибли так.
+
+    Терминальным считается первое из: отправленной формы на странице больше
+    нет, появились видимые ошибки, сменился URL. Ни одного за бюджет — честно
+    возвращаем последний снимок: недоказанная подача останется недоказанной,
+    порог доказательства это ожидание не трогает.
+    """
+    started = time.monotonic()
+    deadline = started + budget_s
+    unreadable_since = None
+    snapshot = None
+    while True:
+        snapshot = await _page_snapshot(page, signature)
+        if snapshot is None:
+            # Нечитаемая страница: терпим только короткую слепоту навигации.
+            unreadable_since = unreadable_since or time.monotonic()
+            if time.monotonic() - unreadable_since >= unreadable_grace_s:
+                return None
+        else:
+            unreadable_since = None
+            if (not snapshot["form_present"] or snapshot["errors_present"]
+                    or page.url != url_before):
+                return snapshot
+        if time.monotonic() >= deadline:
+            return snapshot
+        await asyncio.sleep(poll_s)
+
+
 async def submit_form(page, fields, resume_path=None, screenshot_path=None,
                       consent_checks: list | None = None) -> SubmitResult:
     """Заполнить форму и нажать кнопку submit; вернуть URL подтверждения.
@@ -706,6 +816,10 @@ async def submit_form(page, fields, resume_path=None, screenshot_path=None,
     # результата и независимо от того, чем всё кончилось (иначе «неизвестный
     # исход» неотличим от «кнопку не жали», а это разные состояния заявки).
     click_performed = True
+    # Сначала дождаться, пока исход вообще появится: networkidle сам по себе
+    # возвращается мгновенно, пока сайт ещё не начал свой запрос (см.
+    # _wait_for_submit_outcome — живой инцидент OKX 08.08.2026).
+    await _wait_for_submit_outcome(page, signature, url_before)
     try:
         await page.wait_for_load_state("networkidle", timeout=15_000)
     except Exception:  # noqa: BLE001 — таймаут навигации не фатален
@@ -715,6 +829,9 @@ async def submit_form(page, fields, resume_path=None, screenshot_path=None,
         await page.screenshot(path=screenshot_path)
     signal = await _invalid_fields_signal(form_handle)
     snapshot = await _page_snapshot(page, signature)
+    if (signal is None and snapshot is not None
+            and _looks_like_email_verification(snapshot.get("text"))):
+        signal = "email_verification_required"
     # Ошибки — конъюнкция обеих проверок (форма до клика и живой документ после):
     # мёртвый handle отвечает «чисто» всегда, снимок этого не знает.
     errors_absent = (signal is None and snapshot is not None

@@ -171,9 +171,13 @@ def test_run_package_passes_candidate_id():
 
 
 def test_run_fill_wraps_summary():
-    worker = FakeFillWorker(FillRunSummary(pulled=3, pre_submit_ready=2, blocked=1, errors=0))
+    """agent_fill_pending обязан доходить до кокпита: без него владелец увидит
+    pulled=N при нулях во всех остальных счётчиках и решит, что прогон впустую."""
+    worker = FakeFillWorker(FillRunSummary(pulled=4, pre_submit_ready=2,
+                                           agent_fill_pending=1, blocked=1, errors=0))
     out = tools.run_fill(worker, limit=10)
-    assert out == {"pulled": 3, "pre_submit_ready": 2, "blocked": 1, "errors": 0}
+    assert out == {"pulled": 4, "pre_submit_ready": 2, "agent_fill_pending": 1,
+                   "blocked": 1, "errors": 0}
 
 
 def test_run_fill_passes_candidate_id():

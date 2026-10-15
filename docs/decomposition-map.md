@@ -8,7 +8,7 @@ E1/T2 повторно принят по отказным тестам и live H
 |---|---|---|
 | 1 | E1.S1.T1/T2 | Выполнены; сохранён baseline и исправлена эксплуатация панели |
 | 2 | E2.S1.T1/T2 | Выполнены:35 миграций, clean/upgrade,327 DB-tests,516 catalog objects |
-| 3 | E2.S2 | Следующий: объединение deterministic/agent fill, session lifecycle и stale done guards |
+| 3 | E2.S2 | Выполнен локально: оба fill-пути, verified package context, session CAS/readiness/cleanup;1150 unit/344 DB/112 browser |
 | 4 | E2.S3 | Открыт: общие guards/approval, browser/synthetic E2E, unknown без повторного submit |
 | 5 | E3 | Открыт: восстановление ссылок на материалы, подтверждения, backup/restore |
 
@@ -105,3 +105,14 @@ Heart E2 — S3, подтверждающий ценность двух путе
 | E2.S1.T2 | Доказанная DB-совместимость базового кода | Изолированная DB suite, классифицированные расхождения, актуальный FACT и Trust |
 
 Heart — сохранение состояния при переносе; Core T1, слой0 T1, слой1 T2 как доказательство. Heart Slice T1→T2. Task reached, дочерних backlog нет. План: superpowers/plans/2026-10-15-schema-compatibility.md. E2.S2/S3 и E3 остаются свёрнутыми.
+
+## Проход E2.S2 → Task
+
+Вход: согласованная spec, проверенная E2.S1, diff agent branch накладывается без конфликтов. Полная S2 входит в B; технические guards конкретизируют уже принятые инварианты.
+
+| ID | Task / самостоятельный результат | Приёмка |
+|---|---|---|
+| E2.S2.T1 | Оба пути и retained session lifecycle в новой сборке | Source provenance, regression сохранения/освобождения сессии, stale state/session CAS |
+| E2.S2.T2 | Проверяемое завершение агентного заполнения | Live-page synthetic readiness и отказные сценарии, общий unit/DB/browser review |
+
+Heart — T2 (доверие к фактическому исходу), слой0 T2, слой1 T1 как зависимость. Heart Slice T1→T2; Task reached. Отправка остаётся E2.S3, история/backup E3. План: superpowers/plans/2026-10-15-agent-fill-integration.md.

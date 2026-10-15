@@ -36,6 +36,7 @@ from job_machine.browser.schema import (
     SubmitResult,
 )
 from job_machine.browser.session import SessionManager
+from job_machine.browser.readiness import inspect_readiness
 
 FIXTURE = Path(__file__).parent / "fixtures" / "sample_form.html"
 
@@ -73,6 +74,10 @@ def create_app(manager=None):
     async def healthz():
         return {"status": "ok"}
 
+    @app.get("/session/{session_id}/readiness")
+    async def readiness(session_id: str):
+        return await inspect_readiness(_page_or_404(session_id))
+
     @app.get("/test/sample-form")
     async def sample_form():
         return FileResponse(FIXTURE)
@@ -94,6 +99,16 @@ def create_app(manager=None):
     async def dispose_session(session_id):
         await app.state.manager.dispose_session(session_id)
         return {"status": "disposed", "session_id": session_id}
+
+    @app.post("/session/{session_id}/retain")
+    async def retain_session(session_id: str):
+        """Защитить сессию от обычного dispose — страница ждёт агента.
+
+        Освобождение — существующим POST /handoff/{sid}/release (force-dispose).
+        """
+        if not app.state.manager.retain(session_id):
+            raise HTTPException(status_code=404, detail="no such session")
+        return {"status": "retained", "session_id": session_id}
 
     @app.post("/inspect", response_model=InspectResult)
     async def inspect(req: InspectRequest):
@@ -168,7 +183,10 @@ def create_app(manager=None):
 
     @app.post("/handoff/{session_id}/release")
     async def release_handoff(session_id: str):
-        """Форсированно уничтожить handoff-сессию после завершения ручного взаимодействия."""
+        """Форсированно уничтожить persist-сессию: и headful handoff (после ручного
+        взаимодействия через noVNC), и headless work-сессию, ранее защищённую
+        POST /session/{id}/retain (после завершения агентского дозаполнения) —
+        для обеих тот же force-dispose, отдельного маршрута для retained нет."""
         mgr = app.state.manager
         if mgr.info(session_id) is None:
             raise HTTPException(status_code=404, detail="no such session")

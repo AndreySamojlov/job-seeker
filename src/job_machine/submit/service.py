@@ -7,7 +7,10 @@ approval) → клик → финализация по доказательст�
 может вернуться в очередь и НЕ может стать submit_blocked. Любая ошибка после этой
 точки даёт submit_unknown, а не блокировку и не повтор.
 """
+import logging
 from datetime import datetime, timezone
+
+import httpx
 
 from job_machine.ats.urlnorm import confirmation_mismatch, same_post
 from job_machine.browser.schema import SubmitResult
@@ -16,6 +19,8 @@ from job_machine.fill.store import load_manifest
 from job_machine.package.artifacts import hash_file
 from job_machine.submit import gate, store
 from job_machine.submit.models import SubmitRunSummary
+
+log = logging.getLogger(__name__)
 
 
 def _load_manifest(path: str):
@@ -125,9 +130,13 @@ def _submit_claim(conn, browser, row, summary) -> None:
                       "db_payload_hash": row["payload_hash"]})
         return
 
-    sid = browser.create_session()
+    agent_sid = row.get("agent_fill_session_id")
+    sid = agent_sid or browser.create_session()
     try:
-        result = browser.inspect(sid, manifest.destination_url)
+        if agent_sid:
+            result = browser.inspect_current(sid)
+        else:
+            result = browser.inspect(sid, manifest.destination_url)
         if result.blocker is not None:
             _block_claim(conn, row, summary, result.blocker,
                          {"url": manifest.destination_url})
@@ -142,7 +151,7 @@ def _submit_claim(conn, browser, row, summary) -> None:
 
         mapping = map_fields(manifest.answers, manifest.consents,
                              result.form_schema, row.get("ats_family"))
-        if mapping.unmatched_required:
+        if mapping.unmatched_required and not agent_sid:
             _block_claim(conn, row, summary, "mandatory_unknown",
                          {"unmatched": mapping.unmatched_required})
             return
@@ -162,9 +171,16 @@ def _submit_claim(conn, browser, row, summary) -> None:
             return
         conn.commit()
 
-        submit_result = browser.submit(sid, mapping.fields,
-                                       resume_path=resume.get("path"),
-                                       consent_checks=mapping.auto_consents)
+        # На агентской сессии форма уже заполнена целиком и резюме приложено —
+        # передаём пустой payload, чтобы воркер только кликнул. Повторное
+        # прикрепление того же файла на кастомном аплоадере Greenhouse может
+        # продублировать вложение, а перезапись полей — затереть то, что агент
+        # выбрал в комбобоксах.
+        submit_result = browser.submit(
+            sid,
+            {} if agent_sid else mapping.fields,
+            resume_path=None if agent_sid else resume.get("path"),
+            consent_checks=[] if agent_sid else mapping.auto_consents)
 
         if store.finalize_confirmed(conn, row["attempt_id"], submit_result):
             conn.commit()
@@ -183,4 +199,13 @@ def _submit_claim(conn, browser, row, summary) -> None:
         conn.commit()
         summary.blocked += 1
     finally:
-        browser.dispose(sid)
+        if agent_sid:
+            # Агентская сессия защищена retain — обычный dispose её не закроет,
+            # и страница висела бы до перезапуска воркера. Освобождаем принудительно:
+            # клик уже сделан, держать её больше незачем.
+            try:
+                browser.release(sid)
+            except httpx.HTTPError as exc:
+                log.warning("release агентской сессии %s после submit: %s", sid, exc)
+        else:
+            browser.dispose(sid)

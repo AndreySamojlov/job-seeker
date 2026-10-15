@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Sample Application (all-required group, delayed confirmation)</title></head>
+<body>
+  <h1>Apply: Sample Role</h1>
+  <!-- Обе черты живой вакансии OKX (job-boards.greenhouse.io/okx/jobs/7739163003)
+       разом, как они и встретились 08.08.2026:
+
+       1) чекбокс-группа, где `required` стоит на КАЖДОМ варианте и не снимается
+          при выборе — отвеченная группа навсегда оставляет соседей `:invalid`;
+       2) исход появляется не мгновенно — форма уступает место подтверждению
+          лишь спустя время после клика.
+
+       Порознь каждая уже покрыта. Вместе они дают отказ, который порознь не
+       виден: пока форма ещё на странице, её вечные `:invalid` читаются как
+       «на странице ошибки», ожидание исхода обрывается на первом же опросе, и
+       подтверждение, которое вот-вот появится, никто не дожидается. -->
+  <form id="application" method="post" action="/submitted">
+    <label for="full_name">Full name</label>
+    <input id="full_name" name="full_name" type="text" required>
+
+    <fieldset>
+      <legend>What language(s) are you fluent in?</legend>
+      <label><input type="checkbox" name="languages[]" value="en" required checked> English</label>
+      <label><input type="checkbox" name="languages[]" value="de" required> German</label>
+      <label><input type="checkbox" name="languages[]" value="fr" required> French</label>
+      <label><input type="checkbox" name="languages[]" value="ru" required> Russian</label>
+    </fieldset>
+
+    <button type="submit" id="submit-button">Submit Application</button>
+  </form>
+  <script>
+    document.getElementById('submit-button').addEventListener('click', function (e) {
+      e.preventDefault();
+      var form = document.getElementById('application');
+      setTimeout(function () {
+        var done = document.createElement('div');
+        done.innerHTML =
+          '<h1>Thank you for applying</h1>' +
+          '<p>Your application has been submitted.</p>';
+        form.replaceWith(done);
+      }, 3000);
+    });
+  </script>
+</body>
+</html>

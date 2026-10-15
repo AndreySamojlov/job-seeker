@@ -87,6 +87,29 @@ def load_manifest(path: str) -> PackageManifest:
         return PackageManifest.model_validate_json(fh.read())
 
 
+def load_agent_package(conn, application_id) -> dict | None:
+    with conn.cursor() as cur:
+        cur.execute(
+            "select a.agent_fill_session_id,a.payload_hash,r.path_or_uri,r.content_hash "
+            "from application a join artifact r on r.application_id=a.application_id "
+            "where a.application_id=%s and a.state='agent_fill_pending' "
+            "and r.artifact_type='manifest' order by r.created_at desc limit 1",
+            (application_id,))
+        row = cur.fetchone()
+    return dict(zip(('session_id','payload_hash','path','content_hash'), row)) if row else None
+
+
+def lock_fillable(conn, application_id) -> bool:
+    """Own the fill transition before touching a page; skip concurrent owners."""
+    with conn.cursor() as cur:
+        cur.execute(
+            "select application_id from application where application_id=%s "
+            "and agent_fill_session_id is null "
+            "and (state='package_ready' or (state='fill_blocked' and current_blocker='handoff_manual')) "
+            "for update skip locked", (application_id,))
+        return cur.fetchone() is not None
+
+
 def record_pre_submit_ready(conn, application_id, filled_fields, resume_attached,
                             screenshot_path) -> None:
     aid = uuid.UUID(str(application_id))
@@ -110,6 +133,34 @@ def record_fill_blocked(conn, application_id, blocker, detail) -> None:
     audit.emit_event(conn, "application", aid, "application.fill_blocked", {
         "blocker": blocker, "detail": detail,
     })
+
+
+def record_agent_fill_pending(conn, application_id, session_id, page_url,
+                              unmatched, filled_fields=(), resume_attached=False) -> bool:
+    """Код не сопоставил часть required-полей → страница передаётся агенту.
+
+    В отличие от record_fill_blocked это НЕ терминальный стоп: current_blocker
+    остаётся пустым, сессия браузера продолжает жить, заявка ждёт агента.
+
+    filled_fields/resume_attached — что детерминированный проход уже сделал на этой
+    странице до передачи. Нужны в аудите, чтобы по событию было видно границу между
+    работой кода и работой агента, а не только остаток.
+    """
+    aid = uuid.UUID(str(application_id))
+    with conn.cursor() as cur:
+        cur.execute(
+            "update application set state='agent_fill_pending', current_blocker=null, "
+            "agent_fill_session_id=%s, agent_fill_started_at=now(), updated_at=now() "
+            "where application_id=%s and agent_fill_session_id is null "
+            "and (state='package_ready' or (state='fill_blocked' and current_blocker='handoff_manual'))",
+            (session_id, aid))
+        if cur.rowcount != 1:
+            return False
+    audit.emit_event(conn, "application", aid, "application.agent_fill_pending", {
+        "session_id": session_id, "page_url": page_url, "unmatched": unmatched,
+        "filled_fields": list(filled_fields), "resume_attached": bool(resume_attached),
+    })
+    return True
 
 
 def record_destination_redirect(conn, application_id, vacancy_id,
@@ -155,6 +206,54 @@ def record_final_apply_url(conn, application_id, final_url: str) -> None:
     with conn.cursor() as cur:
         cur.execute("update application set final_apply_url=%s, updated_at=now() "
                     "where application_id=%s", (final_url, uuid.UUID(str(application_id))))
+
+
+def pull_stale_agent_fills(conn, timeout_minutes: int) -> list[dict]:
+    """Заявки, держащие браузерную сессию дольше timeout_minutes — страницы надо вернуть.
+
+    Критерий — наличие session_id, а НЕ состояние. Заявку могли увести из
+    agent_fill_pending мимо агента (refile_application помечает её failed и
+    порождает дубликат), и тогда фильтр по состоянию оставил бы retained-страницу
+    жить вечно: обычный dispose её не закрывает, а sweep_orphaned_contexts не видит
+    — она числится в реестре сессий. Так и копятся контексты, положившие хост
+    2026-07-06.
+    """
+    with conn.cursor() as cur:
+        cur.execute(
+            "select application_id, state, agent_fill_session_id from application "
+            "where agent_fill_session_id is not null "
+            "  and agent_fill_started_at < now() - make_interval(mins => %s)",
+            (timeout_minutes,))
+        rows = cur.fetchall()
+    return [{"application_id": r[0], "state": r[1], "session_id": r[2]} for r in rows]
+
+
+def clear_agent_fill_session(conn, application_id) -> None:
+    """Обнулить agent_fill_session_id/agent_fill_started_at, чтобы свип не подбирал
+    одну и ту же заявку каждый прогон."""
+    aid = uuid.UUID(str(application_id))
+    with conn.cursor() as cur:
+        cur.execute(
+            "update application set agent_fill_session_id=null, "
+            "agent_fill_started_at=null, updated_at=now() where application_id=%s", (aid,))
+
+
+def lock_stale_agent_fill(conn, row, timeout_minutes: int) -> bool:
+    """Recheck the snapshot under row lock; submit claims must win or wait.
+
+    Unknown/in-progress submissions remain untouched for reconciliation.
+    Caller keeps the lock through release and commits (or rolls back on error).
+    """
+    with conn.cursor() as cur:
+        cur.execute(
+            "select application_id from application where application_id=%s "
+            "and state=%s and agent_fill_session_id=%s "
+            "and state in ('agent_fill_pending','pre_submit_ready','approved','failed','fill_blocked',"
+            "'needs_package','package_ready') "
+            "and agent_fill_started_at < now() - make_interval(mins => %s) "
+            "for update skip locked",
+            (row['application_id'], row['state'], row['session_id'], timeout_minutes))
+        return cur.fetchone() is not None
 
 
 def record_guard_block(conn, application_id, guard_result) -> None:

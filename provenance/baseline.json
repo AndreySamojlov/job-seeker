@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "repository": "C:\\Users\\samoj\\Documents\\Claude\\Projects\\\u041f\u043e\u0438\u0441\u043a \u0440\u0430\u0431\u043e\u0442\u044b",
+  "repository": "C:\\Users\\samoj\\Documents\\Claude\\Projects\\Поиск работы",
   "source_commit": "842e46a1f436d31ad2cad5d0a49830356d818907",
   "files": [
     {
@@ -324,8 +324,8 @@
     {
       "path": "src/job_machine/browser/Dockerfile",
       "source_sha256": "1ae5a72be4d201ac9fde15efde36530204e653a1da8c9f6fddf57a2a21cec4ad",
-      "target_sha256": "1ae5a72be4d201ac9fde15efde36530204e653a1da8c9f6fddf57a2a21cec4ad",
-      "adaptation": null
+      "target_sha256": "2c3a390c1de9a26bec93e34c12147346ee2afeea2a511debeded90b114b813aa",
+      "adaptation": "E2.S2 agent-fill integration and review fixes; see integration manifest and plan"
     },
     {
       "path": "src/job_machine/browser/README.md",
@@ -342,8 +342,8 @@
     {
       "path": "src/job_machine/browser/app.py",
       "source_sha256": "f3598ca1eb4bdfde46e2ce8f5ebf071dc51b7b00aeb9f80806689abdc4ce5461",
-      "target_sha256": "f3598ca1eb4bdfde46e2ce8f5ebf071dc51b7b00aeb9f80806689abdc4ce5461",
-      "adaptation": null
+      "target_sha256": "5000a52550d957b56630cacf90e2d6149534b20959938f05508eec5cf9a83dbd",
+      "adaptation": "E2.S2 agent-fill integration and review fixes; see integration manifest and plan"
     },
     {
       "path": "src/job_machine/browser/blockers.py",
@@ -360,14 +360,14 @@
     {
       "path": "src/job_machine/browser/entrypoint.sh",
       "source_sha256": "dbd270bdd1cb2771655c4fb7539201a8ae316f538a19e2521360243baba507ca",
-      "target_sha256": "dbd270bdd1cb2771655c4fb7539201a8ae316f538a19e2521360243baba507ca",
-      "adaptation": null
+      "target_sha256": "238798c56ac3361b30e7c91ab691d5e4935352364e0b2ab1eea180cd72137a63",
+      "adaptation": "E2.S2 agent-fill integration and review fixes; see integration manifest and plan"
     },
     {
       "path": "src/job_machine/browser/fill.py",
       "source_sha256": "77f7a89046e8707ffe9758df9a518cd686f45786575ef8705eb57b64d174de09",
-      "target_sha256": "77f7a89046e8707ffe9758df9a518cd686f45786575ef8705eb57b64d174de09",
-      "adaptation": null
+      "target_sha256": "bce3b832a2f2ff2f1558ccb72dbd9adc38c185a5832a88fa04255d9d49942b86",
+      "adaptation": "E2.S2 agent-fill integration and review fixes; see integration manifest and plan"
     },
     {
       "path": "src/job_machine/browser/fixtures/csp_delayed_render_fields.html",
@@ -618,8 +618,8 @@
     {
       "path": "src/job_machine/browser/session.py",
       "source_sha256": "6bd86e5ae2b3d601247d37ab6c202cec400fc69c41c441b9696659548ac3ff37",
-      "target_sha256": "6bd86e5ae2b3d601247d37ab6c202cec400fc69c41c441b9696659548ac3ff37",
-      "adaptation": null
+      "target_sha256": "44b31965879ce279418da44133d14c5fe61356b99f69e90fc30771751b0aac59",
+      "adaptation": "E2.S2 agent-fill integration and review fixes; see integration manifest and plan"
     },
     {
       "path": "src/job_machine/cloud/README.md",
@@ -924,20 +924,20 @@
     {
       "path": "src/job_machine/fill/adapter.py",
       "source_sha256": "929817bbea25384ceb18509a582f4f4859359b9575594c51e688808b06d5dd06",
-      "target_sha256": "929817bbea25384ceb18509a582f4f4859359b9575594c51e688808b06d5dd06",
-      "adaptation": null
+      "target_sha256": "3dda57e7d8879f0c310affe0d232c1e24bdcec6658ddea48b9b64d1c326a5bc3",
+      "adaptation": "E2.S2 agent-fill integration and review fixes; see integration manifest and plan"
     },
     {
       "path": "src/job_machine/fill/app.py",
       "source_sha256": "7697af3381ef3167aab8f29bf671be10dce5f0817afcf114dbf1cf5a56f9f2e4",
-      "target_sha256": "7697af3381ef3167aab8f29bf671be10dce5f0817afcf114dbf1cf5a56f9f2e4",
-      "adaptation": null
+      "target_sha256": "450baf0f9856af239848ed1a5d5c528c9540b834e4529484e6cca8fc736af9f5",
+      "adaptation": "E2.S2 agent-fill integration and review fixes; see integration manifest and plan"
     },
     {
       "path": "src/job_machine/fill/browser_client.py",
       "source_sha256": "a3c2142a671d0fb2db516c3187ea1c7811b26fce6efc0dcb106f5a27ba9afcb3",
-      "target_sha256": "a3c2142a671d0fb2db516c3187ea1c7811b26fce6efc0dcb106f5a27ba9afcb3",
-      "adaptation": null
+      "target_sha256": "8834472474205a9f63987ff0dfad9e464087967958bc3312cdbfb59769aad5e5",
+      "adaptation": "E2.S2 agent-fill integration and review fixes; see integration manifest and plan"
     },
     {
       "path": "src/job_machine/fill/gate.py",
@@ -948,20 +948,20 @@
     {
       "path": "src/job_machine/fill/models.py",
       "source_sha256": "203f95c3913302e682167078b9706a4b8656e71d44b281feec0e968860fc6b70",
-      "target_sha256": "203f95c3913302e682167078b9706a4b8656e71d44b281feec0e968860fc6b70",
-      "adaptation": null
+      "target_sha256": "543dbc45e9f4a787a496b0ef90f5f49bc7f63c925454c14a5d65c06839d4ab47",
+      "adaptation": "E2.S2 agent-fill integration and review fixes; see integration manifest and plan"
     },
     {
       "path": "src/job_machine/fill/service.py",
       "source_sha256": "909c2c60036383737ecb69d1624f6ca2881fc3a7f1d348875de5f3d2b2dfa16d",
-      "target_sha256": "909c2c60036383737ecb69d1624f6ca2881fc3a7f1d348875de5f3d2b2dfa16d",
-      "adaptation": null
+      "target_sha256": "48a67d83127a97442d6b50a123c7c22c05ba97982fd43512916099feaab7cd73",
+      "adaptation": "E2.S2 agent-fill integration and review fixes; see integration manifest and plan"
     },
     {
       "path": "src/job_machine/fill/store.py",
       "source_sha256": "25b6a81efb98f510f39335218a11569fdf139fd6a96010ecb222e9b0e7a6fb23",
-      "target_sha256": "25b6a81efb98f510f39335218a11569fdf139fd6a96010ecb222e9b0e7a6fb23",
-      "adaptation": null
+      "target_sha256": "59c4bc495b5cd6fe74bb01888696f2a8888816c253a9724ad6ffe5d5f8f75f75",
+      "adaptation": "E2.S2 agent-fill integration and review fixes; see integration manifest and plan"
     },
     {
       "path": "src/job_machine/guards/__init__.py",
@@ -1074,8 +1074,8 @@
     {
       "path": "src/job_machine/mcp/fill_worker_client.py",
       "source_sha256": "cbc3e17756047e10639c1a5004b137df9a4891c07df146c306882b4ccbdd431f",
-      "target_sha256": "cbc3e17756047e10639c1a5004b137df9a4891c07df146c306882b4ccbdd431f",
-      "adaptation": null
+      "target_sha256": "6e7f210de73286096844a9d82d86f5bb4e658d1f1bd12a66aabd5c5ea23eb394",
+      "adaptation": "E2.S2 agent-fill integration and review fixes; see integration manifest and plan"
     },
     {
       "path": "src/job_machine/mcp/funnel.py",
@@ -1098,8 +1098,8 @@
     {
       "path": "src/job_machine/mcp/server.py",
       "source_sha256": "a4c7eaff270057f85f56db03eca08b1aba8060e7ee117f22581d441a29466847",
-      "target_sha256": "a4c7eaff270057f85f56db03eca08b1aba8060e7ee117f22581d441a29466847",
-      "adaptation": null
+      "target_sha256": "f010aa003d3102714943a459dc211ce6f0eeeed3ca307cbc9f199dd5b19cd0bc",
+      "adaptation": "E2.S2 reviewed integration; source snapshot preserved, target updated"
     },
     {
       "path": "src/job_machine/mcp/store.py",
@@ -1116,8 +1116,8 @@
     {
       "path": "src/job_machine/mcp/tools.py",
       "source_sha256": "94738d7b138a8854c93dc6a69c93bcae3c390d413f0d846368b51ff6fa660f37",
-      "target_sha256": "94738d7b138a8854c93dc6a69c93bcae3c390d413f0d846368b51ff6fa660f37",
-      "adaptation": null
+      "target_sha256": "970e2caf0dc3eda339de87d24b781721ad1e958683c0831089df2ecf23fc1740",
+      "adaptation": "E2.S2 reviewed integration; source snapshot preserved, target updated"
     },
     {
       "path": "src/job_machine/notify/Dockerfile",
@@ -1410,20 +1410,20 @@
     {
       "path": "src/job_machine/state_machine/regen.py",
       "source_sha256": "3e2617a0e9f1e23991aa5accf9fa0b88d901e7fed2346e99e3c3e2af6a06892a",
-      "target_sha256": "3e2617a0e9f1e23991aa5accf9fa0b88d901e7fed2346e99e3c3e2af6a06892a",
-      "adaptation": null
+      "target_sha256": "6ff022e83d12361ec4b4919f2ed5daedb799ba0d76315feca4ef4ca8d27e778c",
+      "adaptation": "E2.S2 agent-fill integration and review fixes; see integration manifest and plan"
     },
     {
       "path": "src/job_machine/state_machine/states.py",
       "source_sha256": "ee0a4662698606a9b6b21dcda66bf457699219034c62cc619e882ab4530ecb62",
-      "target_sha256": "ee0a4662698606a9b6b21dcda66bf457699219034c62cc619e882ab4530ecb62",
-      "adaptation": null
+      "target_sha256": "b37dd77396bc8f5866fe3e88f2a5a6334859d3fe6348d3cf4cc28ccdd0fbf770",
+      "adaptation": "E2.S2 agent-fill integration and review fixes; see integration manifest and plan"
     },
     {
       "path": "src/job_machine/state_machine/transitions.py",
       "source_sha256": "cc3a4137bef39eedc6fa43dc6cbdb3ef099b6449c560c227d9a7ce891eed1771",
-      "target_sha256": "cc3a4137bef39eedc6fa43dc6cbdb3ef099b6449c560c227d9a7ce891eed1771",
-      "adaptation": null
+      "target_sha256": "7931a4f7677f3c1b223527a605757a30219a3acf172d5037d1daa6083d66f094",
+      "adaptation": "E2.S2 agent-fill integration and review fixes; see integration manifest and plan"
     },
     {
       "path": "src/job_machine/submit/Dockerfile",
@@ -1464,14 +1464,14 @@
     {
       "path": "src/job_machine/submit/service.py",
       "source_sha256": "97a573bca1b3bb7dd31d64fde6203b073279c69b846f010e208c4d42b01cd55f",
-      "target_sha256": "97a573bca1b3bb7dd31d64fde6203b073279c69b846f010e208c4d42b01cd55f",
-      "adaptation": null
+      "target_sha256": "f7db55754036d31c0519a21f5620447074ff0036433ab746fadb3e81f60d6405",
+      "adaptation": "E2.S2 agent-fill integration and review fixes; see integration manifest and plan"
     },
     {
       "path": "src/job_machine/submit/store.py",
       "source_sha256": "e56a7c7d2b21bf77b6379b10206d5fd4918b8977fa8826cb6451c3f6032547bc",
-      "target_sha256": "e56a7c7d2b21bf77b6379b10206d5fd4918b8977fa8826cb6451c3f6032547bc",
-      "adaptation": null
+      "target_sha256": "c9e169582ca224a336ef9b92c76ced905918f8fd43441eaba2a2026fd56d0717",
+      "adaptation": "E2.S2 agent-fill integration and review fixes; see integration manifest and plan"
     },
     {
       "path": "src/job_machine/telegram_sourcing/__init__.py",
@@ -1698,8 +1698,8 @@
     {
       "path": "tests/browser/test_api.py",
       "source_sha256": "9be0807f2ffd3b1675d1e83e34d5e87c4d0dd7ed324257c5f86a74ad54b35e13",
-      "target_sha256": "9be0807f2ffd3b1675d1e83e34d5e87c4d0dd7ed324257c5f86a74ad54b35e13",
-      "adaptation": null
+      "target_sha256": "e9beb11582313713e75c6a80c0a39693bd47dcc897044737a700443dde45453c",
+      "adaptation": "E2.S2 agent-fill integration and review fixes; see integration manifest and plan"
     },
     {
       "path": "tests/browser/test_blockers.py",
@@ -1752,8 +1752,8 @@
     {
       "path": "tests/browser/test_handoff_session.py",
       "source_sha256": "0026cd2185643299c54dc11d283fe0eaeb8609dd1b5da1bf9a0a0410d8a86d53",
-      "target_sha256": "0026cd2185643299c54dc11d283fe0eaeb8609dd1b5da1bf9a0a0410d8a86d53",
-      "adaptation": null
+      "target_sha256": "8e5cb53d4c021c9f88256f78271d346156865f2353f7cb0ef81de9af7758d4b9",
+      "adaptation": "E2.S2 agent-fill integration and review fixes; see integration manifest and plan"
     },
     {
       "path": "tests/browser/test_inspect.py",
@@ -1788,8 +1788,8 @@
     {
       "path": "tests/browser/test_submit.py",
       "source_sha256": "512ecd2c957e68402fc92db20ede064541e445772d67b4ef3425f2225ef3919a",
-      "target_sha256": "512ecd2c957e68402fc92db20ede064541e445772d67b4ef3425f2225ef3919a",
-      "adaptation": null
+      "target_sha256": "d65077569a503ea3c6392bc8cfd71019ee3d94b6a0eb4cbde323445e050da311",
+      "adaptation": "E2.S2 agent-fill integration and review fixes; see integration manifest and plan"
     },
     {
       "path": "tests/browser/test_submit_proof.py",
@@ -2082,8 +2082,8 @@
     {
       "path": "tests/fill/test_adapter.py",
       "source_sha256": "3f4c1921634fb0f94860459ff9a2997173ca4bed72fa75211a873f166ed70fc1",
-      "target_sha256": "3f4c1921634fb0f94860459ff9a2997173ca4bed72fa75211a873f166ed70fc1",
-      "adaptation": null
+      "target_sha256": "bd718c20b63de1914fb73b58ef1e7e3c561fa1084b67aacf42d21773db94a749",
+      "adaptation": "E2.S2 agent-fill integration and review fixes; see integration manifest and plan"
     },
     {
       "path": "tests/fill/test_adapter_checkbox.py",
@@ -2100,8 +2100,8 @@
     {
       "path": "tests/fill/test_browser_client.py",
       "source_sha256": "eb2912edfd7042345ed7e01eb9982164403a454fefcb7977994e59ae1fc24244",
-      "target_sha256": "eb2912edfd7042345ed7e01eb9982164403a454fefcb7977994e59ae1fc24244",
-      "adaptation": null
+      "target_sha256": "34cc7792658ab12b2561e5ad64196d886751c431e2a320fcdeee5fc3d13130f5",
+      "adaptation": "E2.S2 agent-fill integration and review fixes; see integration manifest and plan"
     },
     {
       "path": "tests/fill/test_gate.py",
@@ -2118,8 +2118,8 @@
     {
       "path": "tests/fill/test_service.py",
       "source_sha256": "9abfc45e767caf7c39ca201274d538b5bf2f2306b2864533c2035af597107065",
-      "target_sha256": "9abfc45e767caf7c39ca201274d538b5bf2f2306b2864533c2035af597107065",
-      "adaptation": null
+      "target_sha256": "37f62ece99bd68eba3e7abaa88136e44f41129d14074d8c25baaaa3e115ddc93",
+      "adaptation": "E2.S2 agent-fill integration and review fixes; see integration manifest and plan"
     },
     {
       "path": "tests/fill/test_store.py",
@@ -2316,8 +2316,8 @@
     {
       "path": "tests/mcp/test_tools_pipeline.py",
       "source_sha256": "d3ce15a6300fc9aec4d5f6de21bf277429663736f8e3f478ded8dbd16a61ed00",
-      "target_sha256": "d3ce15a6300fc9aec4d5f6de21bf277429663736f8e3f478ded8dbd16a61ed00",
-      "adaptation": null
+      "target_sha256": "1c8a250ab67dcc5c6c8ab92396d3ea9bda2b767b8a207aaec90fa7bdbcf2cd23",
+      "adaptation": "E2.S2 agent-fill integration and review fixes; see integration manifest and plan"
     },
     {
       "path": "tests/mcp/test_tools_profile.py",
@@ -2826,8 +2826,8 @@
     {
       "path": "tests/test_schema_state.py",
       "source_sha256": "f754ab1d4d40fde90958d37030c25ab9ef1403f1a8241aef793d51b4814b1a28",
-      "target_sha256": "f754ab1d4d40fde90958d37030c25ab9ef1403f1a8241aef793d51b4814b1a28",
-      "adaptation": null
+      "target_sha256": "2d8fc2755f33621190fb801fe162898777c61245ba84a4e912e4a3972d9d3cb0",
+      "adaptation": "E2.S2 agent-fill integration and review fixes; see integration manifest and plan"
     },
     {
       "path": "tests/test_state_machine.py",

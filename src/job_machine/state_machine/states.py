@@ -14,6 +14,7 @@ class ApplicationState(Enum):
     PACKAGE_READY = "package_ready"
     FORM_INSPECTED = "form_inspected"
     FILL_BLOCKED = "fill_blocked"
+    AGENT_FILL_PENDING = "agent_fill_pending"
     PRE_SUBMIT_READY = "pre_submit_ready"
     AWAITING_APPROVAL = "awaiting_approval"
     APPROVED = "approved"
