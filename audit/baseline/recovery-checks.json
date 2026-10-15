@@ -1,0 +1,23 @@
+{
+  "at": "2026-10-15T12:05:38.712817+00:00",
+  "unit": 1126,
+  "unit_deselected": 425,
+  "smoke": 50,
+  "db": 327,
+  "warnings": "Starlette/httpx deprecation",
+  "provenance": {
+    "baseline": {
+      "files": 506,
+      "adapted": 2,
+      "mismatches": []
+    },
+    "schema-integration": {
+      "files": 3,
+      "adapted": 0,
+      "mismatches": []
+    }
+  },
+  "production_mutations": false,
+  "review": "accepted; negative DB target guards added",
+  "browser_e2e": "not yet verified"
+}

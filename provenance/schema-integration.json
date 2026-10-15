@@ -1,0 +1,26 @@
+{
+  "repository": "C:\\Users\\samoj\\Documents\\Claude\\Projects\\\u041f\u043e\u0438\u0441\u043a \u0440\u0430\u0431\u043e\u0442\u044b",
+  "files": [
+    {
+      "path": "db/migrations/0031_agent_fill_pending.sql",
+      "source_commit": "b174ad6d5f262fd27a509b5546197d220f20b81f",
+      "source_sha256": "d77d2c172842ce4eb5e12d6b2a49662b11588fb1c199438c2de707ffbdd10870",
+      "target_sha256": "d77d2c172842ce4eb5e12d6b2a49662b11588fb1c199438c2de707ffbdd10870",
+      "adaptation": null
+    },
+    {
+      "path": "db/migrations/0034_role_tiers.sql",
+      "source_commit": "94c1ab90e8f1e2001493fef1b689a31dffa5ed7a",
+      "source_sha256": "6c42c55d769ad5ecce7975a7068d342f719039c755b026bfb881463258292306",
+      "target_sha256": "6c42c55d769ad5ecce7975a7068d342f719039c755b026bfb881463258292306",
+      "adaptation": null
+    },
+    {
+      "path": "db/migrations/0035_skip_category.sql",
+      "source_commit": "94c1ab90e8f1e2001493fef1b689a31dffa5ed7a",
+      "source_sha256": "649fa617fc00fc6463bcd2a1e32d29a595b4f5abd5019d392fa5c8d1fb149ece",
+      "target_sha256": "649fa617fc00fc6463bcd2a1e32d29a595b4f5abd5019d392fa5c8d1fb149ece",
+      "adaptation": null
+    }
+  ]
+}

@@ -29,3 +29,11 @@ E1.S1/T1/T2 and slice A acceptance are complete. Full recovery remains open: E2 
 ## Post-delivery correction
 
 User reported dashboard unavailability. Original process survived the previous turn; one access-log 503 was observed. Exact old exception unavailable. Local process predated the SSH stdin fix and was restarted with current code; production untouched. Added sanitized stage/error logging and regression; 38 smoke passed. Prior E1/T2 closure is revoked pending operational re-acceptance, while verified import remains done. Current backlog owner: docs/decomposition-map.md. No claim of background monitoring or fully resolved historical cause.
+
+## Daemon correction and E2.S1 completed
+
+Ruling: use existing daemon PostgreSQL15433 for dashboard after explicit user permission to read its stored credential solely for read-only job_machine. Prior automatic approval rejection was not bypassed; action retried only after the user authorized the exact source/use. No new tunnel, daemon config change, or secret copy.
+
+Ruling: daemon has no arbitrary exec API; /deploy/status belongs to MP Cockpit. Keep bounded SSH for Job Machine container ops, isolate its failure from successful queue data. Read-only transient retry once; mutations never retried. Bounded300sec stale HTML is prominently labelled with timestamp/header; first/expired outage503. Actual transient SSH and daemon failures observed, not attributed to turn termination.
+
+Review accepted ops with OSError normalization regression and cache expiry/recovery; schema review accepted and recommended negative runner tests, now passed. Final unit1126/smoke50/DB327 passed. Three migration source hashes captured. Schema fixture516 objects sourced from read-only production and exactly matched local; PG18 NOT NULL catalog entries normalized while attnotnull remains checked. E1/T2 and E2.S1 complete within these boundaries; original full recovery open.

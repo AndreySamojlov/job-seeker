@@ -7,6 +7,10 @@ import subprocess
 import uuid
 
 SERVICES = ('browser', 'discovery', 'triage', 'resume', 'package', 'fill', 'submit', 'mail')
+
+class TransientTransportError(RuntimeError):
+    """Transient connection failure. Mutations must never be retried automatically."""
+
 INSPECT = ('{"Id":{{json .Id}},"Name":{{json .Name}},"Image":{{json .Image}},'
            '"ImageTag":{{json .Config.Image}},"State":{"Running":{{json .State.Running}},'
            '"Status":{{json .State.Status}},"Health":{{with (index .State "Health")}}{{json .Status}}{{else}}null{{end}}},'
@@ -26,9 +30,15 @@ def ssh_transport(command: list[str], *, stdin: str | None = None) -> str:
         result = subprocess.run(args, **input_options, text=True, encoding='utf-8',
                                 capture_output=True, timeout=45, shell=False)
     except subprocess.TimeoutExpired as exc:
-        raise RuntimeError('SSH timeout; outcome of a requested service action may be unknown. Inspect status before retry.') from exc
+        raise TransientTransportError('SSH timeout; outcome of a requested service action may be unknown. Inspect status before retry.') from exc
+    except OSError:
+        raise RuntimeError('SSH process could not be started; check local OpenSSH installation') from None
     if result.returncode:
-        raise RuntimeError(f'lab-do operation failed (exit {result.returncode}): {redact(result.stderr[-1000:])}')
+        error_type = RuntimeError
+        if result.returncode == 255 and any(message in result.stderr.lower() for message in
+                ('connection timed out', 'connection reset by peer', 'connection refused', 'connection closed by remote host')):
+            error_type = TransientTransportError
+        raise error_type(f'lab-do operation failed (exit {result.returncode}): {redact(result.stderr[-1000:])}')
     return result.stdout
 
 def container(service: str) -> str:

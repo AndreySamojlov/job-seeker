@@ -1,0 +1,7 @@
+{
+  "source": "read-only production catalog",
+  "objects": 516,
+  "local_matches": true,
+  "excluded_table": "reconcile_snapshot_20260806",
+  "not_null_compared": "column attnotnull; catalog contype n normalized"
+}

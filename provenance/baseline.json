@@ -1866,8 +1866,8 @@
     {
       "path": "tests/db/prod_schema_objects.txt",
       "source_sha256": "5e3b7ec016e94a29c4fe037ef4a3003c0a9ce3468cd2709c6ef63981dd0f5523",
-      "target_sha256": "5e3b7ec016e94a29c4fe037ef4a3003c0a9ce3468cd2709c6ef63981dd0f5523",
-      "adaptation": null
+      "target_sha256": "6ceb1930bcc46cbb2485f401d64b1a2713eb9e78fd0c8aca01b05dcd8341588e",
+      "adaptation": "2026-10-15: actual production schema through migration35, catalog NOT NULL normalized across PG15/18; see catalog-parity.json"
     },
     {
       "path": "tests/db/test_conftest_guard.py",
@@ -1884,8 +1884,8 @@
     {
       "path": "tests/db/test_schema_parity.py",
       "source_sha256": "b23514ec0ed961af086045b87dba6b004ab62a638e85c1b99a0019f26e9bd3e1",
-      "target_sha256": "b23514ec0ed961af086045b87dba6b004ab62a638e85c1b99a0019f26e9bd3e1",
-      "adaptation": null
+      "target_sha256": "7d2b68e7b9fa9b44c34f0d55e864e550c1cae07f7753dcb9b4ad502364ccae21",
+      "adaptation": "2026-10-15: actual production schema through migration35, catalog NOT NULL normalized across PG15/18; see catalog-parity.json"
     },
     {
       "path": "tests/discovery/__init__.py",

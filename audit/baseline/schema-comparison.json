@@ -1,0 +1,17 @@
+{
+  "scope": "columns and constraints on baseline public tables; NOT NULL compared through is_nullable; no production writes",
+  "local_postgresql": 180001,
+  "production_postgresql": 150017,
+  "tables_compared": 34,
+  "remote_only_tables": [
+    "reconcile_snapshot_20260806"
+  ],
+  "columns": {
+    "local_only": [],
+    "production_only": []
+  },
+  "constraints": {
+    "local_only": [],
+    "production_only": []
+  }
+}

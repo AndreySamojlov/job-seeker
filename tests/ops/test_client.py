@@ -3,6 +3,20 @@ import json
 from unittest.mock import Mock
 import pytest
 
+def test_missing_ssh_is_a_diagnostic_error(monkeypatch):
+    module = client_module()
+    monkeypatch.setattr(module.subprocess, 'run', Mock(side_effect=FileNotFoundError('missing ssh')))
+    with pytest.raises(RuntimeError, match='SSH process'):
+        module.ssh_transport(['true'])
+
+def test_transport_classifies_connection_timeout_without_retrying(monkeypatch):
+    module = client_module()
+    run = Mock(return_value=Mock(returncode=255, stderr='ssh: connect to host example port 22: Connection timed out'))
+    monkeypatch.setattr(module.subprocess, 'run', run)
+    with pytest.raises(module.TransientTransportError):
+        module.ssh_transport(['docker','restart','example'])
+    assert run.call_count == 1
+
 def test_ssh_does_not_inherit_mcp_stdin(monkeypatch):
     module = client_module()
     run = Mock(return_value=Mock(returncode=0, stdout='ok'))

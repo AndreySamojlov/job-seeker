@@ -4,6 +4,8 @@ column:answer.rule:text:NULL
 column:answer.state:text:NOT NULL
 column:answer.updated_at:timestamp with time zone:NULL
 column:answer.value:text:NULL
+column:application.agent_fill_session_id:text:NULL
+column:application.agent_fill_started_at:timestamp with time zone:NULL
 column:application.answers_hash:text:NULL
 column:application.answers_version:text:NULL
 column:application.application_id:uuid:NOT NULL
@@ -239,6 +241,9 @@ column:schema_migrations.name:text:NOT NULL
 column:schema_migrations.number:integer:NOT NULL
 column:search_profile.candidate_id:text:NOT NULL
 column:search_profile.company_daily_cap:integer:NULL
+column:search_profile.core_role_families:jsonb:NULL
+column:search_profile.domains:jsonb:NULL
+column:search_profile.hands_on_band:text:NULL
 column:search_profile.languages:jsonb:NULL
 column:search_profile.locations:jsonb:NULL
 column:search_profile.notes:text:NULL
@@ -287,15 +292,19 @@ column:telegram_lead_triage.is_relevant:boolean:NOT NULL
 column:telegram_lead_triage.lead_id:uuid:NOT NULL
 column:telegram_lead_triage.triaged_at:timestamp with time zone:NOT NULL
 column:triage_result.candidate_id:text:NOT NULL
+column:triage_result.capped_by:text[]:NULL
 column:triage_result.claims_version:text:NULL
+column:triage_result.eligibility:jsonb:NULL
 column:triage_result.fit_band:text:NULL
 column:triage_result.fit_breakdown:jsonb:NULL
+column:triage_result.fit_facts:jsonb:NULL
 column:triage_result.fit_score:integer:NULL
 column:triage_result.fit_score_version:text:NULL
 column:triage_result.fit_summary:text:NULL
 column:triage_result.hard_requirements:jsonb:NULL
 column:triage_result.material_unknowns:jsonb:NULL
 column:triage_result.overclaim_risks:jsonb:NULL
+column:triage_result.skip_category:text:NULL
 column:triage_result.triaged_at:timestamp with time zone:NULL
 column:triage_result.vacancy_id:uuid:NOT NULL
 column:triage_result.verdict:text:NOT NULL
@@ -320,7 +329,7 @@ constraint:application.application_candidate_fk:foreign_key:FOREIGN KEY (candida
 constraint:application.application_candidate_identity_uq:unique:UNIQUE (application_id, candidate_id)
 constraint:application.application_outcome_chk:check:CHECK (((outcome_status IS NULL) OR (outcome_status = ANY (ARRAY['rejected'::text, 'interview_scheduled'::text]))))
 constraint:application.application_pkey:primary_key:PRIMARY KEY (application_id)
-constraint:application.application_state_canonical_chk:check:CHECK ((state = ANY (ARRAY['needs_package'::text, 'package_ready'::text, 'form_inspected'::text, 'fill_blocked'::text, 'pre_submit_ready'::text, 'awaiting_approval'::text, 'approved'::text, 'submitting'::text, 'submit_blocked'::text, 'submit_unknown'::text, 'submitted'::text, 'failed'::text])))
+constraint:application.application_state_canonical_chk:check:CHECK ((state = ANY (ARRAY['needs_package'::text, 'package_ready'::text, 'form_inspected'::text, 'fill_blocked'::text, 'agent_fill_pending'::text, 'pre_submit_ready'::text, 'awaiting_approval'::text, 'approved'::text, 'submitting'::text, 'submit_blocked'::text, 'submit_unknown'::text, 'submitted'::text, 'failed'::text])))
 constraint:application.application_vacancy_id_fkey:foreign_key:FOREIGN KEY (vacancy_id) REFERENCES vacancy(vacancy_id)
 constraint:application.fk_application_resume_artifact:foreign_key:FOREIGN KEY (resume_artifact_id) REFERENCES artifact(artifact_id)
 constraint:application_answer.application_answer_application_id_field_key:unique:UNIQUE (application_id, field)

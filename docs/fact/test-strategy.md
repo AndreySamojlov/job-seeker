@@ -9,3 +9,7 @@ Ops regression: whitelist/injection, bounded queries, отсутствие чт�
 `audit/verify_live.py` — read-only live health всех восьми сервисов, выборки и artifact checks. `audit/verify_interfaces.py` — настоящий MCP stdio и HTTP; отчёты в audit/baseline. Локальные временные логи находятся в `.runtime` и не коммитятся. На Windows нормальный запуск с разрешениями прошёл; ограниченный subprocess harness ранее зависал, это не считалось успешным тестом.
 
 DB/browser/E2E, отказные сценарии полного pipeline и backup/restore обязательны для следующих срезов; 423 deselected не выдаются за прошедшие тесты.
+
+## Актуализация после daemon/schema интеграции
+
+Unit1126 passed/425 deselected; smoke50 passed; DB327 passed (все db and not browser), один прежний Starlette warning. DB-runner жёстко фиксирует отдельный cluster и имеет три negative checks (имя/порт/data_directory). Browser/E2E и backup/restore пока не проверены. Три SQL импортированы неизменёнными, две baseline parity фикстуры адаптированы с provenance. Review принят; actual stdio MCP и live dashboard HTTP200 повторены. Эти результаты заменяют исходные counts выше, сохраняя их как историю.

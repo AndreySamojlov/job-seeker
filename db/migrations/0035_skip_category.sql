@@ -1,0 +1,13 @@
+-- 0035_skip_category.sql — сохранить категорию skip, поставленную агентом напрямую.
+-- Номер 0035: в прод-БД применены миграции по 34 включительно.
+-- Находка 2026-08-17: skip_category, который агент указывает в TriageVerdict, до сих
+-- пор сохранялся только когда его совпала фаза допуска (eligibility.py: mandatory_
+-- language / clearance_or_citizenship / onsite_location) — тогда категория попадала в
+-- triage_result.eligibility->>'category'. Остальные две категории закрытого перечня
+-- §3 CLAUDE.md — license_or_qualification и domain_mismatch — eligibility.py не
+-- проверяет вовсе, их ставит только сам агент своим суждением, и store.apply_verdict
+-- нигде их не сохранял: ни в eligibility (там остаётся None, раз фаза допуска не
+-- заблокировала), ни в событии аудита (_verdict_payload не несёт skip_category).
+-- Владелец видел verdict='skip' без единого структурного признака причины.
+-- Идемпотентно; nullable = «не skip либо категория не разбиралась».
+alter table triage_result add column if not exists skip_category text;

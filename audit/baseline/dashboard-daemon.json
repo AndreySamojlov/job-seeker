@@ -1,0 +1,21 @@
+{
+  "data_transport": "existing tunnel-daemon postgres15433",
+  "reads": [
+    {
+      "status": 200,
+      "seconds": 4.72,
+      "container_status_available": true
+    },
+    {
+      "status": 200,
+      "seconds": 4.55,
+      "container_status_available": true
+    },
+    {
+      "status": 200,
+      "seconds": 4.5,
+      "container_status_available": true
+    }
+  ],
+  "production_mutations": false
+}

@@ -8,6 +8,10 @@
 
 Управлять существующим lab-do через `job_machine.ops`: сначала status/health/data/logs. Read-only панель `job_machine.ops.dashboard:app`, loopback 18766. Операционные задачи выполняет агент. Start/stop/restart требуют конкретной необходимости и проверки image; stop/restart — явного принятия прерывания. Не останавливать здоровые production workers ради теста. Не трактовать нулевую activity как idle. При unknown submit не повторять отправку.
 
-Production не заменяется локальным baseline: migrations 31/34/35 и agent-fill ещё не объединены. Реальные отправки, миграции, redeploy и очистка исторических данных требуют отдельного определённого задания. Не переносить runtime, browser profiles, реальные резюме, пароли и raw payloads в Git. Краткие очищенные evidence допустимы.
+Production не заменяется локальной сборкой. Migrations 31/34/35 объединены и проверены локально; agent-fill ещё впереди. Реальные отправки, миграции, redeploy и очистка исторических данных требуют отдельного определённого задания. Не переносить runtime, browser profiles, реальные резюме, пароли и raw payloads в Git. Краткие очищенные evidence допустимы.
 
 После изменений: релевантные проверки, review по масштабу, актуализация смыслового владельца FACT, фиксация известных ограничений. Завершение среза A не означает завершение всего восстановления.
+
+SSH-инфраструктура ноутбука: существующий tunnel-daemon в ~/.claude/tools/tunnel-daemon, API127.0.0.1:47100. Не создавать конкурирующие туннели. Dashboard использует PostgreSQL15433; пользователь разрешил пароль демона только для read-only job_machine, не для тестов/миграций/других баз. Не выводить и не копировать секрет. API /deploy/status относится к MP Cockpit, не использовать его как статус Job Machine. Демон и его binary/config не модифицировались.
+
+DB-тесты: scripts/check_schema.py regression|db допускает только loopback25439/job_machine_recovery_test и data_directory этого workspace/.runtime/pg-recovery. Это отдельный локальный кластер, его запускает/останавливает агент через установленный PostgreSQL18 pg_ctl. Не заменять DSN ради удобства. Без запущенного проверенного кластера runner должен отказать.

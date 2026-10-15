@@ -1,5 +1,60 @@
 from importlib.util import find_spec
 from fastapi.testclient import TestClient
+import pytest
+
+def test_outage_uses_explicit_bounded_stale_snapshot_then_recovers(monkeypatch):
+    import job_machine.ops.dashboard as dashboard
+    now=[100.0]
+    monkeypatch.setattr(dashboard.time,'monotonic',lambda:now[0])
+    class Source:
+        broken=False
+        def data(self,view,**kwargs):
+            if self.broken: raise RuntimeError('source down')
+            return []
+        def status(self): return []
+    source=Source()
+    with TestClient(dashboard.create_app(source)) as client:
+        assert client.get('/').headers['X-Job-Machine-Data']=='live'
+        source.broken=True
+        response=client.get('/')
+        assert response.status_code==200
+        assert response.headers['X-Job-Machine-Data']=='stale'
+        assert 'Последний успешный снимок' in response.text
+        now[0]=401.0
+        assert client.get('/').status_code==503
+        source.broken=False
+        assert client.get('/').headers['X-Job-Machine-Data']=='live'
+
+def test_container_status_failure_keeps_live_application_data(caplog):
+    from job_machine.ops.dashboard import create_app
+    class Partial:
+        def data(self, view, **kwargs):
+            return [{'entity':'application','state':'submitted','count':15}] if view == 'summary' else []
+        def status(self): raise RuntimeError('SSH unavailable')
+    with TestClient(create_app(Partial())) as client:
+        response = client.get('/')
+        assert response.status_code == 200
+        assert 'submitted' in response.text.lower()
+        assert 'Статус контейнеров недоступен' in response.text
+        assert 'SSH unavailable' in caplog.text
+
+@pytest.mark.parametrize('failures,expected', [(1,200),(2,503)])
+def test_transient_connection_failure_has_one_read_retry(failures, expected):
+    from job_machine.ops.client import TransientTransportError
+    from job_machine.ops.dashboard import create_app
+    class Flaky:
+        calls = 0
+        def data(self, view, **kwargs):
+            if view == 'summary':
+                self.calls += 1
+                if self.calls <= failures:
+                    raise TransientTransportError('connection timed out')
+            return []
+        def status(self): return []
+    runtime = Flaky()
+    with TestClient(create_app(runtime)) as client:
+        assert client.get('/').status_code == expected
+    assert runtime.calls == 2
 
 def test_live_dashboard_adapter_is_read_only_and_keeps_unknowns():
     assert find_spec('job_machine.ops.dashboard'), 'live dashboard adapter missing'
