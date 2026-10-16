@@ -1,6 +1,6 @@
 FROM job-machine/board:jev-s4-20261016-r1@sha256:a05274af6da97675e12022bae91133346b8acc138aa51a91ca833be0e51890c6
 USER root
-COPY cockpit_engine-0.2.0a8-py3-none-any.whl /tmp/engine.whl
+COPY vendor/cockpit_engine-0.2.0a8-py3-none-any.whl /tmp/engine.whl
 RUN echo '263e176692debe4a41dbe0a4bec6118946e6b37af1b88dce3901ba0160f00fc4  /tmp/engine.whl' | sha256sum -c - && \
     mv /tmp/engine.whl /tmp/cockpit_engine-0.2.0a8-py3-none-any.whl && \
     pip install --no-deps --no-cache-dir /tmp/cockpit_engine-0.2.0a8-py3-none-any.whl && \

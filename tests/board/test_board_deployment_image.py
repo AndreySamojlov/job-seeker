@@ -16,6 +16,7 @@ def test_board_image_pins_deployed_base_and_engine_a8_wheel():
 
     assert dockerfile.startswith(f"FROM {expected_base}\n")
     assert "cockpit_engine-0.2.0a8-py3-none-any.whl" in dockerfile
+    assert "COPY vendor/cockpit_engine-0.2.0a8-py3-none-any.whl /tmp/engine.whl" in dockerfile
     assert "cockpit_engine-0.2.0a5" not in dockerfile
     assert hashlib.sha256(wheel.read_bytes()).hexdigest() == expected_wheel_hash
     assert expected_wheel_hash in dockerfile
