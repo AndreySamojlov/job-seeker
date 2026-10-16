@@ -7,6 +7,7 @@
 | Риск | Обязательное доказательство |
 |---|---|
 | Подмена фактов, кандидата, пакета, назначения или резюме | Unit на canonical hashes/guards, DB ownership/scoping, отрицательные synthetic интеграционные сценарии |
+| Пересчёт завершённого Jev fit, смена входа при повторе или поздний ответ старого worker | `tests/fit`: unit HTTP-контракт, guarded recovery DB immutability/concurrent claims/version fencing и assembled DB+fake-HTTP crash/retry/expiry/deactivation. Отдельный opt-in synthetic inference probe; MockTransport не доказывает качество Jev |
 | Несогласованное содержимое формы перед click | Browser evidence и отказ при drift/unknown content; E2.S3 ещё открыт |
 | Повторная отправка после неизвестного исхода | DB claim/lease/reservation, одновременные workers, timeout/restart до и после clicking; без второго клика после unknown |
 | Потеря/подмена browser session | CAS state+session, повтор resume до DOM, timeout/reopen cleanup, browser restart и недоступность release |

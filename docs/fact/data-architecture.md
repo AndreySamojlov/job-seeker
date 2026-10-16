@@ -9,6 +9,7 @@
 | candidate / search_profile / facts / answers | Факты, предпочтения и разрешённые ответы кандидата; candidate_id задаёт владельца |
 | vacancy / source / Telegram lead | Общие сведения о вакансии/источнике; лид в staging ещё не заявка |
 | triage_result | Оценка и объяснение для пары кандидат–вакансия, включая неизвестное и skip category |
+| fit_job (локальное дополнение0036, 16.10.2026) | Отдельная пара candidate_id/vacancy_id с уникальным PK, сохранённым payload/hash/model/rubric, lease/attempts/retry и nullable score. Input immutable, completed immutable; payload содержит кандидатские данные и не выводится в обычные логи. В production не доставлена |
 | application | Конкретная попытка кандидата откликнуться на vacancy; state, blocker, payload_hash, ссылка на resume и временную agent session |
 | artifact | Метаданные созданного материала: application link, тип, path_or_uri, content_hash; запись не доказывает наличие файла |
 | approval | Решение по определённому payload_hash, TTL, статус и reservation; approval_token — коррелятор, не самостоятельная авторизация |

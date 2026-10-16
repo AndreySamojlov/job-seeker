@@ -1,0 +1,30 @@
+column:fit_job.attempts:integer:NOT NULL
+column:fit_job.candidate_id:text:NOT NULL
+column:fit_job.completed_at:timestamp with time zone:NULL
+column:fit_job.created_at:timestamp with time zone:NOT NULL
+column:fit_job.last_error_code:text:NULL
+column:fit_job.lease_token:uuid:NULL
+column:fit_job.lease_until:timestamp with time zone:NULL
+column:fit_job.model:text:NOT NULL
+column:fit_job.next_attempt_at:timestamp with time zone:NULL
+column:fit_job.payload:jsonb:NOT NULL
+column:fit_job.payload_hash:text:NOT NULL
+column:fit_job.rubric_version:text:NOT NULL
+column:fit_job.score:integer:NULL
+column:fit_job.status:text:NOT NULL
+column:fit_job.updated_at:timestamp with time zone:NOT NULL
+column:fit_job.vacancy_id:uuid:NOT NULL
+constraint:fit_job.fit_job_attempts_check:check:CHECK ((attempts >= 0))
+constraint:fit_job.fit_job_candidate_id_fkey:foreign_key:FOREIGN KEY (candidate_id) REFERENCES candidate(candidate_id)
+constraint:fit_job.fit_job_check1:check:CHECK ((((status = 'processing'::text) AND (lease_token IS NOT NULL) AND (lease_until IS NOT NULL)) OR ((status <> 'processing'::text) AND (lease_token IS NULL) AND (lease_until IS NULL))))
+constraint:fit_job.fit_job_check2:check:CHECK (((status <> 'retry_wait'::text) OR (next_attempt_at IS NOT NULL)))
+constraint:fit_job.fit_job_check3:check:CHECK (((status = 'completed'::text) = (completed_at IS NOT NULL)))
+constraint:fit_job.fit_job_check:check:CHECK ((((status = 'completed'::text) AND (score IS NOT NULL) AND ((score >= 0) AND (score <= 100))) OR ((status <> 'completed'::text) AND (score IS NULL))))
+constraint:fit_job.fit_job_payload_check:check:CHECK ((jsonb_typeof(payload) = 'object'::text))
+constraint:fit_job.fit_job_payload_hash_check:check:CHECK ((payload_hash ~ '^[0-9a-f]{64}$'::text))
+constraint:fit_job.fit_job_pkey:primary_key:PRIMARY KEY (candidate_id, vacancy_id)
+constraint:fit_job.fit_job_status_check:check:CHECK ((status = ANY (ARRAY['pending'::text, 'processing'::text, 'retry_wait'::text, 'blocked'::text, 'completed'::text])))
+constraint:fit_job.fit_job_vacancy_id_fkey:foreign_key:FOREIGN KEY (vacancy_id) REFERENCES vacancy(vacancy_id)
+index:fit_job.fit_job_due:CREATE INDEX fit_job_due ON fit_job USING btree (status, next_attempt_at, lease_until) WHERE (status = ANY (ARRAY['pending'::text, 'retry_wait'::text, 'processing'::text]))
+index:fit_job.fit_job_pkey:CREATE UNIQUE INDEX fit_job_pkey ON fit_job USING btree (candidate_id, vacancy_id)
+trigger:fit_job.fit_job_immutable:CREATE TRIGGER fit_job_immutable BEFORE DELETE OR UPDATE ON fit_job FOR EACH ROW EXECUTE FUNCTION protect_fit_job_snapshot()

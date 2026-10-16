@@ -6,6 +6,7 @@
 |---|---|---|
 | discovery, ats, telegram_sourcing | Получение/нормализация/дедуп вакансий и проверка назначения; Telegram staging не тождественен vacancy | Источники, browser для нужных ATS, DB |
 | triage (включая eligibility/scoring) | Оценка вакансии для конкретного кандидата, объяснения/неизвестные/риски | Vacancy, candidate facts, DB |
+| fit (локальная JFIT.S1, 16.10.2026) | Отдельный адаптер Jev и однократное выполнение назначенной пары по сохранённому входу; lease/retry/blocked, неизменяемый результат; CLI status/run-once/resume-blocked | Уже подготовленные кандидатские факты, httpx, локальная миграция0036; автоматический discovery и борда ещё не подключены |
 | resume | Подготовка адаптированного резюме из фактов; проверяемый файл | DB, PDF/browser, volume |
 | package | Manifest, раскрытая summary, locked answers, consents/warnings и payload hash | Resume, candidate/application answers, volume, DB |
 | fill | Детерминированное заполнение, агентный handoff, verified context и session lifecycle; останавливается до submit | Package, browser, DB |

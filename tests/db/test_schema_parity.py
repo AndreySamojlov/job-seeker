@@ -25,6 +25,10 @@ pg_get_triggerdef. Сравнение двустороннее — лишнее 
 NOT NULL проверяется через attnotnull; дополнительный contype n локального PG18
 не дублируется в constraints при сравнении с PG15.
 
+2026-10-16: production fixture остаётся снимком до0035. Проверка baseline
+применяет только0001–0035. Отдельная проверка всех локальных миграций требует
+точное дополнение из local_schema_objects.txt (0036 fit_job), не игнорируя extras.
+
 Дальнейшая ценность теста двойная: поймать тихое изменение схемы миграциями без
 осознанного обновления фикстуры в PR, и поймать повторный уход прода вперёд кода —
 для второго достаточно пересобрать фикстуру теми же запросами против прода и
@@ -36,8 +40,10 @@ from pathlib import Path
 import pytest
 
 from tests.conftest import apply_migrations
+from job_machine.db import migrate
 
 _EXPECTED = Path(__file__).with_name("prod_schema_objects.txt")
+_LOCAL_ADDITIONS = Path(__file__).with_name("local_schema_objects.txt")
 
 _CONTYPE_LABELS = {
     "c": "check",
@@ -130,7 +136,10 @@ def _snapshot_schema(conn, schema: str) -> set[str]:
 @pytest.mark.db
 def test_migrations_reproduce_production_schema(db_schema):
     conn, schema = db_schema
-    apply_migrations(conn)
+    migrate.applied_migrations(conn)
+    for migration in migrate.discover_migrations("db/migrations"):
+        if migration[0] <= 35:
+            migrate.apply_migration(conn, migration)
     conn.commit()
 
     local = _snapshot_schema(conn, schema)
@@ -145,4 +154,20 @@ def test_migrations_reproduce_production_schema(db_schema):
     assert not missing and not extra, (
         f"canon migrations do not reproduce the recorded schema — "
         f"missing: {missing}; extra (undocumented locally-only): {extra}"
+    )
+
+
+@pytest.mark.db
+def test_migrations_add_only_documented_local_schema(db_schema):
+    conn, schema = db_schema
+    apply_migrations(conn)
+    conn.commit()
+    baseline = set(_EXPECTED.read_text(encoding="utf-8").splitlines())
+    additions = set(_LOCAL_ADDITIONS.read_text(encoding="utf-8").splitlines())
+    assert additions and not baseline.intersection(additions)
+    expected = baseline | additions
+    local = _snapshot_schema(conn, schema)
+    assert local == expected, (
+        f"local schema differs from production baseline plus declared additions — "
+        f"missing: {sorted(expected - local)}; extra: {sorted(local - expected)}"
     )

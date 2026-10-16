@@ -246,8 +246,8 @@
     {
       "path": "pyproject.toml",
       "source_sha256": "ea19098ddd3b0dda3ac8196ce363d8bdced00d99e7db5c0604498b8e230bf49c",
-      "target_sha256": "a447c945e53e2016b92fcb56cf07850297b6e89a5f43d8a2b0091d114454b48b",
-      "adaptation": "S1 board runtime: pin local cockpit-engine0.2.0a2 wheel restoring native shell/table after UI incident; retain FastAPI/Uvicorn group. Source hash preserved."
+      "target_sha256": "60fbe1dfda6b6f7f2f4afac82b8fe719a7b67be536c222d33060e233c2e5d8f9",
+      "adaptation": "S1 board runtime: pin local cockpit-engine0.2.0a2 wheel restoring native shell/table after UI incident; retain FastAPI/Uvicorn group. Source hash preserved. 2026-10-16: reconcile pre-existing committed board change5ea29e3 to cockpit-engine0.2.0a5; pyproject/lock unmodified by JFIT.S1; see audit/vacancy-fit-s1.md."
     },
     {
       "path": "scripts/requeue_quick_skips.py",
@@ -1884,8 +1884,8 @@
     {
       "path": "tests/db/test_schema_parity.py",
       "source_sha256": "b23514ec0ed961af086045b87dba6b004ab62a638e85c1b99a0019f26e9bd3e1",
-      "target_sha256": "7d2b68e7b9fa9b44c34f0d55e864e550c1cae07f7753dcb9b4ad502364ccae21",
-      "adaptation": "2026-10-15: actual production schema through migration35, catalog NOT NULL normalized across PG15/18; see catalog-parity.json"
+      "target_sha256": "8f13d6e62ea20f26169819b4e0dfe486e0968e842f177c1f0131627db8811c39",
+      "adaptation": "2026-10-15: actual production schema through migration35, catalog NOT NULL normalized across PG15/18; see catalog-parity.json; 2026-10-16: preserve production baseline through0035 and separately enforce exact declared local0036 fit_job catalog; see audit/vacancy-fit-s1.md"
     },
     {
       "path": "tests/discovery/__init__.py",
@@ -3036,8 +3036,8 @@
     {
       "path": "uv.lock",
       "source_sha256": "82b560167926d0eaf123af2e24eac0fb9ef8d7c39f896899d52ce101ec3b80b4",
-      "target_sha256": "3a9a6aebb0b9423c11228bcd1d4563aab8cc9116958297b768b1a796f52acd15",
-      "adaptation": "S1 board runtime: pin local cockpit-engine0.2.0a2 wheel restoring native shell/table after UI incident; retain FastAPI/Uvicorn group. Source hash preserved."
+      "target_sha256": "66b168a74c26ccd04c110e666251a69c916eed92ab79b84d49a843153c033a66",
+      "adaptation": "S1 board runtime: pin local cockpit-engine0.2.0a2 wheel restoring native shell/table after UI incident; retain FastAPI/Uvicorn group. Source hash preserved. 2026-10-16: reconcile pre-existing committed board change5ea29e3 to cockpit-engine0.2.0a5; pyproject/lock unmodified by JFIT.S1; see audit/vacancy-fit-s1.md."
     }
   ],
   "excluded": [

@@ -4,6 +4,8 @@
 
 ## Системная структура
 
+Локальное дополнение16.10.2026: `job_machine.fit` отделён от triage и выполняет только уже назначенные пары. Claim транзакция завершается до HTTP; completion/failure выполняются отдельно с lease fencing. Миграция0036 добавляет защищённый `fit_job`; production-каталог до0035 сохранён отдельной фикстурой, новый локальный каталог проверяется точным дополнением. Worker/CLI не включены в discovery, серверные образы или борду. Детали интерфейсов — [Component Map](component-map.md), доказательства и ограничения — [S1 audit](../../audit/vacancy-fit-s1.md).
+
 Python3.12/Psycopg/FastAPI/MCP/Playwright, зависимости из неизменённого uv.lock. HTTP-workers разделяют стадии discovery, triage, resume, package, fill, submit, mail и browser. Pipeline/MCP координируют стадии; PostgreSQL хранит состояние, Docker volume — материалы. Новый фронтенд не создавался: server-rendered HTML переиспользован для панели.
 
 Локальная сборка объединяет baseline `842e46a`, три schema additions и выборочный agent-fill diff `b049837..b174ad6` с проверенными адаптациями. Исходные рабочие копии сохранены. Новые локальные API не считаются доступными в старых production-образах.
