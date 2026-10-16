@@ -1849,6 +1849,179 @@
       "label": "inDrive"
     },
     {
+      "_comment": "=== Additional greenhouse boards verified via public Boards API for russian_roots_companies.xlsx on 2026-10-16 ==="
+    },
+    {
+      "ats": "greenhouse",
+      "token": "affirm",
+      "label": "Affirm"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "appodeal",
+      "label": "Appodeal"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "bark",
+      "label": "BARK"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "bigid",
+      "label": "BigID"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "bird",
+      "label": "Bird"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "careem",
+      "label": "Careem"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "coherentsolutions",
+      "label": "Coherent Solutions"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "databricks",
+      "label": "Databricks"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "deliveroo",
+      "label": "Deliveroo"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "duolingo",
+      "label": "Duolingo"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "dwelly",
+      "label": "Dwelly"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "enhesa",
+      "label": "Enhesa"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "finom",
+      "label": "Finom"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "flohealth",
+      "label": "Flo Health"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "formlabs",
+      "label": "Formlabs"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "fxpro",
+      "label": "FxPro"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "incode",
+      "label": "Incode Technologies"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "lokalise",
+      "label": "Lokalise"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "manychat",
+      "label": "Manychat"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "moloco",
+      "label": "Moloco"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "orchestra",
+      "label": "Orchestra"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "oura",
+      "label": "Oura"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "pandadoc",
+      "label": "PandaDoc"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "picsart",
+      "label": "Picsart"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "stackadapt",
+      "label": "StackAdapt"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "toloka",
+      "label": "Toloka"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "webflow",
+      "label": "Webflow"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "wooga",
+      "label": "Wooga"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "zencoder",
+      "label": "ZenCoder"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "abbyy",
+      "label": "ABBYY"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "behavox",
+      "label": "Behavox"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "devrev",
+      "label": "DevRev"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "gostudent",
+      "label": "GoStudent"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "payoneer",
+      "label": "Payoneer"
+    },
+    {
       "_comment": "=== hh.ru (worldwide-remote, RU-язык) — прямой httpx (не Playwright — см. hh.py docstring, ревизия 2026-07-20), отдельный более частый cron, см. docs/superpowers/specs/2026-07-17-hh-ru-sourcing-design.md. Список расширен 2026-07-20 с 6 до 16 фраз (полное покрытие ролей andrey-s + daria-b) — httpx дешёвый, курировать до 6-8 больше не нужно."
     },
     {
@@ -1946,6 +2119,339 @@
       "token": "testirovshchik",
       "label": "hh.ru: Тестировщик",
       "query": {"text": "Тестировщик", "area": "1001", "schedule": "remote"}
+    },
+    {
+      "_comment": "=== Additional active boards verified through public ATS APIs on 2026-10-16 ==="
+    },
+    {
+      "ats": "ashby",
+      "token": "3commas",
+      "label": "3Commas"
+    },
+    {
+      "ats": "ashby",
+      "token": "manychat",
+      "label": "Manychat"
+    },
+    {
+      "ats": "ashby",
+      "token": "recraft",
+      "label": "Recraft"
+    },
+    {
+      "ats": "ashby",
+      "token": "beamery",
+      "label": "Beamery"
+    },
+    {
+      "ats": "ashby",
+      "token": "quicknode",
+      "label": "QuickNode"
+    },
+    {
+      "ats": "ashby",
+      "token": "apron",
+      "label": "Apron"
+    },
+    {
+      "ats": "ashby",
+      "token": "chattermill",
+      "label": "Chattermill"
+    },
+    {
+      "ats": "ashby",
+      "token": "splitmetrics",
+      "label": "Splitmetrics"
+    },
+    {
+      "ats": "ashby",
+      "token": "datafold",
+      "label": "Datafold"
+    },
+    {
+      "ats": "ashby",
+      "token": "luminai",
+      "label": "Luminai"
+    },
+    {
+      "ats": "ashby",
+      "token": "outschool",
+      "label": "Outschool"
+    },
+    {
+      "ats": "ashby",
+      "token": "whitecircle",
+      "label": "White Circle"
+    },
+    {
+      "ats": "ashby",
+      "token": "aghanim",
+      "label": "Aghanim"
+    },
+    {
+      "ats": "ashby",
+      "token": "endgame",
+      "label": "ENDGAME"
+    },
+    {
+      "ats": "ashby",
+      "token": "loora",
+      "label": "Loora"
+    },
+    {
+      "ats": "ashby",
+      "token": "nevis",
+      "label": "Nevis"
+    },
+    {
+      "ats": "ashby",
+      "token": "webflow",
+      "label": "Webflow"
+    },
+    {
+      "ats": "ashby",
+      "token": "moonactive",
+      "label": "Moon Active"
+    },
+    {
+      "ats": "ashby",
+      "token": "cryptio",
+      "label": "Cryptio"
+    },
+    {
+      "ats": "ashby",
+      "token": "hopper",
+      "label": "Hopper"
+    },
+    {
+      "ats": "ashby",
+      "token": "qonto",
+      "label": "Qonto"
+    },
+    {
+      "ats": "ashby",
+      "token": "ziina",
+      "label": "Ziina"
+    },
+    {
+      "ats": "ashby",
+      "token": "cantina",
+      "label": "Cantina"
+    },
+    {
+      "ats": "ashby",
+      "token": "cortea",
+      "label": "Cortea"
+    },
+    {
+      "ats": "ashby",
+      "token": "yazio",
+      "label": "Yazio"
+    },
+    {
+      "ats": "ashby",
+      "token": "pinely",
+      "label": "Pinely"
+    },
+    {
+      "ats": "lever",
+      "token": "zerion",
+      "label": "Zerion"
+    },
+    {
+      "ats": "lever",
+      "token": "unlimit",
+      "label": "Unlimit"
+    },
+    {
+      "ats": "lever",
+      "token": "1inch",
+      "label": "1inch"
+    },
+    {
+      "ats": "lever",
+      "token": "quadcode",
+      "label": "Quadcode"
+    },
+    {
+      "ats": "lever",
+      "token": "truv",
+      "label": "Truv"
+    },
+    {
+      "ats": "lever",
+      "token": "appfollow",
+      "label": "AppFollow"
+    },
+    {
+      "ats": "lever",
+      "token": "planner5d",
+      "label": "Planner5D"
+    },
+    {
+      "ats": "lever",
+      "token": "superannotate",
+      "label": "SuperAnnotate"
+    },
+    {
+      "ats": "lever",
+      "token": "moonpay",
+      "label": "MoonPay"
+    },
+    {
+      "ats": "lever",
+      "token": "farfetch",
+      "label": "FARFETCH"
+    },
+    {
+      "ats": "lever",
+      "token": "pipedrive",
+      "label": "Pipedrive"
+    },
+    {
+      "ats": "lever",
+      "token": "accesssoftek",
+      "label": "Access Softek"
+    },
+    {
+      "ats": "lever",
+      "token": "apolloresearch",
+      "label": "Apollo Research"
+    },
+    {
+      "ats": "workable",
+      "token": "joom",
+      "label": "Joom"
+    },
+    {
+      "ats": "recruitee",
+      "token": "intento",
+      "label": "Intento"
+    },
+    {
+      "ats": "smartrecruiters",
+      "token": "joom",
+      "label": "Joom"
+    },
+    {
+      "ats": "smartrecruiters",
+      "token": "soax",
+      "label": "SOAX"
+    },
+    {
+      "ats": "smartrecruiters",
+      "token": "welltory",
+      "label": "Welltory"
+    },
+    {
+      "ats": "smartrecruiters",
+      "token": "beamery",
+      "label": "Beamery"
+    },
+    {
+      "ats": "smartrecruiters",
+      "token": "electroneek",
+      "label": "ElectroNeek"
+    },
+    {
+      "ats": "smartrecruiters",
+      "token": "kadmos",
+      "label": "Kadmos"
+    },
+    {
+      "ats": "smartrecruiters",
+      "token": "wise",
+      "label": "Wise"
+    },
+    {
+      "ats": "smartrecruiters",
+      "token": "deliveryhero",
+      "label": "Delivery Hero"
+    },
+    {
+      "ats": "smartrecruiters",
+      "token": "acumatica",
+      "label": "Acumatica"
+    },
+    {
+      "ats": "smartrecruiters",
+      "token": "servicetitan",
+      "label": "ServiceTitan"
+    },
+    {
+      "ats": "smartrecruiters",
+      "token": "picsart",
+      "label": "Picsart"
+    },
+    {
+      "ats": "smartrecruiters",
+      "token": "mirantis",
+      "label": "Mirantis"
+    },
+    {
+      "ats": "smartrecruiters",
+      "token": "devexperts",
+      "label": "Devexperts"
+    },
+    {
+      "ats": "pinpoint",
+      "token": "tabby",
+      "label": "Tabby"
+    },
+    {
+      "ats": "pinpoint",
+      "token": "joom",
+      "label": "Joom"
+    },
+    {
+      "ats": "pinpoint",
+      "token": "kodland",
+      "label": "Kodland"
+    },
+    {
+      "ats": "pinpoint",
+      "token": "manychat",
+      "label": "Manychat"
+    },
+    {
+      "ats": "pinpoint",
+      "token": "playkot",
+      "label": "Playkot"
+    },
+    {
+      "ats": "pinpoint",
+      "token": "mapbox",
+      "label": "Mapbox"
+    },
+    {
+      "ats": "pinpoint",
+      "token": "chattermill",
+      "label": "Chattermill"
+    },
+    {
+      "ats": "pinpoint",
+      "token": "planner5d",
+      "label": "Planner5D"
+    },
+    {
+      "ats": "pinpoint",
+      "token": "yango",
+      "label": "Yango"
+    },
+    {
+      "ats": "pinpoint",
+      "token": "ziina",
+      "label": "Ziina"
+    },
+    {
+      "ats": "pinpoint",
+      "token": "bolt",
+      "label": "Bolt"
+    },
+    {
+      "ats": "pinpoint",
+      "token": "bark",
+      "label": "Bark"
     }
   ]
 }

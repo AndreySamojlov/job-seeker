@@ -4,7 +4,7 @@
 
 Детерминированное обнаружение Greenhouse-вакансий и верификация их актуальности.
 
-Конвейер: fetch Greenhouse Job Board API → normalize → dedup → upsert в Postgres таблицу `vacancy`. Отдельный маршрут verify читает уже сохранённые вакансии, делает per-job GET к Greenhouse JSON API (`live`/`gone`) и обновляет статус (`verified` / `stale`).
+Конвейер: fetch публичных API зарегистрированных ATS → normalize → dedup → upsert в Postgres таблицу `vacancy`. Отдельный маршрут verify читает уже сохранённые вакансии, делает per-job GET к Greenhouse JSON API (`live`/`gone`) и обновляет статус (`verified` / `stale`).
 
 Submit-маршрута и браузерной автоматизации в этом воркере нет — только чтение публичного API и запись в БД.
 
@@ -17,13 +17,13 @@ Submit-маршрута и браузерной автоматизации в э
 | `POST` | `/verify` | `{}` или `{"limit": N}` | `{checked, verified, stale, transient}` |
 
 Без `boards` в теле `/discover` берёт мульти-ATS реестр `config/sources.json`
-(Greenhouse/Lever/Ashby, 144 источника). Явный `boards` в теле — legacy-путь: один
+(478 источников на 2026-10-16). Явный `boards` в теле — legacy-путь: один
 ATS (Greenhouse), только токены из тела запроса, `config/greenhouse_boards.json` не
 читается автоматически.
 
 ## Реестр
 
-`config/sources.json` — основной мульти-ATS реестр (GH/Lever/Ashby), дефолт для
+`config/sources.json` — основной мульти-ATS реестр, дефолт для
 `/discover` без явного `boards` в теле. `config/greenhouse_boards.json` — исходный
 Greenhouse-only список (30 токенов, портирован из prior-art n8n-флоу), используется
 только через явный `boards` в теле запроса (ручные Greenhouse-only пробы). Оба —
@@ -121,8 +121,9 @@ HTTP POST `http://job-discovery:8080/verify` (`{"limit": 200}`). На обеих
   воркер должен быть запущен под именем `job-discovery` (тогда хост `job-discovery:8080`
   резолвится). Для постоянной работы запускать воркер без `--rm` (см. шаг 3, имя сохранить).
 - **Ручной прогон:** открыть workflow в n8n и «Execute Workflow».
-- **Активация расписания — операторский шаг** (намеренно не активирован автоматически):
-  включить toggle Active в UI после проверки.
+- **Расписание на production:** workflow `Discovery: Greenhouse` (`e24YvyCpFhlXlbBh`)
+  проверен 2026-10-16; active, запускается ежедневно. Timeout Discover — 600000 мс,
+  Verify — 300000 мс.
 - Error Trigger / отдельный error-workflow — follow-up (per-node `retryOnFail` уже есть).
 
 ## Безопасность среза

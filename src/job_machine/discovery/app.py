@@ -29,7 +29,7 @@ def create_app(conn_factory=connect, client_factory=GreenhouseClient,
                 finally:
                     client.close()
             else:
-                # Дефолт — мульти-ATS реестр (config/sources.json): GH+Lever+Ashby.
+                # Дефолт — весь мульти-ATS реестр (config/sources.json).
                 summary = service.run_discovery_multi(conn, sources_loader())
         finally:
             conn.close()

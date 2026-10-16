@@ -4,7 +4,7 @@
 существующим сервисам. LLM-стадии (triage/resume) встроены здесь с per-item
 изоляцией и rollback.
 
-Дискавери — мульти-сорс (Greenhouse/Ashby/Lever) через реестр среза A:
+Дискавери — мульти-сорс через реестр среза A:
 run_discovery_multi(conn, sources). Источники берутся из config/sources.json
 (load_sources), либо из переданного sources, либо — для обратной совместимости
 CLI — из boards (трактуются как greenhouse-доски).

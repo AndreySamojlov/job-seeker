@@ -57,7 +57,7 @@ def run_discovery_multi(
     sources: list[SourceSpec],
     client_factory: Callable[[str], object] = client_for,
 ) -> DiscoverySummary:
-    """Запустить дискавери по списку SourceSpec с разными ATS (Greenhouse/Ashby/Lever).
+    """Запустить дискавери по списку SourceSpec из поддерживаемых ATS.
 
     client_factory принимает ats-строку и возвращает КЛАСС клиента (не экземпляр).
     Изоляция ошибок: падение одной доски не прерывает остальные.

@@ -1,7 +1,7 @@
 """Background filler: discovery → verify → package → fill (детерминированные стадии).
 
 LLM-стадии (triage/resume фразинг) идут отдельно (n8n/оператор) — не в этом раннере.
-Источники дискавери: config/sources.json (мульти-ATS: Greenhouse/Ashby/Lever).
+Источники дискавери: мульти-ATS реестр config/sources.json.
 """
 from job_machine.discovery import service as discovery_service
 from job_machine.discovery.sources import (
