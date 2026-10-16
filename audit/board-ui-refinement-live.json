@@ -1,0 +1,29 @@
+{
+  "engine": "0.2.0a5",
+  "checks": [
+    {
+      "kind": "baseline",
+      "total": 7468,
+      "bars": 21,
+      "parity": true
+    },
+    {
+      "kind": "fractional_fit",
+      "total": 0,
+      "parity": true
+    },
+    {
+      "kind": "company",
+      "total": 193,
+      "parity": true
+    },
+    {
+      "kind": "baseline",
+      "total": 7468,
+      "bars": 21,
+      "parity": true
+    }
+  ],
+  "columns": 5,
+  "all_column_controls": true
+}

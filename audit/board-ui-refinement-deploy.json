@@ -1,0 +1,1 @@
+{"image": "sha256:88e7468827c71e9710f129f29dab857b057585f992575cbc00d17fc16466ad10", "tag": "job-machine/board:ui-5ea29e3", "health": {"status": "ok"}, "rollback": "job-machine-board-rollback-a4", "canary_removed": true}

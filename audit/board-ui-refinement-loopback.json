@@ -1,0 +1,10 @@
+{
+  "url": "http://127.0.0.1:8095",
+  "health": true,
+  "new_runtime_asset": true,
+  "columns": 5,
+  "baseline_total": 7468,
+  "filtered_total": 193,
+  "column_filter_context": true,
+  "horizontal_bars": 21
+}

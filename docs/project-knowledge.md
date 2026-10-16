@@ -110,3 +110,6 @@ Trust: локальная наблюдаемость подкреплена unit
 В S2 реализованы три независимых распределения текущих состояний из существующего summary, без новых аналитических фактов. Приёмка усилена browser geometry/first-screen/mobile и live parity. [Evidence](../audit/observer-s2.md). Trust к submit/history не повышается; S3/S4 и E2.S3/E3 остаются открытыми.
 
 Итог S2: устранено отсутствие графиков в применённой панели. На фактическом URL Chromium подтвердил3 диаграммы/17 столбцов и стабильную parity с summary; unit1187/smoke87, независимый review без findings. Реальная графическая приёмка стала условием закрытия визуальной возможности; incident не объясняется кэшем браузера. Отдельный transient tunnel-daemon отказ в журнале не скрыт и не выдаётся за дефект самих графиков.
+
+
+16.10.2026 UI correction доставлен8095: engine0.2.0a5, native фильтры пяти колонок по всей SQL выборке, horizontal top20/company labels/прочее. Independent review исправлен, baseline1248/87PASS, guarded DB345PASS; реальные SQL totals и пользовательский loopback проверены.8workers IDs/images сохранены. [Владелец FACT/evidence](../audit/board-ui-refinement.md). Пользовательская визуальная приёмка остаётся открытой.
