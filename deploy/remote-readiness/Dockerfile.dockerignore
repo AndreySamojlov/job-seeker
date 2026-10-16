@@ -12,6 +12,10 @@
 !src/
 !src/job_machine/
 !src/job_machine/__init__.py
+!src/job_machine/audit.py
+
+!src/job_machine/guards/
+!src/job_machine/guards/base.py
 
 !src/job_machine/db/
 !src/job_machine/db/__init__.py
@@ -63,6 +67,7 @@
 !src/job_machine/discovery/remotive.py
 !src/job_machine/discovery/rss.py
 !src/job_machine/discovery/sources.py
+!src/job_machine/discovery/store.py
 !src/job_machine/discovery/smartrecruiters.py
 !src/job_machine/discovery/weworkremotely.py
 !src/job_machine/discovery/workable.py

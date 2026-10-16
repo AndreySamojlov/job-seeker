@@ -24,6 +24,8 @@ RUN python -m pip install --no-cache-dir --disable-pip-version-check \
 # Explicit source allowlist: the worker, database connection, and only the
 # existing ATS adapters and text helpers imported by the RWR preparation path.
 COPY src/job_machine/__init__.py /app/src/job_machine/__init__.py
+COPY src/job_machine/audit.py /app/src/job_machine/audit.py
+COPY src/job_machine/guards/base.py /app/src/job_machine/guards/base.py
 COPY src/job_machine/db/__init__.py /app/src/job_machine/db/__init__.py
 COPY src/job_machine/db/connection.py /app/src/job_machine/db/connection.py
 COPY src/job_machine/remote_readiness/ /app/src/job_machine/remote_readiness/
@@ -33,6 +35,7 @@ COPY src/job_machine/triage/__init__.py /app/src/job_machine/triage/__init__.py
 COPY src/job_machine/triage/htmltext.py /app/src/job_machine/triage/htmltext.py
 COPY src/job_machine/discovery/__init__.py /app/src/job_machine/discovery/__init__.py
 COPY src/job_machine/discovery/sources.py /app/src/job_machine/discovery/sources.py
+COPY src/job_machine/discovery/store.py /app/src/job_machine/discovery/store.py
 COPY src/job_machine/discovery/models.py /app/src/job_machine/discovery/models.py
 COPY src/job_machine/discovery/rss.py /app/src/job_machine/discovery/rss.py
 COPY src/job_machine/discovery/hh_parser.py /app/src/job_machine/discovery/hh_parser.py

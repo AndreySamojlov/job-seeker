@@ -27,8 +27,25 @@ def test_board_image_pins_deployed_base_and_engine_a8_wheel():
 def test_board_image_context_allows_only_deployment_inputs():
     ignore = (ROOT / "deploy" / "board" / "Dockerfile.dockerignore").read_text(encoding="utf-8")
     dockerfile = (ROOT / "deploy" / "board" / "Dockerfile").read_text(encoding="utf-8")
-    assert "!src/job_machine/board/**" in ignore
-    assert "!vendor/cockpit_engine-0.2.0a8-py3-none-any.whl" in ignore
-    assert "!config/sources.json" in ignore
-    assert ".runtime" not in ignore
+    assert [line for line in ignore.splitlines() if line and not line.startswith("#")] == [
+        "**",
+        "!deploy/",
+        "deploy/*",
+        "!deploy/board/",
+        "deploy/board/*",
+        "!deploy/board/Dockerfile",
+        "!vendor/",
+        "vendor/*",
+        "!vendor/cockpit_engine-0.2.0a8-py3-none-any.whl",
+        "!src/",
+        "src/*",
+        "!src/job_machine/",
+        "src/job_machine/*",
+        "!src/job_machine/board/",
+        "src/job_machine/board/*",
+        "!src/job_machine/board/*.py",
+        "!config/",
+        "config/*",
+        "!config/sources.json",
+    ]
     assert "COPY ." not in dockerfile

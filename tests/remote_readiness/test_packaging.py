@@ -25,5 +25,8 @@ def test_worker_image_has_an_explicit_runtime_copy_allowlist():
     assert "!src/job_machine/remote_readiness/daemon.py" in ignore
     assert "!src/job_machine/remote_readiness/jev.py" in ignore
     assert "!src/job_machine/remote_readiness/rules.py" in ignore
+    assert "COPY src/job_machine/audit.py /app/src/job_machine/audit.py" in dockerfile
+    assert "COPY src/job_machine/guards/base.py /app/src/job_machine/guards/base.py" in dockerfile
+    assert "COPY src/job_machine/discovery/store.py /app/src/job_machine/discovery/store.py" in dockerfile
     assert ".runtime" not in ignore
     assert ".env" not in ignore
