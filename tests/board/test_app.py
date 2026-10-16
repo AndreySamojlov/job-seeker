@@ -133,3 +133,23 @@ def test_builder_value_error_is_not_candidate_error(monkeypatch):
         assert response.json()['code'] == 'invalid_report'
         assert 'candidate_unavailable' not in response.text
         assert 'synthetic' not in response.text
+
+
+def test_column_filters_cover_whole_report_and_context():
+    with TestClient(create_app(Repository())) as client:
+        response = client.get('/api/board/greenhouse', params={'column_filters': '{"company":{"q":"Acme"}}'})
+        assert response.status_code == 200
+        p = response.json()
+        assert p['table']['filters'] == {'company': {'q': 'Acme'}}
+        assert p['table']['filter_param'] == 'column_filters'
+        assert p['meta']['context']['column_filters'] == '{"company":{"q":"Acme"}}'
+        assert all(c['filter'] in ('text', 'range') for c in p['table']['columns'])
+
+
+def test_synthetic_fixture_filters_the_complete_selection():
+    from tests.board.fixture_app import create_app as fixture_app
+    with TestClient(fixture_app()) as client:
+        p = client.get('/api/board/greenhouse', params={'column_filters': '{"title":{"q":"vacancy 199"}}'}).json()
+        assert p['table']['total_rows'] == 1
+        assert len(p['table']['rows']) == 1
+        assert p['table']['rows'][0]['title'] == 'Synthetic vacancy 199'

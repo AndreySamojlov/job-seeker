@@ -25,7 +25,7 @@ class InvalidReport(RuntimeError):
     pass
 
 
-ENGINE_VERSION = '0.2.0a4'
+ENGINE_VERSION = '0.2.0a5'
 
 
 def create_app(repository=None) -> FastAPI:
@@ -48,16 +48,16 @@ def create_app(repository=None) -> FastAPI:
     @app.get('/api/board/greenhouse')
     async def greenhouse(request: Request, domain: str = 'greenhouse', candidate_id: str | None = None,
                    discovered_from: date | None = None, discovered_to: date | None = None,
-                   board: str | None = None, availability: str | None = None,
+                   board: str | None = None, availability: str | None = None, column_filters: str = '{}',
                    page: int = Query(0, ge=0), sort_key: str = 'discovered_at', sort_direction: str = 'desc'):
         budget = ReadBudget()
-        allowed = {'domain', 'candidate_id', 'discovered_from', 'discovered_to', 'board', 'availability', 'page', 'sort_key', 'sort_direction'}
+        allowed = {'domain', 'candidate_id', 'discovered_from', 'discovered_to', 'board', 'availability', 'column_filters', 'page', 'sort_key', 'sort_direction'}
         if domain != 'greenhouse' or set(request.query_params) - allowed:
             raise HTTPException(422, 'Invalid selection')
         today = datetime.now(MOSCOW).date()
         try:
             filters = BoardFilters(candidate_id or None, discovered_from or today - timedelta(days=29),
-                                   discovered_to or today, board or None, availability or None)
+                                   discovered_to or today, board or None, availability or None, column_filters)
             paging = TablePage(page, sort_key, sort_direction)
         except ValueError:
             raise HTTPException(422, 'Invalid selection') from None

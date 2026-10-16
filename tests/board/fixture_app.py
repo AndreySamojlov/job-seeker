@@ -4,6 +4,7 @@ import time
 
 from job_machine.board.app import create_app as real_app
 from job_machine.board.models import GreenhouseSnapshot, MOSCOW
+from job_machine.board.column_filters import parse_column_filters, TEXT_FIELDS
 
 
 class SyntheticRepository:
@@ -19,6 +20,11 @@ class SyntheticRepository:
                      discovered_at=now - timedelta(hours=i % 10), fit_score=(i % 100 if filters.candidate_id != 'beta' else 99) if i < 200 else None,
                      fit_band='high' if filters.candidate_id == 'beta' else 'low', fit_score_version='synthetic-v1') for i in range(201)]
         rows = [r for r in rows if filters.date_from <= r['discovered_at'].astimezone(MOSCOW).date() <= filters.date_to]
+        for key, state in parse_column_filters(filters.column_filters).items():
+            if key in TEXT_FIELDS:
+                rows = [r for r in rows if state['q'].casefold() in str(r.get(key) or '').casefold()]
+            else:
+                rows = [r for r in rows if r.get(key) is not None and state.get('min', 0) <= r[key] <= state.get('max', 100)]
         if filters.board == 'empty': rows = []
         def key(row):
             return (row.get(page.sort_key) is None, row.get(page.sort_key) or '', row['vacancy_id'])
@@ -33,7 +39,7 @@ class SyntheticRepository:
             board_options=['acme', 'empty', 'fail', 'slow'], total_rows=total, unscored=sum(r['fit_score'] is None for r in rows),
             daily=[dict(day=d, count=count) for d, count in daily.items()],
             bands=[dict(label='Synthetic', count=sum(r['fit_score'] is not None for r in rows)), dict(label='Не оценено', count=sum(r['fit_score'] is None for r in rows))],
-            boards=[dict(token='acme', count=total)] if total else [],
+            boards=[dict(token='acme', company='Synthetic company', count=total)] if total else [],
             points=[dict(discovered_at=r['discovered_at'], fit_score=r['fit_score'], fit_score_version=r['fit_score_version']) for r in rows if r['fit_score'] is not None],
             rows=rows[page.page * 100:(page.page + 1) * 100])
 

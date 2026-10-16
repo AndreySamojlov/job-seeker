@@ -1,7 +1,7 @@
 FROM job-machine/package:3d0b9af
 USER root
-COPY cockpit_engine-0.2.0a4-py3-none-any.whl /tmp/engine.whl
-RUN mv /tmp/engine.whl /tmp/cockpit_engine-0.2.0a4-py3-none-any.whl && pip install --no-deps --no-cache-dir /tmp/cockpit_engine-0.2.0a4-py3-none-any.whl && rm /tmp/cockpit_engine-0.2.0a4-py3-none-any.whl
+COPY cockpit_engine-0.2.0a5-py3-none-any.whl /tmp/engine.whl
+RUN mv /tmp/engine.whl /tmp/cockpit_engine-0.2.0a5-py3-none-any.whl && pip install --no-deps --no-cache-dir /tmp/cockpit_engine-0.2.0a5-py3-none-any.whl && rm /tmp/cockpit_engine-0.2.0a5-py3-none-any.whl
 COPY board/ /app/src/job_machine/board/
 COPY sources.json /app/config/sources.json
 ENV PYTHONPATH=/app/src

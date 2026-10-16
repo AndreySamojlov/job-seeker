@@ -76,3 +76,34 @@ def test_scatter_keeps_rubric_versions_distinguishable():
     series = report['charts']['chart_series'][3]['series']
     assert {s['name'] for s in series} == {'Фит · v1', 'Фит · v2', 'Фит · Версия неизвестна'}
     assert sum(len(s['data']) for s in series) == 3
+
+
+def test_table_keeps_only_requested_columns():
+    report = build_greenhouse_report(snapshot(), BoardFilters('alpha', date(2026, 10, 13), date(2026, 10, 15)))
+    assert [c['key'] for c in report['table']['columns']] == ['title', 'company', 'location', 'work_mode', 'fit_score']
+
+
+def test_boards_horizontal_top_twenty_company_labels_and_other(monkeypatch):
+    monkeypatch.setattr('job_machine.board.greenhouse.board_labels', lambda: {'token-0': 'Company Zero'})
+    boards = [dict(token=f'token-{i}', company=f'Company {i:02}', count=30-i) for i in range(23)]
+    report = build_greenhouse_report(snapshot(boards=list(reversed(boards))), BoardFilters('alpha', date(2026, 10, 13), date(2026, 10, 15)))
+    chart = next(c for c in report['charts']['specs'] if c['id'] == 'boards')
+    data = next(c for c in report['charts']['chart_series'] if c['id'] == 'boards')
+    assert chart['encoding'] == 'hbar'
+    assert chart['guard']['overflow'] == 21
+    assert chart['guard']['flatCv'] == 0
+    assert data['x'] == ['Company Zero'] + [f'Company {i:02}' for i in range(1, 20)] + ['Прочее']
+    assert data['series'][0]['y'] == list(range(30, 10, -1)) + [27]
+    assert sum(data['series'][0]['y']) == 437
+
+
+def test_board_chart_small_empty_and_unknown_company(monkeypatch):
+    monkeypatch.setattr('job_machine.board.greenhouse.board_labels', lambda: {})
+    selection = BoardFilters('alpha', date(2026, 10, 13), date(2026, 10, 15))
+    p = build_greenhouse_report(snapshot(boards=[dict(token='unlabelled-token', company=None, count=1)]), selection)
+    data = p['charts']['chart_series'][2]
+    assert data['x'] == ['Компания не указана']
+    assert data['series'][0]['y'] == [1]
+    assert build_greenhouse_report(snapshot(boards=[]), selection)['charts']['chart_series'][2]['x'] == []
+    unknown = build_greenhouse_report(snapshot(boards=[dict(token=None, company='Do not attribute all unknown boards here', count=10)]), selection)
+    assert unknown['charts']['chart_series'][2]['x'] == ['Компания не указана']

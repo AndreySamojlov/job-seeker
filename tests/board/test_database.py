@@ -43,4 +43,13 @@ def test_candidate_isolation_calendar_aggregation_and_server_paging(db_schema):
     filtered = load_greenhouse_snapshot(conn, BoardFilters('board-alpha', selection.date_from, selection.date_to, board='acme'), TablePage())
     assert filtered.total_rows == 102 and filtered.unknown_board == 0
     assert load_greenhouse_snapshot(conn, BoardFilters('board-alpha', selection.date_from, selection.date_to, board="';DROP"), TablePage()).total_rows == 0
+    column_filtered = load_greenhouse_snapshot(conn, BoardFilters('board-alpha', selection.date_from, selection.date_to,
+        column_filters='{"title":{"q":"Vacancy 10"},"fit_score":{"min":0,"max":0}}'), TablePage())
+    assert column_filtered.total_rows == 3
+    assert {row['title'] for row in column_filtered.rows} == {'Vacancy 10', 'Vacancy 100', 'Vacancy 101'}
+    assert sum(row['count'] for row in column_filtered.boards) == 3
+    assert sum(row['count'] for row in column_filtered.daily) == 3
+    assert len(column_filtered.points) == 3
+    assert load_greenhouse_snapshot(conn, BoardFilters('board-alpha', selection.date_from, selection.date_to,
+        column_filters='{"title":{"q":"%_"}}'), TablePage()).total_rows == 0
     conn.row_factory = tuple_row

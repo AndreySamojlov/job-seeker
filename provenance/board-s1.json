@@ -2,11 +2,11 @@
   "archive": "job-seeker-handoff-0.2.0a1.zip",
   "archive_sha256": "f4b37b86c1f3cd3016151735268f84019e020f9c5172c70a55bbb39c356b7fe1",
   "wheel": {
-    "path": "vendor/cockpit_engine-0.2.0a4-py3-none-any.whl",
-    "sha256": "b202dd3f5f0dc90a1dd91447d20a1170ee76483e6748276c247cd67996e12c8f",
-    "source_commit": "5b97579839c9a7c3039c81180a6c6932b1fade3d",
+    "path": "vendor/cockpit_engine-0.2.0a5-py3-none-any.whl",
+    "sha256": "aec5195b43cd0ac3d59ceb2d9b8c62202e6874b0515bc6bd6304097d54548630",
+    "source_commit": "fe842546f712417ccc3d418b4e5d99f53ebba922",
     "source_branch": "codex/portable-board-s1",
-    "adaptation": "Native refresh lifecycle with reviewed canonical filter bindings, conservative resume/expiry and released interaction tokens. Immutable successor to0.2.0a3."
+    "adaptation": "Native text/range funnels route to full-selection server filters; canonical numeric context, pending-menu ordering, no page-local filtering."
   },
   "documents": [
     {
@@ -56,6 +56,13 @@
       "source_commit": "87faf8c4d66e47b68030a36a2b89df6a2d67bfc1",
       "source_branch": "codex/portable-board-s1",
       "adaptation": "Opt-in refresh controller and native interaction lifecycle; canonical context and freshness metadata from consumer; no consumer asset copies."
+    },
+    {
+      "path": "vendor/cockpit_engine-0.2.0a4-py3-none-any.whl",
+      "sha256": "b202dd3f5f0dc90a1dd91447d20a1170ee76483e6748276c247cd67996e12c8f",
+      "source_commit": "5b97579839c9a7c3039c81180a6c6932b1fade3d",
+      "source_branch": "codex/portable-board-s1",
+      "adaptation": "Native refresh lifecycle with reviewed canonical filter bindings, conservative resume/expiry and released interaction tokens. Immutable successor to0.2.0a3."
     }
   ]
 }

@@ -3,6 +3,7 @@ from datetime import datetime, time, timedelta, timezone
 
 from job_machine.board.models import BoardFilters, GreenhouseSnapshot, MOSCOW, TablePage, ReadStamp
 from job_machine.board.read_budget import ReadBudget
+from job_machine.board.column_filters import filter_sql
 
 # Only the persisted per-job API URL proves board identity. Company is not a key.
 BASE = r"""
@@ -18,6 +19,7 @@ WITH source AS (
    ON t.vacancy_id = v.vacancy_id AND t.candidate_id = %(candidate)s
  WHERE v.discovered_at >= %(start)s AND v.discovered_at < %(end)s
    AND (%(board)s::text IS NULL OR v.board_token = %(board)s)
+   /* column_filters */
 )
 """
 
@@ -44,8 +46,10 @@ def load_greenhouse_snapshot(conn, filters: BoardFilters, table_page: TablePage,
         params = dict(candidate=candidate_id, board=filters.board,
                       start=datetime.combine(filters.date_from, time.min, MOSCOW),
                       end=datetime.combine(filters.date_to + timedelta(days=1), time.min, MOSCOW))
+        column_where, column_params = filter_sql(filters.column_filters)
+        params.update(column_params)
         def query(suffix):
-            return execute(BASE + suffix, params)
+            return execute(BASE.replace('/* column_filters */', column_where) + suffix, params)
         result.board_options = [r['token'] for r in query(
             'SELECT DISTINCT board_token AS token FROM source WHERE board_token IS NOT NULL ORDER BY token').fetchall()]
         counts = query('SELECT count(*) AS total_rows, count(*) FILTER (WHERE board_token IS NULL) AS unknown_board, '
@@ -56,7 +60,8 @@ def load_greenhouse_snapshot(conn, filters: BoardFilters, table_page: TablePage,
         result.bands = query("SELECT CASE WHEN fit_score IS NULL THEN 'Не оценено' "
                              "ELSE coalesce(fit_band, 'Без группы') || ' · ' || coalesce(fit_score_version, 'Версия неизвестна') END AS label, "
                              'count(*) AS count FROM selected GROUP BY label ORDER BY label').fetchall()
-        result.boards = query('SELECT board_token AS token, count(*) AS count FROM selected GROUP BY board_token ORDER BY count DESC, token').fetchall()
+        result.boards = query("SELECT board_token AS token, min(nullif(btrim(company), '')) AS company, "
+                              'count(*) AS count FROM selected GROUP BY board_token ORDER BY count DESC, token').fetchall()
         result.points = query('SELECT discovered_at, fit_score, fit_score_version FROM selected WHERE fit_score IS NOT NULL ORDER BY discovered_at, vacancy_id').fetchall()
         # These identifiers are validated enums, all values remain bound parameters.
         result.rows = query(f'SELECT * FROM selected ORDER BY {table_page.sort_key} {table_page.sort_direction} '

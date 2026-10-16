@@ -4,6 +4,7 @@ from datetime import date, datetime, timedelta, timezone
 import re
 from uuid import uuid4
 from job_machine.board.read_budget import monotonic_ms
+from job_machine.board.column_filters import serialize_column_filters
 
 MOSCOW = timezone(timedelta(hours=3))
 SORT_KEYS = ('title', 'company', 'board_token', 'location', 'work_mode', 'discovered_at', 'availability', 'availability_checked_at', 'fit_score', 'fit_band', 'fit_score_version')
@@ -16,8 +17,10 @@ class BoardFilters:
     date_to: date
     board: str | None = None
     availability: str | None = None
+    column_filters: str = '{}'
 
     def __post_init__(self):
+        object.__setattr__(self, 'column_filters', serialize_column_filters(self.column_filters))
         if self.candidate_id is not None and not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,63}', self.candidate_id):
             raise ValueError('Invalid candidate')
         if self.date_from > self.date_to or self.date_to > datetime.now(MOSCOW).date():
