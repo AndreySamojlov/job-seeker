@@ -125,3 +125,14 @@ Trust: локальная наблюдаемость подкреплена unit
 
 
 16.10.2026 UI correction доставлен8095: engine0.2.0a5, native фильтры пяти колонок по всей SQL выборке, horizontal top20/company labels/прочее. Independent review исправлен, baseline1248/87PASS, guarded DB345PASS; реальные SQL totals и пользовательский loopback проверены.8workers IDs/images сохранены. [Владелец FACT/evidence](../audit/board-ui-refinement.md). Пользовательская визуальная приёмка остаётся открытой.
+
+## Международная удалённая работа — 16 октября 2026
+
+Decision: пользователь выбрал отдельный индекс Jev 0–100 по тексту вакансии; Rules — оболочка вызова, без дополнительных вычислений; значение хранится как исходная fraction Jev и форматируется отдельно. Оценка не калибрована как вероятность, не смешивается с candidate fit и не влияет на triage/очередь/отклик. Охват — все вакансии, кроме явного `on-site`; первичную оценку существующей базы предваряет active verification. `Europe` включает Албанию, `EU only` её исключает; unknown снижает оценку, но не означает запрет. Владелец требований — [Epic Intent](remote-work-readiness-intent.md), разрез и статус — [Decomposition Map](decomposition-map.md).
+
+Историческая первая интеграционная проверка S1 ниже заменена агрегированным состоянием Epic. Engine source snapshot `fe842546f712417ccc3d418b4e5d99f53ebba922`, manifest `b90d1ec4cb1a3038cf7c49188bc7007fc48b3e2f6e52951e8dc12990a39a54f3` и wheel `0.2.0a6` остаются provenance источника; consumer wheel `0.2.0a7` superseded.
+
+Первоначальная S1-проверка (`1372` unit, `443` DB, wheel a7) является историческим срезом и не описывает текущее состояние целого Epic. См. [архив S1 evidence](../audit/remote-work-readiness-s1.md).
+
+
+**Текущее FACT — RWR Epic local integration, 2026-10-16:** Engine/consumer wheel `0.2.0a8`, SHA-256 `263e176692debe4a41dbe0a4bec6118946e6b37af1b88dce3901ba0160f00fc4`; полный unit `1412 passed, 560 deselected`, smoke `87 passed`, guarded recovery DB `454 passed, 1535 deselected`, guarded schema regression `2 passed`. Synthetic Rules→Jev→PostgreSQL сохраняет fraction `0.3141592653589793` и model/rubric; board field только display, не сортируется/не фильтруется. Независимые Story-boundary и Stories→Epic reviews закрыты, review findings исправлены и проверены. [Агрегированное evidence и ограничения](../audit/remote-work-readiness-epic.md), [S4 rehearsal evidence](../audit/remote-work-readiness-s4.md). `uv sync --frozen --all-groups --python 3.12` не завершён: sandbox запретил сетевую загрузку `cffi==2.0.0`; это ограничение проверки dependency installation. Live Jev/ATS и production migration/config/redeploy/enablement не выполнялись; целевой production контур остаётся отдельной задачей.

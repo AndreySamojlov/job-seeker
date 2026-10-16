@@ -98,6 +98,8 @@ def build_greenhouse_report(snapshot: GreenhouseSnapshot, filters: BoardFilters,
                                  **({'filterMin': 0, 'filterMax': 100} if kind == 'number' else {'filterMaxLength': 200}),
                                  **({'href_key': 'url'} if key == 'title' else {}))
                    for key, title, kind in [('title', 'Вакансия', 'link'), ('company', 'Компания', 'text'),
-                    ('location', 'Локация', 'text'), ('work_mode', 'Формат', 'text'), ('fit_score', 'Фит', 'number')]],
+                    ('location', 'Локация', 'text'), ('work_mode', 'Формат', 'text'), ('fit_score', 'Фит', 'number')]] +
+                    [dict(key='remote_work_readiness', label='Международная удалёнка', kind='number',
+                          format='percent', sortable=False, filter=None)],
                    filter_param='column_filters', filter_context_key='column_filters', filters=parse_column_filters(filters.column_filters),
                    row_key='vacancy_id', rows=rows, total_rows=snapshot.total_rows, page=table_page.page, page_size=100))

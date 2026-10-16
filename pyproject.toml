@@ -32,7 +32,7 @@ sourcing = [
     "pydantic>=2",
 ]
 board = [
-    "cockpit-engine==0.2.0a5",
+    "cockpit-engine==0.2.0a8",
     "fastapi>=0.110",
     "uvicorn>=0.29",
 ]
@@ -56,4 +56,4 @@ build-backend = "hatchling.build"
 packages = ["src/job_machine"]
 
 [tool.uv.sources]
-cockpit-engine = { path = "vendor/cockpit_engine-0.2.0a5-py3-none-any.whl" }
+cockpit-engine = { path = "vendor/cockpit_engine-0.2.0a8-py3-none-any.whl" }

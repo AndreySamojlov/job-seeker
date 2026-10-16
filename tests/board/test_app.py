@@ -143,7 +143,24 @@ def test_column_filters_cover_whole_report_and_context():
         assert p['table']['filters'] == {'company': {'q': 'Acme'}}
         assert p['table']['filter_param'] == 'column_filters'
         assert p['meta']['context']['column_filters'] == '{"company":{"q":"Acme"}}'
-        assert all(c['filter'] in ('text', 'range') for c in p['table']['columns'])
+        readiness = next(c for c in p['table']['columns'] if c['key'] == 'remote_work_readiness')
+        assert readiness['filter'] is None
+        assert readiness['sortable'] is False
+        assert all(c['filter'] in ('text', 'range') for c in p['table']['columns'] if c is not readiness)
+
+
+def test_readiness_column_is_display_only_in_board_contract():
+    with TestClient(create_app(Repository())) as client:
+        response = client.get('/api/board/greenhouse')
+        assert response.status_code == 200
+        columns = response.json()['table']['columns']
+        readiness = next(c for c in columns if c['key'] == 'remote_work_readiness')
+        assert readiness['filter'] is None
+        assert readiness['sortable'] is False
+        rejected_filter = client.get('/api/board/greenhouse', params={
+            'column_filters': '{"remote_work_readiness":{"min":0}}',
+        })
+        assert rejected_filter.status_code == 422
 
 
 def test_synthetic_fixture_filters_the_complete_selection():

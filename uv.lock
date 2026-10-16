@@ -214,14 +214,14 @@ wheels = [
 
 [[package]]
 name = "cockpit-engine"
-version = "0.2.0a5"
-source = { path = "vendor/cockpit_engine-0.2.0a5-py3-none-any.whl" }
+version = "0.2.0a8"
+source = { path = "vendor/cockpit_engine-0.2.0a8-py3-none-any.whl" }
 dependencies = [
     { name = "psycopg", extra = ["binary"] },
     { name = "python-dotenv" },
 ]
 wheels = [
-    { filename = "cockpit_engine-0.2.0a5-py3-none-any.whl", hash = "sha256:aec5195b43cd0ac3d59ceb2d9b8c62202e6874b0515bc6bd6304097d54548630" },
+    { filename = "cockpit_engine-0.2.0a8-py3-none-any.whl", hash = "sha256:263e176692debe4a41dbe0a4bec6118946e6b37af1b88dce3901ba0160f00fc4" },
 ]
 
 [package.metadata]
@@ -493,7 +493,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 board = [
-    { name = "cockpit-engine", path = "vendor/cockpit_engine-0.2.0a5-py3-none-any.whl" },
+    { name = "cockpit-engine", path = "vendor/cockpit_engine-0.2.0a8-py3-none-any.whl" },
     { name = "fastapi", specifier = ">=0.110" },
     { name = "uvicorn", specifier = ">=0.29" },
 ]

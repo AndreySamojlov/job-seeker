@@ -14,9 +14,12 @@ WITH source AS (
 ), selected AS (
  SELECT v.vacancy_id, v.title, v.canonical_url AS url, v.company, v.location,
         v.work_mode, v.discovered_at, v.board_token, t.fit_score, t.fit_band, t.fit_score_version,
+        r.value AS remote_work_readiness,
         'Неизвестно'::text AS availability, NULL::timestamptz AS availability_checked_at
  FROM source v LEFT JOIN triage_result t
    ON t.vacancy_id = v.vacancy_id AND t.candidate_id = %(candidate)s
+ LEFT JOIN remote_work_readiness_job r
+   ON r.vacancy_id = v.vacancy_id AND r.status = 'completed'
  WHERE v.discovered_at >= %(start)s AND v.discovered_at < %(end)s
    AND (%(board)s::text IS NULL OR v.board_token = %(board)s)
    /* column_filters */

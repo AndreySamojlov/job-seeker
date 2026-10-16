@@ -3,8 +3,9 @@ from datetime import date
 
 import pytest
 
-from job_machine.board.models import BoardFilters, TablePage
+from job_machine.board.models import BoardFilters, TablePage, SORT_KEYS
 from job_machine.board.repository import load_greenhouse_snapshot
+from job_machine.board.column_filters import parse_column_filters, TEXT_FIELDS
 
 
 class Cursor:
@@ -39,6 +40,13 @@ def test_transaction_and_parameterization():
     assert "x';DROP" not in sql_text
     assert 'LIMIT 100 OFFSET' in sql_text
     assert 'NULLS LAST, vacancy_id' in sql_text
+    assert 'LEFT JOIN remote_work_readiness_job r' in sql_text
+    assert "r.status = 'completed'" in sql_text
+    assert 'r.value AS remote_work_readiness' in sql_text
+    assert 'remote_work_readiness' not in SORT_KEYS
+    assert 'remote_work_readiness' not in TEXT_FIELDS
+    with pytest.raises(ValueError, match='Invalid column filters'):
+        parse_column_filters('{"remote_work_readiness":{"min":0}}')
 
 
 def test_multiple_candidates_never_silently_choose_one():

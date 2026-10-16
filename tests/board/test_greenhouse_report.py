@@ -14,7 +14,7 @@ def snapshot(**changes):
                   boards=[{'token': 'acme', 'count': 2}, {'token': None, 'count': 1}],
                   points=[{'discovered_at': datetime(2026, 10, 13, tzinfo=timezone.utc), 'fit_score': 0},
                           {'discovered_at': datetime(2026, 10, 15, tzinfo=timezone.utc), 'fit_score': 90}],
-                  rows=[{'vacancy_id': 'synthetic', 'title': '<img src=x>', 'url': 'javascript:alert(1)', 'fit_score': 0, 'board_token': None}],
+                  rows=[{'vacancy_id': 'synthetic', 'title': '<img src=x>', 'url': 'javascript:alert(1)', 'fit_score': 0, 'remote_work_readiness': None, 'board_token': None}],
                   fetched_at=datetime(2026, 10, 15, tzinfo=timezone.utc))
     values.update(changes)
     return GreenhouseSnapshot(**values)
@@ -80,7 +80,23 @@ def test_scatter_keeps_rubric_versions_distinguishable():
 
 def test_table_keeps_only_requested_columns():
     report = build_greenhouse_report(snapshot(), BoardFilters('alpha', date(2026, 10, 13), date(2026, 10, 15)))
-    assert [c['key'] for c in report['table']['columns']] == ['title', 'company', 'location', 'work_mode', 'fit_score']
+    columns = report['table']['columns']
+    assert [c['key'] for c in columns] == ['title', 'company', 'location', 'work_mode', 'fit_score', 'remote_work_readiness']
+    readiness = columns[-1]
+    assert readiness == {'key': 'remote_work_readiness', 'label': 'Международная удалёнка', 'kind': 'number',
+                         'format': 'percent', 'sortable': False, 'filter': None}
+    assert report['table']['rows'][0]['remote_work_readiness'] is None
+    assert report['table']['rows'][0]['fit_score'] == 0
+
+
+def test_readiness_row_value_is_preserved_raw_in_report():
+    fraction = 0.3141592653589793
+    report = build_greenhouse_report(snapshot(rows=[dict(vacancy_id='ready', title='Remote',
+        url='https://example.test/job', fit_score=None, remote_work_readiness=fraction, board_token=None)]),
+        BoardFilters('alpha', date(2026, 10, 13), date(2026, 10, 15)))
+    assert report['table']['rows'][0]['remote_work_readiness'] == fraction
+    assert 'model' not in report['table']['rows'][0]
+    assert 'rubric' not in report['table']['rows'][0]
 
 
 def test_boards_horizontal_top_twenty_company_labels_and_other(monkeypatch):
