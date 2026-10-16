@@ -1,6 +1,6 @@
 # Готовность вакансии к международной удалённой работе
 
-Дата: 16 октября 2026. Уровень: Epic. Родитель: Job Machine. Статус: Product Intent утверждён; локальная реализация S1–S4 проверена и прошла Story-boundary и Stories→Epic review. Production-поставка остаётся отдельной операцией. См. [Decomposition Map](decomposition-map.md), [Project Knowledge](project-knowledge.md) и [Epic evidence](../audit/remote-work-readiness-epic.md).
+Дата: 16 октября 2026. Уровень: Epic. Родитель: Job Machine. Статус: Product Intent утверждён; S1–S4 локально проверены; отдельный production worker доставлен и оставлен disabled. Production миграции `0039–0041` и переключение board остаются открытыми; RWR enablement и реальные ATS/Jev вызовы не выполнялись. См. [Decomposition Map](decomposition-map.md), [Project Knowledge](project-knowledge.md), [Epic evidence](../audit/remote-work-readiness-epic.md) и [актуальное evidence S5/S6](../audit/remote-work-readiness-s5-s6-delivery.md).
 
 ## Назначение
 
@@ -46,4 +46,4 @@ Rules Cockpit служит оболочкой вызова Jev и возвращ
 
 ## Границы и оставшаяся техническая работа
 
-Epic не меняет существующий fit `jfit-1`, не запускает юридическую проверку стран и не строит отдельную систему правил. Локальный результат включает оценку Jev через Rules, поле борды, автоматический охват с active ATS verification, durable retries, redacted управление и staged rehearsal. Production migrations, конфигурация секретов, реальный API, redeploy и enablement требуют самостоятельного конкретного задания; локальная реализация не доказывает production-доступность или качество модели.
+Epic не меняет существующий fit `jfit-1`, не запускает юридическую проверку стран и не строит отдельную систему правил. Локальный результат включает оценку Jev через Rules, поле борды, автоматический охват с active ATS verification, durable retries, redacted управление и staged rehearsal. Для production уже доставлен отдельный worker в disabled/no-network режиме. Production migrations `0039–0041` ждут проверенного write-capable канала; board image собран, но его переключение ждёт миграций и принятого окна downtime. Реальные API-вызовы и enablement не выполнялись и не входят в текущую поставку; локальные и disabled runtime проверки не доказывают доступность внешних endpoints или качество модели.

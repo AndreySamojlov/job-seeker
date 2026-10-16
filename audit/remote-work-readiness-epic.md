@@ -35,3 +35,7 @@ Independent follow-up review confirmed both Epic findings are fixed: bounded cle
 ## Limits
 
 No live Jev/ATS calls, real vacancy text, production migration, production config/secret change, redeploy or enablement was performed. No claim is made about production endpoint access, provider quotas, rubric quality or statistical calibration. Production delivery still needs its own scoped operation with the target service/image, schema state, secret channel, quota limits and accepted interruption identified. The assembled implementation remains in the Story worktree and is not committed.
+
+## Superseded delivery status
+
+The preceding paragraph is historical and applies to the S1–S4 integration evidence at the time it was written. S5/S6 delivery later committed the implementation and deployed a separate disabled/no-network RWR worker. Production migrations `0039–0041` and board image replacement remain pending. Current image IDs, worker heartbeat, checks, production ledger observation and remaining gates are recorded in [S5/S6 delivery evidence](remote-work-readiness-s5-s6-delivery.md) and the [operations runbook](../docs/superpowers/runbooks/2026-10-16-remote-work-readiness-operations.md).
