@@ -1,15 +1,17 @@
 # Data Architecture — FACT
 
-Область: локальная модель `da55881` и read-only audit production от15.10.2026. Каноническое операционное состояние — PostgreSQL `job_machine` на lab-do. Целевая схема0001–0035 интегрирована локально; source migrations и hashes — [provenance](../../provenance/schema-integration.json).
+Область: локальная модель `da55881` и production `job_machine` на lab-do. Целевая схема0001–0035 интегрирована локально; source migrations и hashes — [provenance](../../provenance/schema-integration.json). На16.10.2026 в production применена миграция0037 для маркера `company_watchlist.ru`; она независима от локальной миграции0036 `fit_job`, которая в production не доставлена. Production ledger содержит0037 при отсутствующей0036. В рабочей копии локальные additions 0036–0038 перечислены в [local schema inventory](../../tests/db/local_schema_objects.txt): 0037 описывает уже известный production marker, 0038 — локальную S2 preparation queue, не доставленную в production.
 
 ## Сущности и владение
 
 | Сущность | Смысл, идентичность и граница |
 |---|---|
 | candidate / search_profile / facts / answers | Факты, предпочтения и разрешённые ответы кандидата; candidate_id задаёт владельца |
+| company_watchlist | Наблюдаемые компании; nullable text `ru` равен `ru` для18 существующих записей из `russian_roots_companies.xlsx`. Это маркер присутствия в исходном списке, не подтверждение российского происхождения |
 | vacancy / source / Telegram lead | Общие сведения о вакансии/источнике; лид в staging ещё не заявка |
 | triage_result | Оценка и объяснение для пары кандидат–вакансия, включая неизвестное и skip category |
 | fit_job (локальное дополнение0036, 16.10.2026) | Отдельная пара candidate_id/vacancy_id с уникальным PK, сохранённым payload/hash/model/rubric, lease/attempts/retry и nullable score. Input immutable, completed immutable; payload содержит кандидатские данные и не выводится в обычные логи. В production не доставлена |
+| fit_prepare / fit_prepare_candidate (локальное дополнение0038, 16.10.2026) | Долговечное назначение подготовки по вакансии и неизменяемый снимок активных candidate/vacancy получателей при первом verify. Хранятся lease/retry/block, excerpt и состояние подготовки; S1 `fit_job` создаётся идемпотентно. Нет backfill, поздняя активация не меняет снимок. В production не доставлено |
 | application | Конкретная попытка кандидата откликнуться на vacancy; state, blocker, payload_hash, ссылка на resume и временную agent session |
 | artifact | Метаданные созданного материала: application link, тип, path_or_uri, content_hash; запись не доказывает наличие файла |
 | approval | Решение по определённому payload_hash, TTL, статус и reservation; approval_token — коррелятор, не самостоятельная авторизация |

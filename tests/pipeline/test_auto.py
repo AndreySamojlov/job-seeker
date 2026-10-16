@@ -99,6 +99,11 @@ def _patch_stages(monkeypatch, *, conn, llm,
     """Мокать все стадии конвейера."""
     calls = []
 
+    # Fit queues are independently covered by integration tests; keep existing
+    # pipeline-stage tests focused and free of database/network access.
+    monkeypatch.setattr(auto.fit_preparation, "run_once", lambda *a, **k: "idle")
+    monkeypatch.setattr(auto.fit_worker, "run_once", lambda *a, **k: "idle")
+
     # Discovery (мульти-сорс)
     monkeypatch.setattr(
         auto.discovery_service, "run_discovery_multi",
@@ -529,3 +534,118 @@ def test_honesty_floor_drops_fabricated_metric(db_schema, tmp_path):
 
     # Реальная метрика должна быть в HTML (source_metric в скобках)
     assert "15000" in html, "Реальная метрика 15000 test-hours должна быть в HTML"
+
+
+def test_fit_queues_run_after_verify_before_triage_even_when_this_cycle_verifies_none(monkeypatch):
+    """Older queued work must drain every cycle, isolated before triage."""
+    from types import SimpleNamespace
+
+    conn = FakeConn()
+    llm = FakeLLM()
+    calls = _patch_stages(monkeypatch, conn=conn, llm=llm)
+    monkeypatch.setattr(
+        auto.discovery_service, "run_verify",
+        lambda *args: calls.append("verify") or type("S", (), {"verified": 0})(),
+    )
+    prep_returns = iter(["prepared", "idle"])
+    fit_returns = iter(["completed", "idle"])
+    monkeypatch.setattr(auto, "fit_preparation", SimpleNamespace(
+        run_once=lambda *args, **kwargs: calls.append("prepare") or next(prep_returns),
+    ), raising=False)
+    monkeypatch.setattr(auto, "fit_worker", SimpleNamespace(
+        run_once=lambda *args, **kwargs: calls.append("jev") or next(fit_returns),
+    ), raising=False)
+    monkeypatch.setattr(auto, "load_cloud", lambda c, cid: type("Cloud", (), {
+        "positions": [], "achievements": [], "skills": []
+    })())
+
+    auto.run_auto_cycle(
+        conn, llm=llm, browser=object(), pdf=object(), discovery_client=object(),
+        boards=["acme"], limit=5, conn_factory=lambda: conn,
+        fit_client=object(), fit_api_key="synthetic-key",
+    )
+
+    assert calls.index("verify") < calls.index("prepare") < calls.index("jev")
+    assert calls.index("jev") < calls.index("triage_pull[cand-1]")
+    assert calls.index("prepare") < calls.index("package")
+
+
+def test_fit_queue_errors_do_not_stop_later_pipeline_stages(monkeypatch):
+    from types import SimpleNamespace
+
+    conn = FakeConn()
+    llm = FakeLLM()
+    calls = _patch_stages(monkeypatch, conn=conn, llm=llm)
+    monkeypatch.setattr(auto, "fit_preparation", SimpleNamespace(
+        run_once=lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("secret DSN and candidate payload")),
+    ), raising=False)
+    monkeypatch.setattr(auto, "fit_worker", SimpleNamespace(
+        run_once=lambda *args, **kwargs: "idle",
+    ), raising=False)
+    monkeypatch.setattr(auto, "load_cloud", lambda c, cid: type("Cloud", (), {
+        "positions": [], "achievements": [], "skills": []
+    })())
+
+    result = auto.run_auto_cycle(
+        conn, llm=llm, browser=object(), pdf=object(), discovery_client=object(),
+        boards=["acme"], limit=2, conn_factory=lambda: conn,
+        fit_client=object(), fit_api_key="synthetic-key",
+    )
+
+    assert any(error.startswith("fit_prepare:") for error in result.errors)
+    assert "secret" not in repr(result.errors)
+    assert "triage_pull[cand-1]" in calls
+    assert "package" in calls
+    assert "fill" in calls
+
+
+def test_fit_queue_exceptions_are_not_logged_with_raw_details(monkeypatch, caplog):
+    from types import SimpleNamespace
+    conn = FakeConn()
+    llm = FakeLLM()
+    _patch_stages(monkeypatch, conn=conn, llm=llm)
+    monkeypatch.setattr(auto, "fit_preparation", SimpleNamespace(
+        run_once=lambda *a, **k: (_ for _ in ()).throw(RuntimeError("secret vacancy text")),
+    ), raising=False)
+    monkeypatch.setattr(auto, "fit_worker", SimpleNamespace(run_once=lambda *a, **k: "idle"), raising=False)
+    monkeypatch.setattr(auto, "load_cloud", lambda c, cid: type("Cloud", (), {
+        "positions": [], "achievements": [], "skills": []
+    })())
+    result = auto.run_auto_cycle(
+        conn, llm=llm, browser=object(), pdf=object(), discovery_client=object(),
+        boards=["acme"], limit=1, conn_factory=lambda: conn,
+        fit_client=object(), fit_api_key="synthetic-key",
+    )
+    assert "secret" not in caplog.text
+    assert "secret" not in repr(result.errors)
+
+
+def test_fit_queue_batches_are_bounded_and_report_safe_outcomes(monkeypatch):
+    from types import SimpleNamespace
+
+    conn = FakeConn()
+    llm = FakeLLM()
+    calls = _patch_stages(monkeypatch, conn=conn, llm=llm)
+    prep = iter(["prepared", "retry_wait", "prepared"])
+    jev = iter(["completed", "blocked", "completed"])
+    prep_calls, jev_calls = [], []
+    monkeypatch.setattr(auto, "fit_preparation", SimpleNamespace(
+        run_once=lambda *a, **k: prep_calls.append(1) or next(prep),
+    ), raising=False)
+    monkeypatch.setattr(auto, "fit_worker", SimpleNamespace(
+        run_once=lambda *a, **k: jev_calls.append(1) or next(jev),
+    ), raising=False)
+    monkeypatch.setattr(auto, "load_cloud", lambda c, cid: type("Cloud", (), {
+        "positions": [], "achievements": [], "skills": []
+    })())
+
+    result = auto.run_auto_cycle(
+        conn, llm=llm, browser=object(), pdf=object(), discovery_client=object(),
+        boards=["acme"], limit=2, conn_factory=lambda: conn,
+        fit_client=object(), fit_api_key="synthetic-key",
+    )
+
+    assert len(prep_calls) == len(jev_calls) == 2
+    assert (result.fit_prepared, result.fit_prepare_retry) == (1, 1)
+    assert (result.fit_completed, result.fit_blocked) == (1, 1)
+    assert "package" in calls and "fill" in calls

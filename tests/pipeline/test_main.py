@@ -17,6 +17,7 @@ class TestMain:
         # Патчим client_from_env
         fake_llm = object()
         monkeypatch.setattr(llm_module, "client_from_env", lambda: fake_llm)
+        monkeypatch.setenv("TYPESAFE_API_KEY", "synthetic-secret")
 
         # Патчим connect
         fake_conn = object()
@@ -26,10 +27,12 @@ class TestMain:
         # Патчим run_auto_cycle
         expected_summary = AutoCycleSummary(inserted=3, verified=2, triaged=1)
 
-        def fake_run(conn, *, llm, browser, pdf, discovery_client, boards, base_dir, limit):
+        def fake_run(conn, *, llm, browser, pdf, discovery_client, boards, base_dir, limit, **kwargs):
             captured["boards"] = boards
             captured["limit"] = limit
             captured["conn"] = conn
+            captured["conn_factory"] = kwargs["conn_factory"]
+            captured["fit_api_key"] = kwargs["fit_api_key"]
             return expected_summary
 
         monkeypatch.setattr(cli, "run_auto_cycle", fake_run)
@@ -40,6 +43,8 @@ class TestMain:
         assert captured["boards"] == ["acme", "globex"]
         assert captured["limit"] == 5
         assert captured["conn"] is fake_conn
+        assert captured["conn_factory"] is cli.connect
+        assert captured["fit_api_key"] == "synthetic-secret"
 
     def test_main_returns_zero(self, monkeypatch, capsys):
         """main возвращает 0 и печатает JSON-сводку."""
@@ -68,7 +73,7 @@ class TestMain:
         monkeypatch.setattr(llm_module, "client_from_env", lambda: object())
         monkeypatch.setattr(cli, "connect", lambda: object())
 
-        def fake_run(conn, *, llm, browser, pdf, discovery_client, boards, base_dir, limit):
+        def fake_run(conn, *, llm, browser, pdf, discovery_client, boards, base_dir, limit, **kwargs):
             captured["limit"] = limit
             return AutoCycleSummary()
 

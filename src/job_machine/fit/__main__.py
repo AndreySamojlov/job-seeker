@@ -17,13 +17,29 @@ def main(argv=None):
     commands = parser.add_subparsers(dest="action", required=True)
     commands.add_parser("run-once")
     commands.add_parser("status")
+    commands.add_parser("preparation-status")
+    preparation_resume = commands.add_parser("preparation-resume-blocked")
+    preparation_resume.add_argument("--vacancy-id", type=UUID, required=True)
+    preparation_resume.add_argument("--candidate-id")
     resume = commands.add_parser("resume-blocked")
     resume.add_argument("--candidate-id", required=True)
     resume.add_argument("--vacancy-id", type=UUID, required=True)
     args = parser.parse_args(argv)
     clock = lambda: datetime.now(timezone.utc)
     try:
-        if args.action == "status":
+        if args.action == "preparation-status":
+            with connect() as conn:
+                counts = conn.execute("SELECT status,count(*) FROM fit_prepare GROUP BY status ORDER BY status").fetchall()
+                errors = conn.execute("SELECT last_error_code,count(*) FROM fit_prepare_candidate WHERE last_error_code IS NOT NULL GROUP BY last_error_code ORDER BY last_error_code").fetchall()
+                parent_errors = conn.execute("SELECT last_error_code,count(*) FROM fit_prepare WHERE last_error_code IS NOT NULL GROUP BY last_error_code ORDER BY last_error_code").fetchall()
+            result = {"counts": dict(counts), "parent_error_counts": dict(parent_errors), "candidate_error_counts": dict(errors)}
+        elif args.action == "preparation-resume-blocked":
+            from .preparation_store import rearm_blocked
+            with connect() as conn:
+                resumed = rearm_blocked(conn, args.vacancy_id, candidate_id=args.candidate_id, now=clock())
+                conn.commit()
+            result = {"resumed": resumed}
+        elif args.action == "status":
             with connect() as conn:
                 rows = conn.execute("SELECT status, count(*) FROM fit_job GROUP BY status ORDER BY status").fetchall()
             result = {"counts": dict(rows)}

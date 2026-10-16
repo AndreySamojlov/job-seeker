@@ -17,6 +17,7 @@ import argparse
 import json
 import os
 import sys
+import httpx
 
 from job_machine.db.connection import connect
 from job_machine.discovery.greenhouse import GreenhouseClient
@@ -31,6 +32,13 @@ def _boards(raw: str | None) -> list[str]:
     if not raw:
         return []
     return [b.strip() for b in raw.split(",") if b.strip()]
+
+
+def _answer_allowlist(raw: str | None) -> tuple[str, ...]:
+    """Explicit qualification-field allowlist; empty means no vault answers."""
+    if not raw:
+        return ()
+    return tuple(dict.fromkeys(value.strip() for value in raw.split(",") if value.strip()))
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -73,16 +81,21 @@ def main(argv: list[str] | None = None) -> int:
     pdf = PdfClient(base_url=browser_url)
     discovery_client = GreenhouseClient()
 
-    summary = run_auto_cycle(
-        conn,
-        llm=llm_client,
-        browser=browser,
-        pdf=pdf,
-        discovery_client=discovery_client,
-        boards=boards,
-        base_dir=base_dir,
-        limit=args.limit,
-    )
+    with httpx.Client() as fit_client:
+        summary = run_auto_cycle(
+            conn,
+            llm=llm_client,
+            browser=browser,
+            pdf=pdf,
+            discovery_client=discovery_client,
+            boards=boards,
+            base_dir=base_dir,
+            limit=args.limit,
+            conn_factory=connect,
+            fit_client=fit_client,
+            fit_api_key=os.environ.get("TYPESAFE_API_KEY", ""),
+            fit_answer_allowlist=_answer_allowlist(os.environ.get("FIT_ANSWER_ALLOWLIST", "")),
+        )
 
     print(json.dumps(summary.__dict__))
     return 0

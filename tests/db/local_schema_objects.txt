@@ -1,3 +1,4 @@
+column:company_watchlist.ru:text:NULL
 column:fit_job.attempts:integer:NOT NULL
 column:fit_job.candidate_id:text:NOT NULL
 column:fit_job.completed_at:timestamp with time zone:NULL
@@ -14,6 +15,26 @@ column:fit_job.score:integer:NULL
 column:fit_job.status:text:NOT NULL
 column:fit_job.updated_at:timestamp with time zone:NOT NULL
 column:fit_job.vacancy_id:uuid:NOT NULL
+column:fit_prepare.attempts:integer:NOT NULL
+column:fit_prepare.completed_at:timestamp with time zone:NULL
+column:fit_prepare.created_at:timestamp with time zone:NOT NULL
+column:fit_prepare.job_text:text:NULL
+column:fit_prepare.last_error_code:text:NULL
+column:fit_prepare.lease_token:uuid:NULL
+column:fit_prepare.lease_until:timestamp with time zone:NULL
+column:fit_prepare.next_attempt_at:timestamp with time zone:NULL
+column:fit_prepare.status:text:NOT NULL
+column:fit_prepare.updated_at:timestamp with time zone:NOT NULL
+column:fit_prepare.vacancy_id:uuid:NOT NULL
+column:fit_prepare_candidate.attempts:integer:NOT NULL
+column:fit_prepare_candidate.candidate_id:text:NOT NULL
+column:fit_prepare_candidate.created_at:timestamp with time zone:NOT NULL
+column:fit_prepare_candidate.last_error_code:text:NULL
+column:fit_prepare_candidate.next_attempt_at:timestamp with time zone:NULL
+column:fit_prepare_candidate.prepared_at:timestamp with time zone:NULL
+column:fit_prepare_candidate.status:text:NOT NULL
+column:fit_prepare_candidate.updated_at:timestamp with time zone:NOT NULL
+column:fit_prepare_candidate.vacancy_id:uuid:NOT NULL
 constraint:fit_job.fit_job_attempts_check:check:CHECK ((attempts >= 0))
 constraint:fit_job.fit_job_candidate_id_fkey:foreign_key:FOREIGN KEY (candidate_id) REFERENCES candidate(candidate_id)
 constraint:fit_job.fit_job_check1:check:CHECK ((((status = 'processing'::text) AND (lease_token IS NOT NULL) AND (lease_until IS NOT NULL)) OR ((status <> 'processing'::text) AND (lease_token IS NULL) AND (lease_until IS NULL))))
@@ -25,6 +46,33 @@ constraint:fit_job.fit_job_payload_hash_check:check:CHECK ((payload_hash ~ '^[0-
 constraint:fit_job.fit_job_pkey:primary_key:PRIMARY KEY (candidate_id, vacancy_id)
 constraint:fit_job.fit_job_status_check:check:CHECK ((status = ANY (ARRAY['pending'::text, 'processing'::text, 'retry_wait'::text, 'blocked'::text, 'completed'::text])))
 constraint:fit_job.fit_job_vacancy_id_fkey:foreign_key:FOREIGN KEY (vacancy_id) REFERENCES vacancy(vacancy_id)
+constraint:fit_prepare.fit_prepare_attempts_check:check:CHECK ((attempts >= 0))
+constraint:fit_prepare.fit_prepare_check1:check:CHECK (((status <> 'retry_wait'::text) OR (next_attempt_at IS NOT NULL)))
+constraint:fit_prepare.fit_prepare_check2:check:CHECK (((status = 'completed'::text) = (completed_at IS NOT NULL)))
+constraint:fit_prepare.fit_prepare_check:check:CHECK ((((status = 'processing'::text) AND (lease_token IS NOT NULL) AND (lease_until IS NOT NULL)) OR ((status <> 'processing'::text) AND (lease_token IS NULL) AND (lease_until IS NULL))))
+constraint:fit_prepare.fit_prepare_job_text_check:check:CHECK ((length(job_text) <= 100000))
+constraint:fit_prepare.fit_prepare_last_error_code_check:check:CHECK ((last_error_code ~ '^[a-z][a-z0-9_]{0,63}$'::text))
+constraint:fit_prepare.fit_prepare_pkey:primary_key:PRIMARY KEY (vacancy_id)
+constraint:fit_prepare.fit_prepare_status_check:check:CHECK ((status = ANY (ARRAY['pending'::text, 'processing'::text, 'retry_wait'::text, 'blocked'::text, 'completed'::text])))
+constraint:fit_prepare.fit_prepare_vacancy_id_fkey:foreign_key:FOREIGN KEY (vacancy_id) REFERENCES vacancy(vacancy_id)
+constraint:fit_prepare_candidate.fit_prepare_candidate_attempts_check:check:CHECK ((attempts >= 0))
+constraint:fit_prepare_candidate.fit_prepare_candidate_candidate_id_fkey:foreign_key:FOREIGN KEY (candidate_id) REFERENCES candidate(candidate_id)
+constraint:fit_prepare_candidate.fit_prepare_candidate_check1:check:CHECK (((status = 'prepared'::text) = (prepared_at IS NOT NULL)))
+constraint:fit_prepare_candidate.fit_prepare_candidate_check:check:CHECK (((status <> 'retry_wait'::text) OR (next_attempt_at IS NOT NULL)))
+constraint:fit_prepare_candidate.fit_prepare_candidate_last_error_code_check:check:CHECK ((last_error_code ~ '^[a-z][a-z0-9_]{0,63}$'::text))
+constraint:fit_prepare_candidate.fit_prepare_candidate_pkey:primary_key:PRIMARY KEY (candidate_id, vacancy_id)
+constraint:fit_prepare_candidate.fit_prepare_candidate_status_check:check:CHECK ((status = ANY (ARRAY['pending'::text, 'prepared'::text, 'retry_wait'::text, 'blocked'::text])))
+constraint:fit_prepare_candidate.fit_prepare_candidate_vacancy_id_fkey:foreign_key:FOREIGN KEY (vacancy_id) REFERENCES fit_prepare(vacancy_id)
 index:fit_job.fit_job_due:CREATE INDEX fit_job_due ON fit_job USING btree (status, next_attempt_at, lease_until) WHERE (status = ANY (ARRAY['pending'::text, 'retry_wait'::text, 'processing'::text]))
 index:fit_job.fit_job_pkey:CREATE UNIQUE INDEX fit_job_pkey ON fit_job USING btree (candidate_id, vacancy_id)
+index:fit_prepare.fit_prepare_due:CREATE INDEX fit_prepare_due ON fit_prepare USING btree (status, next_attempt_at, lease_until) WHERE (status = ANY (ARRAY['pending'::text, 'retry_wait'::text, 'processing'::text]))
+index:fit_prepare.fit_prepare_pkey:CREATE UNIQUE INDEX fit_prepare_pkey ON fit_prepare USING btree (vacancy_id)
+index:fit_prepare_candidate.fit_prepare_candidate_pkey:CREATE UNIQUE INDEX fit_prepare_candidate_pkey ON fit_prepare_candidate USING btree (candidate_id, vacancy_id)
+trigger:candidate.fit_candidate_active_insert:CREATE TRIGGER fit_candidate_active_insert BEFORE INSERT ON candidate FOR EACH STATEMENT EXECUTE FUNCTION serialize_fit_active_set()
+trigger:candidate.fit_candidate_active_update:CREATE TRIGGER fit_candidate_active_update BEFORE UPDATE OF active ON candidate FOR EACH STATEMENT EXECUTE FUNCTION serialize_fit_active_set()
 trigger:fit_job.fit_job_immutable:CREATE TRIGGER fit_job_immutable BEFORE DELETE OR UPDATE ON fit_job FOR EACH ROW EXECUTE FUNCTION protect_fit_job_snapshot()
+trigger:fit_prepare.fit_prepare_identity:CREATE TRIGGER fit_prepare_identity BEFORE DELETE OR UPDATE ON fit_prepare FOR EACH ROW EXECUTE FUNCTION protect_fit_preparation_identity()
+trigger:fit_prepare_candidate.fit_prepare_candidate_identity:CREATE TRIGGER fit_prepare_candidate_identity BEFORE DELETE OR UPDATE ON fit_prepare_candidate FOR EACH ROW EXECUTE FUNCTION protect_fit_preparation_identity()
+trigger:vacancy.fit_vacancy_verified_insert:CREATE TRIGGER fit_vacancy_verified_insert BEFORE INSERT ON vacancy FOR EACH STATEMENT EXECUTE FUNCTION serialize_fit_active_set()
+trigger:vacancy.fit_vacancy_verified_update:CREATE TRIGGER fit_vacancy_verified_update BEFORE UPDATE OF vacancy_status ON vacancy FOR EACH STATEMENT EXECUTE FUNCTION serialize_fit_active_set()
+trigger:vacancy.fit_verified_snapshot:CREATE TRIGGER fit_verified_snapshot AFTER INSERT OR UPDATE OF vacancy_status ON vacancy FOR EACH ROW EXECUTE FUNCTION snapshot_fit_recipients()

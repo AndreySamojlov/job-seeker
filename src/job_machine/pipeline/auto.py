@@ -13,12 +13,16 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from typing import Any
 
 from job_machine.cloud.store import load_cloud
 from job_machine.discovery import service as discovery_service
 from job_machine.discovery.sources import SourceSpec, load_sources
 from job_machine.fill import service as fill_service
+from job_machine.fit import preparation as fit_preparation
+from job_machine.fit.preparation import default_client_factory as _default_fit_client_factory
+from job_machine.fit import worker as fit_worker
 from job_machine.mcp import store as mcp_store
 from job_machine.package import service as package_service
 from job_machine.resume import selector, service as resume_service, store as resume_store
@@ -42,6 +46,12 @@ class AutoCycleSummary:
     resume_errors: int = 0
     packaged: int = 0
     pre_submit_ready: int = 0
+    fit_prepared: int = 0
+    fit_prepare_retry: int = 0
+    fit_prepare_blocked: int = 0
+    fit_completed: int = 0
+    fit_retry: int = 0
+    fit_blocked: int = 0
     errors: list[str] = field(default_factory=list)
 
 
@@ -68,6 +78,15 @@ def _stage(summary: AutoCycleSummary, name: str, fn) -> None:
     except Exception as exc:  # noqa: BLE001
         log.exception("Ошибка в стадии %s", name)
         summary.errors.append(f"{name}: {exc}")
+
+
+def _safe_stage(summary: AutoCycleSummary, name: str, fn) -> None:
+    """Fit-stage errors can carry snapshots/DSNs; expose only a fixed code."""
+    try:
+        fn()
+    except Exception:  # noqa: BLE001
+        log.error("Ошибка в стадии %s (operation_failed)", name)
+        summary.errors.append(f"{name}: operation_failed")
 
 
 # ---------------------------------------------------------------------------
@@ -141,10 +160,15 @@ def run_auto_cycle(
     sources: list[SourceSpec] | None = None,
     base_dir: str = "applications",
     limit: int = 10,
+    conn_factory=None,
+    fit_client=None,
+    fit_api_key: str = "",
+    fit_client_factory=None,
+    fit_answer_allowlist=(),
 ) -> AutoCycleSummary:
     """Прогнать полный автономный конвейер с LLM-стадиями triage и resume.
 
-    Порядок стадий: discovery → verify → triage → resume → package → fill.
+    Порядок стадий: discovery → verify → preparation → Jev → triage → resume → package → fill.
     Детерминированные стадии делегируются соответствующим сервисам.
     LLM-стадии выполняются per-item с изоляцией падения и rollback.
 
@@ -175,6 +199,57 @@ def run_auto_cycle(
         summary.verified = getattr(result, "verified", 0)
 
     _stage(summary, "verify", _ver)
+
+    # Durable queues are drained every cycle, including work left by earlier
+    # cycles. Each queue has an independent batch bound and stage isolation.
+    def _fit_prepare():
+        if conn_factory is None:
+            raise ValueError("fit preparation requires conn_factory")
+        factory = fit_client_factory or _default_fit_client_factory
+        for _ in range(max(0, limit)):
+            outcome = fit_preparation.run_once(
+                conn_factory, client_factory=factory,
+                answer_allowlist=fit_answer_allowlist,
+            )
+            if outcome == "idle":
+                break
+            if outcome == "prepared":
+                summary.fit_prepared += 1
+            elif outcome == "retry_wait":
+                summary.fit_prepare_retry += 1
+            elif outcome == "blocked":
+                summary.fit_prepare_blocked += 1
+            elif outcome == "lease_lost":
+                continue
+            else:
+                raise ValueError("invalid fit preparation outcome")
+
+    _safe_stage(summary, "fit_prepare", _fit_prepare)
+
+    def _fit_evaluate():
+        if conn_factory is None:
+            raise ValueError("fit evaluation requires conn_factory")
+        if fit_client is None:
+            raise ValueError("fit evaluation requires fit_client")
+        for _ in range(max(0, limit)):
+            outcome = fit_worker.run_once(
+                conn_factory, client=fit_client, api_key=fit_api_key,
+                clock=lambda: datetime.now(timezone.utc),
+            )
+            if outcome == "idle":
+                break
+            if outcome == "completed":
+                summary.fit_completed += 1
+            elif outcome == "retry_wait":
+                summary.fit_retry += 1
+            elif outcome == "blocked":
+                summary.fit_blocked += 1
+            elif outcome == "lease_lost":
+                continue
+            else:
+                raise ValueError("invalid Jev outcome")
+
+    _safe_stage(summary, "fit_jev", _fit_evaluate)
 
     # --- Triage (LLM) ---
     def _triage():
