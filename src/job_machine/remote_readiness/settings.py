@@ -18,6 +18,7 @@ class ReadinessSettings:
     concurrency: int = field(default=1, init=False)
     request_timeout_seconds: int = 30
     max_attempts: int = 8
+    poll_interval_seconds: int = 30
 
     @classmethod
     def from_env(cls, env: Mapping[str, str] | None = None) -> "ReadinessSettings":
@@ -32,6 +33,7 @@ class ReadinessSettings:
             "jev_batch_limit": ("RWR_JEV_BATCH_LIMIT", 1, 100, 1),
             "request_timeout_seconds": ("RWR_REQUEST_TIMEOUT_SECONDS", 1, 120, 30),
             "max_attempts": ("RWR_MAX_ATTEMPTS", 1, 8, 8),
+            "poll_interval_seconds": ("RWR_POLL_INTERVAL_SECONDS", 1, 300, 30),
         }
         parsed: dict[str, int] = {}
         for field, (key, minimum, maximum, default) in limits.items():
@@ -48,7 +50,9 @@ class ReadinessSettings:
 
         if enabled:
             api_key = values.get("TYPESAFE_API_KEY")
-            if not isinstance(api_key, str) or not api_key.strip():
+            api_key_file = values.get("TYPESAFE_API_KEY_FILE")
+            if ((not isinstance(api_key, str) or not api_key.strip())
+                    and (not isinstance(api_key_file, str) or not api_key_file.strip())):
                 raise ValueError("missing_rwr_api_key")
 
         return cls(enabled=enabled, **parsed)

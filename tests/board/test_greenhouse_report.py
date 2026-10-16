@@ -10,7 +10,7 @@ def snapshot(**changes):
     values = dict(candidate_id='alpha', candidates=[{'candidate_id': 'alpha', 'name': 'Alpha'}],
                   board_options=['acme'], total_rows=3, unknown_board=1, unscored=1,
                   daily=[{'day': date(2026, 10, 13), 'count': 1}, {'day': date(2026, 10, 15), 'count': 2}],
-                  bands=[{'label': 'low · v1', 'count': 1}, {'label': 'high · v2', 'count': 1}, {'label': 'Не оценено', 'count': 1}],
+                  bands=[{'label': '0', 'count': 1}, {'label': '90', 'count': 1}],
                   boards=[{'token': 'acme', 'count': 2}, {'token': None, 'count': 1}],
                   points=[{'discovered_at': datetime(2026, 10, 13, tzinfo=timezone.utc), 'fit_score': 0},
                           {'discovered_at': datetime(2026, 10, 15, tzinfo=timezone.utc), 'fit_score': 90}],
@@ -20,13 +20,13 @@ def snapshot(**changes):
     return GreenhouseSnapshot(**values)
 
 
-def test_report_preserves_zero_unknowns_versions_and_calendar_days():
+def test_report_preserves_zero_unknowns_and_calendar_days():
     report = build_greenhouse_report(snapshot(), BoardFilters('alpha', date(2026, 10, 13), date(2026, 10, 15)))
     assert [k['value'] for k in report['kpis']] == ['1', 'Нет данных', '1', 'Нет данных']
     assert report['charts']['chart_series'][0]['series'][0]['y'] == [1, 0, 2]
-    assert report['charts']['chart_series'][1]['x'] == ['low · v1', 'high · v2', 'Не оценено']
+    assert report['charts']['chart_series'][1]['x'] == ['0', '90']
     assert report['charts']['chart_series'][3]['series'][0]['data'][0]['y'] == 0
-    assert '1' in report['charts']['specs'][3]['caption']
+    assert report['charts']['specs'][3]['caption'] == 'Не оценено: 1'
     assert report['table']['total_rows'] == 3
     assert report['table']['rows'][0]['fit_score'] == 0
     assert report['table']['rows'][0]['url'] is None
@@ -66,7 +66,7 @@ def test_page_does_not_bound_aggregates():
     assert report['charts']['chart_series'][0]['series'][0]['y'] == [1, 0, 2]
 
 
-def test_scatter_keeps_rubric_versions_distinguishable():
+def test_scatter_uses_deployed_jev_contract_without_rubric_series():
     stamp = datetime(2026, 10, 15, tzinfo=timezone.utc)
     report = build_greenhouse_report(snapshot(points=[
         dict(discovered_at=stamp, fit_score=50, fit_score_version='v1'),
@@ -74,8 +74,8 @@ def test_scatter_keeps_rubric_versions_distinguishable():
         dict(discovered_at=stamp, fit_score=0, fit_score_version=None)]),
         BoardFilters('alpha', date(2026, 10, 13), date(2026, 10, 15)))
     series = report['charts']['chart_series'][3]['series']
-    assert {s['name'] for s in series} == {'Фит · v1', 'Фит · v2', 'Фит · Версия неизвестна'}
-    assert sum(len(s['data']) for s in series) == 3
+    assert [s['name'] for s in series] == ['Jev']
+    assert len(series[0]['data']) == 3
 
 
 def test_table_keeps_only_requested_columns():
@@ -87,6 +87,17 @@ def test_table_keeps_only_requested_columns():
                          'format': 'percent', 'sortable': False, 'filter': None}
     assert report['table']['rows'][0]['remote_work_readiness'] is None
     assert report['table']['rows'][0]['fit_score'] == 0
+
+
+def test_score_distribution_uses_aggregate_for_entire_selection_not_current_page():
+    report = build_greenhouse_report(snapshot(rows=[{'vacancy_id': 'page-row', 'fit_score': 0,
+        'remote_work_readiness': None, 'board_token': None}], bands=[
+            {'label': '0', 'count': 17}, {'label': '90', 'count': 6}]),
+        BoardFilters('alpha', date(2026, 10, 13), date(2026, 10, 15)), TablePage(page=1))
+    assert report['charts']['chart_series'][1]['x'] == ['0', '90']
+    assert report['charts']['chart_series'][1]['series'][0]['y'] == [17, 6]
+    assert report['table']['page'] == 1
+    assert [row['vacancy_id'] for row in report['table']['rows']] == ['page-row']
 
 
 def test_readiness_row_value_is_preserved_raw_in_report():

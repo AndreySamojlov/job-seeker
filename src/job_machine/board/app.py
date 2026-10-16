@@ -14,7 +14,7 @@ from job_machine.board.config import GreenhouseRepository
 from job_machine.board.greenhouse import build_greenhouse_report
 from job_machine.board.models import BoardFilters, MOSCOW, TablePage
 
-from job_machine.board.read_budget import ReadBudget, monotonic_ms
+from job_machine.board.read_budget import MAX_RESPONSE_BYTES, ReadBudget, ReadDeadline, SnapshotTooLarge, monotonic_ms
 from job_machine.board.read_runtime import ReadCoordinator, PreparedReport, ReadBusy
 
 class CandidateUnavailable(ValueError):
@@ -76,14 +76,24 @@ def create_app(repository=None) -> FastAPI:
                 body = json.dumps(jsonable_encoder(report), ensure_ascii=False, allow_nan=False, separators=(',', ':')).encode('utf-8')
             except Exception:
                 raise InvalidReport() from None
+            if len(body) > MAX_RESPONSE_BYTES:
+                raise SnapshotTooLarge()
             budget.check_response_deadline()
             return PreparedReport(body)
         try:
             result = await coordinator.run(prepare, budget=budget)
         except CandidateUnavailable:
             raise HTTPException(422, 'candidate_unavailable') from None
+        except SnapshotTooLarge:
+            return JSONResponse(dict(schema_version=1, state='unavailable', code='snapshot_too_large',
+                                     detail='Выборка слишком велика для безопасного чтения'),
+                                status_code=503, headers={'Cache-Control': 'no-store'})
         except InvalidReport:
             return JSONResponse(dict(schema_version=1, state='unavailable', code='invalid_report', detail='Данные недоступны'), status_code=500, headers={'Cache-Control': 'no-store'})
+        except ReadDeadline:
+            return JSONResponse(dict(schema_version=1, state='unavailable', code='snapshot_timeout',
+                                     detail='Не удалось полностью загрузить выборку за отведённое время'),
+                                status_code=503, headers={'Cache-Control': 'no-store'})
         except Exception as exc:
             return JSONResponse(dict(schema_version=1, state='unavailable', detail='Данные недоступны',
                                      code='read_busy' if isinstance(exc, ReadBusy) else 'source_unavailable'),

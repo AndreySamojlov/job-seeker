@@ -32,14 +32,13 @@ class Connection:
 def test_transaction_and_parameterization():
     conn = Connection()
     selection = BoardFilters('alpha', date(2026, 10, 13), date(2026, 10, 15), board="x';DROP TABLE vacancy;--")
-    result = load_greenhouse_snapshot(conn, selection, TablePage(sort_key='fit_score'))
+    result = load_greenhouse_snapshot(conn, selection, TablePage(page=2, sort_key='fit_score'))
     assert result.total_rows == 0
     sql_text = '\n'.join(s for s, p in conn.calls)
     assert 'REPEATABLE READ READ ONLY' in sql_text
     assert 'statement_timeout' in sql_text
     assert "x';DROP" not in sql_text
-    assert 'LIMIT 100 OFFSET' in sql_text
-    assert 'NULLS LAST, vacancy_id' in sql_text
+    assert 'ORDER BY fit_score DESC NULLS LAST, vacancy_id LIMIT 100 OFFSET 200' in sql_text
     assert 'LEFT JOIN remote_work_readiness_job r' in sql_text
     assert "r.status = 'completed'" in sql_text
     assert 'r.value AS remote_work_readiness' in sql_text

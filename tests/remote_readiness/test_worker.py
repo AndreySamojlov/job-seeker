@@ -247,6 +247,7 @@ def test_cli_status_is_redacted_and_makes_no_provider_calls(monkeypatch, capsys)
     monkeypatch.setattr(cli.settings.ReadinessSettings, "from_env", lambda: type("Settings", (), {
         "enabled": True, "intake_batch_limit": 4, "jev_batch_limit": 3,
         "concurrency": 1, "request_timeout_seconds": 30, "max_attempts": 5,
+        "poll_interval_seconds": 30,
     })())
     monkeypatch.setattr(cli, "run_once", lambda *a, **k: pytest.fail("provider path called"))
     monkeypatch.setattr(cli.preparation, "run_once", lambda *a, **k: pytest.fail("ATS path called"))

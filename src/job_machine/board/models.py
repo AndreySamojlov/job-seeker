@@ -7,7 +7,7 @@ from job_machine.board.read_budget import monotonic_ms
 from job_machine.board.column_filters import serialize_column_filters
 
 MOSCOW = timezone(timedelta(hours=3))
-SORT_KEYS = ('title', 'company', 'board_token', 'location', 'work_mode', 'discovered_at', 'availability', 'availability_checked_at', 'fit_score', 'fit_band', 'fit_score_version')
+SORT_KEYS = ('title', 'company', 'location', 'work_mode', 'discovered_at', 'fit_score')
 
 
 @dataclass(frozen=True)

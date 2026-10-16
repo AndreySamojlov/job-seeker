@@ -26,6 +26,16 @@ create table remote_work_readiness_job (
     constraint rwr_completed check ((status = 'completed') = (completed_at is not null))
 );
 
+-- The board role is provisioned by the existing board deployment. Keep its
+-- access limited to the fields used to display a completed percentage.
+do $$
+begin
+    if exists (select 1 from pg_roles where rolname = 'job_board_reader') then
+        execute 'grant select (vacancy_id, status, value) on remote_work_readiness_job to job_board_reader';
+    end if;
+end;
+$$;
+
 -- PostgreSQL float ordering puts NaN above all finite numbers: <= 1 rejects it
 -- together with Infinity; >= 0 rejects -Infinity. No rounding/scale conversion.
 create index remote_work_readiness_job_due

@@ -1,12 +1,12 @@
 # RWR — операторский runbook
 
-Дата: 16 октября 2026. Статус: рабочая инструкция для локальной подготовки; production-поставка не разрешена этим документом.
+Дата: 16 октября 2026. Статус: начальная production-поставка S5/S6 ограничена отдельным disabled worker и обновлением board по текущему заданию. Включение RWR и реальные ATS/Jev вызовы не входят в разрешённый rollout.
 
 Связанные артефакты: [Epic Intent](../../remote-work-readiness-intent.md), [карта декомпозиции](../../decomposition-map.md), [проект S4](../specs/2026-10-16-remote-work-readiness-s4-design.md), [план S4](../plans/2026-10-16-remote-work-readiness-s4.md), [проверенная база проекта](../../fact/architecture.md), [стратегия проверок](../../fact/test-strategy.md), [аудит S1](../../../audit/remote-work-readiness-s1.md).
 
 ## 1. Назначение и ограничения
 
-Runbook задаёт безопасный порядок preflight → additive schema/config → synthetic smoke → enable → observation и обратного перехода. Он не является разрешением применять миграции, менять секреты, вызывать ATS/Jev, менять рабочую конфигурацию, делать redeploy либо прерывать сервисы. Такие операции требуют отдельного поручения с указанной средой, точными сервисом и image ID, объёмом воздействия и принятием возможного прерывания.
+Runbook задаёт безопасный порядок preflight → additive schema/config → synthetic smoke и обратного перехода. Текущее задание разрешает подготовить и доставить отдельный worker в состоянии disabled, применить только migrations `0039`–`0041` после отдельной проверки канала записи, и заменить только board image после явного принятия board-only downtime. Не разрешены включение RWR, реальные ATS/Jev вызовы и использование read-only доступа к БД для записи.
 
 Оценка остаётся vacancy-only. Очереди RWR и её состояние не меняют fit, triage, сортировку, приоритет и отправку отклика. Ошибка или отсутствие результата не равны нулевому индексу. Завершённые оценки и исходные Jev snapshots не пересчитываются и не удаляются.
 
@@ -24,14 +24,15 @@ Runbook задаёт безопасный порядок preflight → additive 
 
 | Параметр | Статус |
 |---|---|
-| Среда, владелец и окно поставки | Не определены |
-| Имя RWR worker/service, базовый image, точный image digest и способ сборки/доставки | Не определены; отдельного RWR deployment template сейчас нет |
-| Целевая БД, текущий migration ledger, права/роль мигратора и runner | Не определены; production schema не проверялась для этой Story |
+| Целевая среда | lab-do; существующие Job Machine сервисы должны оставаться без изменений, кроме отдельно переключаемой board |
+| RWR worker/service | Отдельный Compose service `rwr-worker`; desired state — disabled; image digest и фактический deployment ещё не подтверждены |
+| Целевая БД и migration ledger | Production ledger был прочитан read-only: head `0038`; новые RWR migrations ещё не применялись. Проверенный write-capable migration channel пока не установлен |
+| Локальная guarded DB suite | Заблокирована: PID `26512` (`postgres.exe`, `-D .runtime/pg-recovery`) держит loopback `25439` из основного workspace; его не останавливали и не использовали после прерванной попытки. DB-проверка должна выполняться только на собственном `.runtime/pg-recovery` Story worktree после освобождения порта |
 | Endpoint и доступность закреплённой модели Jev `jev-1.13.0` в целевом аккаунте | Требуют подтверждения; живой вызов этим runbook не предусмотрен |
 | Настройки batch/timeout/retry | Валидируются S4.T1; production значения требуют подтверждённых квот. Обработка последовательная с concurrency=1; timeout действует на Jev HTTP request; max attempts ограничивает обе очереди |
 | Восстановление последней lease | Если worker завершился аварийно после последней попытки, истёкшая lease переводится в `blocked` с безопасным кодом `lease_expired`; rearm допускается после устранения причины |
 | ATS источники и их доступность | Требуют read-only подтверждения для целевого worker |
-| Secret channel для `TYPESAFE_API_KEY` | Переменная приложения известна; secret store/mount/ACL целевого сервиса не определены |
+| Secret channel для `TYPESAFE_API_KEY` | В шаблоне поддержан read-only file mount; точный target source/ACL ещё не подтверждён |
 | Persistent enable/disable и status S4.T2 | Реализованы; перед применением подтвердить подключение именно к target. Status redacted, но показывает counters и error codes |
 | Подтверждённый backup/restore и допустимое прерывание | Не подтверждены; отключение RWR не требует удаления схемы и не заменяет backup |
 
@@ -72,9 +73,13 @@ Staged rehearsal реализован как `tests/remote_readiness/test_rehear
 ### Шаг B — additive schema и disabled config
 
 1. Сверить release manifest/hash с прошедшими проверку S1–S4 артефактами и выбранным image digest.
-2. По утверждённому migration runner применить последовательно только отсутствующие и заранее перечисленные additive migrations: `0039`, `0040`, `0041`. Не делать destructive downgrade или обратную миграцию. Если ledger отличается от ожидаемого, остановиться до любых изменений.
-3. Развернуть валидированную конфигурацию T1 с persistent control в состоянии **disabled**. Значения batch/timeout/retry брать из подтверждённых квот и approved config; concurrency фиксирована на 1; если конечные значения или границы в конфигурации отсутствуют — процесс не включать.
-4. Проверить redacted status: disabled; обе очереди доступны для счётчиков; completed результаты видны как завершённые без текстов объявлений, provider body, ключа и exception strings. Не запускать обработчик очередей.
+2. Сначала выполнить `python -m job_machine.remote_readiness.migrations preflight`. Команда не создаёт таблицы и не меняет ledger: PostgreSQL принудительно выполняет проверку в read-only транзакции. Она печатает идентификатор target `address:port/database`, ledger head и недостающие RWR migrations. Runner проверяет закреплённые SHA-256 ровно для `0039`, `0040`, `0041`; непрерывную историю и корректные имена migrations `0001–0038`; отсутствие пропусков, посторонних номеров и неправильного порядка RWR migrations. История до `0038` должна быть непрерывной и включать точное имя `0038_vacancy_fit_preparation.sql`. Историческое состояние с `0037` без `0036` намеренно закрывает gate и требует отдельного решения по schema history; runner ничего не исправляет автоматически.
+3. До любых записей убедиться read-only запросом, что роль `job_board_reader` уже существует. Migration 0039 выдаёт ей только column-level SELECT на `vacancy_id`, `status`, `value`, если роль есть; при её отсутствии grant намеренно пропускается. Если роль отсутствует — остановиться и выполнить её штатное provision по `deploy/board/README.md` до миграции.
+4. Только после проверки target-строки, роли и отдельного подтверждения окна применять `python -m job_machine.remote_readiness.migrations apply --expect-target "<address:port/database из preflight>"`. `apply` повторяет read-only preflight, требует точного совпадения target, берёт advisory lock и перед каждой транзакцией повторно проверяет ledger; каждая allowlisted migration и запись `schema_migrations` фиксируются атомарно. Команда применяет только отсутствующий упорядоченный суффикс из `0039–0041`; она не запускает другие SQL файлы. При несовпадении hash, target, имени/порядка ledger или исключении текущая транзакция откатывается, последующие migration не запускаются. Уже успешно зафиксированный предыдущий суффикс сохраняется; повторный запуск после устранения причины продолжает с первой отсутствующей migration. Повторный `apply` при уже применённых трёх migration безопасно возвращает `applied=none`.
+5. После применения 0039 read-only способом проверить, что `has_column_privilege` для `job_board_reader` и каждого из `vacancy_id`, `status`, `value` возвращает true. Убедиться, что чтение payload/модельных полей роли не выдано. Если проверка не прошла, board image не переключать; восстановить разрешения по `deploy/board/README.md` и повторить проверку.
+6. Не делать destructive downgrade или обратную миграцию. Если ledger отличается от ожидаемого, остановиться до любых изменений; не редактировать ledger вручную и не обходить gate.
+7. Развернуть валидированную конфигурацию T1 с persistent control в состоянии **disabled**. Значения batch/timeout/retry брать из подтверждённых квот и approved config; concurrency фиксирована на 1; если конечные значения или границы в конфигурации отсутствуют — процесс не включать.
+8. Проверить redacted status: disabled; обе очереди доступны для счётчиков; completed результаты видны как завершённые без текстов объявлений, provider body, ключа и exception strings. Не запускать обработчик очередей.
 
 ### Шаг C — staged smoke
 
@@ -102,6 +107,4 @@ Staged rehearsal реализован как `tests/remote_readiness/test_rehear
 
 ## 7. Статус и критерий закрытия
 
-Локальная реализация S4.T1–T4, migration `0041`, control CLI и guarded rehearsal реализованы. Точные результаты и оставшиеся ограничения фиксируются в S4 audit. Подтверждающий путь — guarded DB suite и конкретный rehearsal test, не live provider CLI.
-
-Production rollout остаётся отдельной gated операцией и этим runbook не разрешён: неизвестны target environment/service/image, migration runner/ledger, secret channel, реальные квоты, окно и допустимое прерывание. Локальная rehearsal не подтверждает эти production факты, доступность endpoint или качество Jev. До отдельного определённого поручения не применять миграции, менять secrets/config, делать redeploy, включать control или инициировать живые ATS/Jev вызовы.
+Локальные S1–S4 были интегрированы и проверены отдельно. S5/S6 код и package сейчас проходят локальные unit/smoke checks; production image build, own-worktree guarded DB suite, миграционное применение и service rollout остаются незавершёнными до восстановления наблюдаемости SSH, DB guard и write-capable migration channel. Не считать disabled deployment завершённым, пока exact image, zero-provider-call smoke и health evidence не записаны. RWR должно остаться disabled; board-only переключение требует отдельного явного ответа в concrete outage gate.

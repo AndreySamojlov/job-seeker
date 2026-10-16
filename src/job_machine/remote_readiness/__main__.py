@@ -8,7 +8,7 @@ import re
 from uuid import UUID
 
 from job_machine.db.connection import connect
-from . import control_store, intake_store, preparation, settings, store
+from . import control_store, daemon, intake_store, preparation, settings, store
 from .worker import run_once
 
 
@@ -43,6 +43,7 @@ def main(argv=None) -> int:
     commands.add_parser("disable")
     commands.add_parser("run-once")
     commands.add_parser("prepare-once")
+    commands.add_parser("daemon", help="Run the isolated RWR polling runtime")
     resume = commands.add_parser("resume-blocked")
     resume.add_argument("--vacancy-id", type=UUID, required=True)
     rearm_intake = commands.add_parser("rearm-intake")
@@ -67,6 +68,7 @@ def main(argv=None) -> int:
                 "concurrency": configured.concurrency,
                 "request_timeout_seconds": configured.request_timeout_seconds,
                 "max_attempts": configured.max_attempts,
+                "poll_interval_seconds": configured.poll_interval_seconds,
             }
             configured_enabled = bool(configured and configured.enabled)
             result = {
@@ -103,6 +105,8 @@ def main(argv=None) -> int:
                 resumed = store.rearm_blocked(conn, args.vacancy_id, now=now())
                 conn.commit()
             result = {"resumed": resumed}
+        elif args.action == "daemon":
+            return daemon.main()
         else:
             configured = settings.ReadinessSettings.from_env()
             if not configured.enabled or not _control_enabled():

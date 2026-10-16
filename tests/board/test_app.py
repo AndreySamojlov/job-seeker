@@ -170,3 +170,18 @@ def test_synthetic_fixture_filters_the_complete_selection():
         assert p['table']['total_rows'] == 1
         assert len(p['table']['rows']) == 1
         assert p['table']['rows'][0]['title'] == 'Synthetic vacancy 199'
+
+
+def test_synthetic_fixture_pages_server_side_under_engine_a8_contract():
+    from tests.board.fixture_app import create_app as fixture_app
+    with TestClient(fixture_app()) as client:
+        first = client.get('/api/board/greenhouse', params={
+            'page': 0, 'sort_key': 'title', 'sort_direction': 'asc'}).json()
+        second = client.get('/api/board/greenhouse', params={
+            'page': 1, 'sort_key': 'title', 'sort_direction': 'asc'}).json()
+    assert first['table']['total_rows'] == 201
+    assert first['table']['page'] == 0 and len(first['table']['rows']) == 100
+    assert second['table']['page'] == 1 and len(second['table']['rows']) == 100
+    assert 'client_sort' not in first['table']
+    assert first['table']['rows'][0]['title'] == 'Synthetic vacancy 0'
+    assert second['table']['rows'][0]['title'] != first['table']['rows'][0]['title']

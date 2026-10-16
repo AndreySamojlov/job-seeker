@@ -12,6 +12,7 @@ def test_defaults_disable_work_and_keep_all_resource_limits_finite():
     assert settings.concurrency == 1
     assert settings.request_timeout_seconds == 30
     assert settings.max_attempts == 8
+    assert settings.poll_interval_seconds == 30
     assert not hasattr(settings, "api_key")
 
 
@@ -22,6 +23,7 @@ def test_enabled_settings_accept_bounded_values_without_storing_secret():
         "RWR_JEV_BATCH_LIMIT": "15",
         "RWR_REQUEST_TIMEOUT_SECONDS": "45",
         "RWR_MAX_ATTEMPTS": "5",
+        "RWR_POLL_INTERVAL_SECONDS": "47",
         "TYPESAFE_API_KEY": "test-secret",
     })
 
@@ -31,6 +33,7 @@ def test_enabled_settings_accept_bounded_values_without_storing_secret():
     assert settings.concurrency == 1
     assert settings.request_timeout_seconds == 45
     assert settings.max_attempts == 5
+    assert settings.poll_interval_seconds == 47
     assert "test-secret" not in repr(settings)
     assert not hasattr(settings, "api_key")
 
@@ -51,6 +54,8 @@ def test_invalid_enabled_flag_is_rejected(raw):
     ("RWR_MAX_ATTEMPTS", "0"),
     ("RWR_MAX_ATTEMPTS", "9"),
     ("RWR_MAX_ATTEMPTS", "2.5"),
+    ("RWR_POLL_INTERVAL_SECONDS", "0"),
+    ("RWR_POLL_INTERVAL_SECONDS", "301"),
 ])
 def test_out_of_range_or_malformed_limit_is_rejected(key, raw):
     with pytest.raises(ValueError, match="invalid_rwr_setting"):
@@ -68,3 +73,12 @@ def test_enabled_mode_requires_secret_without_exposing_its_value(secret):
 
     assert "TYPESAFE_API_KEY" not in str(error.value)
     assert "secret" not in str(error.value)
+
+
+def test_enabled_settings_accept_secret_file_reference_without_storing_it():
+    settings = ReadinessSettings.from_env({
+        "RWR_ENABLED": "true",
+        "TYPESAFE_API_KEY_FILE": ".runtime/jev-secret",
+    })
+    assert settings.enabled
+    assert ".runtime/jev-secret" not in repr(settings)
