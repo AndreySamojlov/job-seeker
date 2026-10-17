@@ -9,7 +9,7 @@ import zipfile
 BASE = Path(__file__).resolve().parent
 VENDOR = BASE.parents[1]
 INPUT = VENDOR / 'cockpit_engine-0.2.0a5-py3-none-any.whl'
-OUTPUT = VENDOR / 'cockpit_engine-0.2.0a6-py3-none-any.whl'
+OUTPUT = VENDOR / 'fit-s3/cockpit_engine-0.2.0a6-py3-none-any.whl'
 EXPECTED_INPUT = 'aec5195b43cd0ac3d59ceb2d9b8c62202e6874b0515bc6bd6304097d54548630'
 assert hashlib.sha256(INPUT.read_bytes()).hexdigest() == EXPECTED_INPUT
 with zipfile.ZipFile(INPUT) as source:

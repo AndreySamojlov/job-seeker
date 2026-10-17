@@ -70,7 +70,7 @@
       "adaptation": "Immediate input wheel for immutable 0.2.0a6 client-sort adaptation."
     },
     {
-      "path": "vendor/cockpit_engine-0.2.0a6-py3-none-any.whl",
+      "path": "vendor/fit-s3/cockpit_engine-0.2.0a6-py3-none-any.whl",
       "sha256": "aee09b66b37433772b2a31df8d2e699c258b6f38d2e90755ba2013540d1f66d9",
       "adaptation": "Input wheel for immutable 0.2.0a7 table link-style successor."
     }
