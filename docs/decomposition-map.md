@@ -457,8 +457,10 @@ S1–S4 реализованы локально и проверены; signed co
 
 | ID | Исполнимый результат | Доказательство |
 |---|---|---|
-| RWR.S6.T1 | Обновлённый board image включает проверенные S2 UI/contract и Cockpit Engine a8 | provenance/hash и unit/API/DOM regression; source commit не зависит от незакоммиченной fit-ветки |
+| RWR.S6.T1 | Обновлённый board image включает проверенные S2 UI/contract и Cockpit Engine a9, объединяющий RWR, Fit S3 client sort и link style | provenance/hash и unit/API regression; составной wheel собран из зафиксированных исходников |
 | RWR.S6.T2 | Read-only preflight и переключение только board image на lab-do | health/port/identity/config до и после; оценка воздействия; явное подтверждение перед кратким downtime только board |
 | RWR.S6.T3 | Board acceptance и Epic-level consistency review | percent/NULL=пусто, no-sort/no-filter, остальная board функциональность и workers здоровы; Story review, затем Epic merge review |
 
 S5 task order: T1/T2 параллельно; T3 после T1, T2; T4 после T1–T3. S6.T1 параллельно с S5; S6.T2 после S5.T2 и S6.T1; S6.T3 после интеграции обоих Stories. Story reviews выполняются только на границах S5 и S6, затем один Epic-to-Stories merge review.
+
+**Доставка эпиков, 2026-10-17:** Jev Fit и Remote Work Readiness объединены локальным merge commit `b3a9bf6`; board `a9` собрана offline на lab-do и доставлена на `127.0.0.1:8095`. Fit и RWR fields проверены в двух live candidate contexts; клиентская сортировка полного snapshot и CSS-ссылки проверены по production assets. RWR worker `RWR_ENABLED=false`, persistent control `enabled=false`, реальные Jev/ATS calls не выполнялись. Полный результат и ограничения — [delivery evidence](../audit/fit-rwr-board-a9-deploy.md).

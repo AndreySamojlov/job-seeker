@@ -1,0 +1,95 @@
+{
+  "date": "2026-10-17",
+  "scope": "Fit S4 + Remote Work Readiness S6 board integration; RWR processing remains disabled",
+  "source": {
+    "branch": "codex/jev-fit-s1",
+    "merge_commit": "b3a9bf63e14faeb8ea486cfc1458789c214cd49d",
+    "remote_configured": false
+  },
+  "build": {
+    "command": "docker build --pull=false --network=none",
+    "context_sha256": "652e24b6becd509927009b8592d035ce65b3e0c47560430083ba32c4133b239c",
+    "base_image": "job-machine/board:jev-s4-20261016-r1@sha256:a05274af6da97675e12022bae91133346b8acc138aa51a91ca833be0e51890c6",
+    "engine_version": "0.2.0a9",
+    "wheel": "vendor/cockpit_engine-0.2.0a9-py3-none-any.whl",
+    "wheel_sha256": "b1e4883ac1f636a8b09ae7bb1fdfedf1e630b4908d34ec889a7ccae1ba5c3916",
+    "image_tag": "job-machine/board:jev-fit-rwr-a9-20261017-r1",
+    "image_id": "sha256:5bd425b7eee970d892a2e0ea79399f0e3caaf4867e9a46fbe3d565c1f40e6b3f",
+    "isolated_container_smoke": "passed; engine and board source verified with network=none, read-only root, non-root user"
+  },
+  "production": {
+    "url": "http://127.0.0.1:8095/",
+    "container_id": "3dff21ce7f6693a308aa8c31fe30b421b4d8a55b4111b7950272e4ae202b8b82",
+    "state": "running",
+    "health": "healthy",
+    "binding": "127.0.0.1:8095",
+    "runtime_profile": {
+      "network": "greenhouse-runtime",
+      "user": "65532:65532",
+      "read_only_root": true,
+      "cap_drop": ["ALL"],
+      "no_new_privileges": true,
+      "memory_bytes": 268435456,
+      "nano_cpus": 500000000,
+      "pids_limit": 64,
+      "restart": "unless-stopped",
+      "secret_mount": "/run/secrets/board.pgpass (read-only, server path unchanged)"
+    },
+    "previous_container": {
+      "id": "14b4521af4398d8cdaefd0d2af194932e190bd45799ec3f5eb9df21f8b509525",
+      "image_id": "sha256:d982c2874a5ba631a4f1ac100f3a2c38937fc13e80847620a6fa205af2f32343",
+      "name": "job-machine-board-rollback-rwr-20261017",
+      "state": "exited"
+    },
+    "http": {
+      "healthz": 200,
+      "page": 200,
+      "css": 200,
+      "css_cache_control": "no-cache",
+      "css_response_sha256": "8704124fb802fb3847afff35d106163255d409e0437da7754d175e8ae164ed6f",
+      "css_response_hash_note": "matches a9 wheel styles.css after board_routes replaces /static/fonts/ with /cockpit-assets/fonts/",
+      "table_link_black_solid_ochre_underline": true,
+      "issue_dotted_underline_preserved": true
+    },
+    "api": {
+      "active_candidate_contexts_checked": 2,
+      "each_context": {
+        "state": "live",
+        "total_rows": 8754,
+        "page_rows": 8754,
+        "fit_values": 302,
+        "remote_work_readiness_values": 0,
+        "fit_score_present": true,
+        "remote_work_readiness_present": true,
+        "rwr_display_only": true,
+        "client_sort_full_snapshot": true
+      },
+      "candidate_identifiers_or_rows_emitted": false
+    }
+  },
+  "preserved_runtime": {
+    "standard_workers": 8,
+    "worker_ids_and_images_unchanged": true,
+    "all_running": true,
+    "package_health_http": 200,
+    "ops_summary_rows": 17,
+    "redacted_package_log_lines_read": 10,
+    "rwr_worker_id": "b5c4aaec297de86862db9c36d4913e54b0e4b3f2bd95ee46449a1b42f5069287",
+    "rwr_worker_image": "sha256:0be32c8d7fbe8efa12524c5a036ff94ba887b1e3484cfd1c353039d214b7dca9",
+    "rwr_worker_network": "none",
+    "rwr_worker_enabled": false,
+    "persistent_rwr_control_enabled": false,
+    "provider_calls": 0,
+    "migrations_run_for_this_delivery": false
+  },
+  "verification": {
+    "baseline_unit": "1446 passed, 571 deselected",
+    "baseline_smoke": "87 passed",
+    "diff_check": "passed before integration commit",
+    "full_uv_sync": "not completed; auto-review escalation timed out",
+    "frozen_dependency_sync_no_install_project": "passed",
+    "production_db_tests": "not run"
+  },
+  "recovery_note": "The first PowerShell-wrapped cutover attempt stopped the old board before a CRLF-terminated bash script produced an invalid image reference. The old container was retained; a direct Docker invocation started the new board, then production health/API checks passed. No worker, database, or daemon was changed.",
+  "visual_acceptance": "No browser screenshot captured; HTTP/API/CSS checks do not assert final browser geometry."
+}
