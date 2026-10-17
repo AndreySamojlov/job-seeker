@@ -144,23 +144,27 @@ def test_column_filters_cover_whole_report_and_context():
         assert p['table']['filter_param'] == 'column_filters'
         assert p['meta']['context']['column_filters'] == '{"company":{"q":"Acme"}}'
         readiness = next(c for c in p['table']['columns'] if c['key'] == 'remote_work_readiness')
-        assert readiness['filter'] is None
-        assert readiness['sortable'] is False
+        assert readiness['filter'] == 'range'
+        assert readiness['sortable'] is True
         assert all(c['filter'] in ('text', 'range') for c in p['table']['columns'] if c is not readiness)
 
 
-def test_readiness_column_is_display_only_in_board_contract():
+def test_readiness_filter_and_sort_are_part_of_board_contract():
     with TestClient(create_app(Repository())) as client:
         response = client.get('/api/board/greenhouse')
         assert response.status_code == 200
         columns = response.json()['table']['columns']
         readiness = next(c for c in columns if c['key'] == 'remote_work_readiness')
-        assert readiness['filter'] is None
-        assert readiness['sortable'] is False
-        rejected_filter = client.get('/api/board/greenhouse', params={
+        assert readiness['filter'] == 'range'
+        assert readiness['sortable'] is True
+        accepted_filter = client.get('/api/board/greenhouse', params={
             'column_filters': '{"remote_work_readiness":{"min":0}}',
         })
-        assert rejected_filter.status_code == 422
+        assert accepted_filter.status_code == 200
+        assert accepted_filter.json()['table']['filters'] == {'remote_work_readiness': {'min': 0}}
+        sorted_readiness = client.get('/api/board/greenhouse', params={'sort_key': 'remote_work_readiness'})
+        assert sorted_readiness.status_code == 200
+        assert sorted_readiness.json()['meta']['context']['sort_key'] == 'remote_work_readiness'
 
 
 def test_synthetic_fixture_filters_the_complete_selection():

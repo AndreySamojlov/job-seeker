@@ -34,6 +34,11 @@ const mixed=[{vacancy_id:'b',score:10,title:'B'},{vacancy_id:'c',score:null,titl
 assert.deepEqual(boardTablePage(cols,mixed,opts).map(r=>r.vacancy_id),['z','a','b','c']);
 assert.deepEqual(boardTablePage(cols,mixed,{...opts,sortDirection:'desc'}).map(r=>r.vacancy_id),['a','b','z','c']);
 assert.deepEqual(boardTablePage(cols,mixed,{...opts,sortKey:'title'}).map(r=>r.vacancy_id),['a','b','z','c']);
+const rwrCols=[{key:'remote_work_readiness',kind:'number',format:'percent'}];
+const readiness=[{vacancy_id:'mid',remote_work_readiness:0.5},{vacancy_id:'none',remote_work_readiness:null},
+  {vacancy_id:'low',remote_work_readiness:0.1},{vacancy_id:'high',remote_work_readiness:0.9}];
+assert.deepEqual(boardTablePage(rwrCols,readiness,{...opts,sortKey:'remote_work_readiness'}).map(r=>r.vacancy_id),['low','mid','high','none']);
+assert.deepEqual(boardTablePage(rwrCols,readiness,{...opts,sortKey:'remote_work_readiness',sortDirection:'desc'}).map(r=>r.vacancy_id),['high','mid','low','none']);
 const p={schema_version:1,state:'live',meta:{domain:'x',filters:{}},filters:[],kpis:[],charts:{specs:[],chart_series:[]},table:{columns:[],rows,total_rows:201,page:0,page_size:100}};
 assert.throws(()=>validateBoardPayload(p));
 assert.equal(validateBoardPayload({...p,table:{...p.table,client_sort:true}}).table.rows.length,201);

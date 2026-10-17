@@ -98,7 +98,7 @@ def test_table_keeps_only_requested_columns():
     assert [c['key'] for c in columns] == ['title', 'company', 'location', 'work_mode', 'fit_score', 'remote_work_readiness']
     readiness = columns[-1]
     assert readiness == {'key': 'remote_work_readiness', 'label': 'Международная удалёнка', 'kind': 'number',
-                         'format': 'percent', 'sortable': False, 'filter': None}
+                         'format': 'percent', 'sortable': True, 'filter': 'range', 'filterMin': 0, 'filterMax': 100}
     assert report['table']['rows'][0]['remote_work_readiness'] is None
     assert report['table']['rows'][0]['fit_score'] == 0
 

@@ -3,6 +3,8 @@ import json
 import math
 
 TEXT_FIELDS = ('title', 'company', 'location', 'work_mode')
+PERCENT_FIELDS = ('remote_work_readiness',)
+NUMBER_FIELDS = ('fit_score', *PERCENT_FIELDS)
 
 
 def parse_column_filters(raw):
@@ -12,7 +14,7 @@ def parse_column_filters(raw):
         values = json.loads(raw)
     except (ValueError, TypeError):
         raise ValueError('Invalid column filters') from None
-    if not isinstance(values, dict) or set(values) - {*TEXT_FIELDS, 'fit_score'}:
+    if not isinstance(values, dict) or set(values) - {*TEXT_FIELDS, *NUMBER_FIELDS}:
         raise ValueError('Invalid column filters')
     result = {}
     for key, state in values.items():
@@ -26,16 +28,16 @@ def parse_column_filters(raw):
                 result[key] = {'q': q}
         else:
             if set(state) - {'min', 'max'}:
-                raise ValueError('Invalid fit filter')
+                raise ValueError('Invalid number filter')
             bounds = {}
             for bound, value in state.items():
                 if value is None:
                     continue
                 if type(value) not in (int, float) or not 0 <= value <= 100 or not math.isfinite(value):
-                    raise ValueError('Invalid fit bound')
+                    raise ValueError('Invalid number bound')
                 bounds[bound] = int(value) if int(value) == value else value
             if bounds.get('min', 0) > bounds.get('max', 100):
-                raise ValueError('Inverted fit bounds')
+                raise ValueError('Inverted number bounds')
             if bounds:
                 result[key] = bounds
     return result
@@ -55,7 +57,10 @@ def filter_sql(raw):
             clauses.append(f"v.{key} ILIKE %({param})s ESCAPE '\\'")
         else:
             for bound, value in state.items():
-                param = 'column_fit_' + bound
-                params[param] = value
-                clauses.append(f"t.fit_score {'>=' if bound == 'min' else '<='} %({param})s")
+                if key == 'fit_score':
+                    param, expression, bound_value = 'column_fit_' + bound, 't.fit_score', value
+                else:
+                    param, expression, bound_value = 'column_readiness_' + bound, 'r.value', value / 100
+                params[param] = bound_value
+                clauses.append(f"{expression} {'>=' if bound == 'min' else '<='} %({param})s")
     return ''.join(' AND ' + clause for clause in clauses), params

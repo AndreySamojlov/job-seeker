@@ -43,10 +43,9 @@ def test_transaction_and_parameterization():
     assert 'LEFT JOIN remote_work_readiness_job r' in sql_text
     assert "r.status = 'completed'" in sql_text
     assert 'r.value AS remote_work_readiness' in sql_text
-    assert 'remote_work_readiness' not in SORT_KEYS
+    assert 'remote_work_readiness' in SORT_KEYS
     assert 'remote_work_readiness' not in TEXT_FIELDS
-    with pytest.raises(ValueError, match='Invalid column filters'):
-        parse_column_filters('{"remote_work_readiness":{"min":0}}')
+    assert parse_column_filters('{"remote_work_readiness":{"min":0}}') == {'remote_work_readiness': {'min': 0}}
 
 
 def test_multiple_candidates_never_silently_choose_one():

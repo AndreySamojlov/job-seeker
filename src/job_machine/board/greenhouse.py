@@ -99,6 +99,6 @@ def build_greenhouse_report(snapshot: GreenhouseSnapshot, filters: BoardFilters,
                    for key, title, kind in [('title', 'Вакансия', 'link'), ('company', 'Компания', 'text'),
                     ('location', 'Локация', 'text'), ('work_mode', 'Формат', 'text'), ('fit_score', 'Jev', 'number')]] +
                    [dict(key='remote_work_readiness', label='Международная удалёнка', kind='number',
-                         format='percent', sortable=False, filter=None)],
+                         format='percent', sortable=True, filter='range', filterMin=0, filterMax=100)],
                    filter_param='column_filters', filter_context_key='column_filters', filters=parse_column_filters(filters.column_filters),
                    client_sort=True, row_key='vacancy_id', rows=rows, total_rows=snapshot.total_rows, page=table_page.page, page_size=100))

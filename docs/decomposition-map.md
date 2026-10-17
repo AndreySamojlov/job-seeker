@@ -383,7 +383,9 @@ GHL.S1.T5 — correction16.10.2026 по обратной связи пользо
 
 **A — полная локальная реализация Epic.** S1–S4 включают оценку Jev через Rules, отдельное отображение, автоматический охват новых/активных существующих вакансий, durable retries, bounded control и synthetic staged rehearsal. Это выбранный и реализованный срез; все проверки используют synthetic data и разрешённый recovery DB.
 
-**B — рабочая поставка.** Пользователь выбрал отдельный RWR worker на lab-do с первоначальным состоянием disabled. Реальные provider calls не входят в первоначальный rollout; enablement остаётся отдельным gate после read-only preflight, миграций, synthetic rehearsal и проверки status.
+**B — исходная рабочая поставка.** Отдельный RWR worker на lab-do был доставлен disabled. Это решение выполнило первоначальную границу S5/S6; реальные provider calls не запускались.
+
+**C — follow-up 17.10.2026.** Пользователь запросил видимые сортировку/фильтр по RWR и включение всего подходящего backlog без суточной квоты. Сохраняются текущие `intake_batch_limit=1`, `jev_batch_limit=1`, `concurrency=1`, `timeout=30s`, `max_attempts=8`, `poll_interval=30s`; ATS/Jev обрабатываются по существующим циклам. Производственное включение требует доступного read-only preflight, synthetic rehearsal, approved DB/provider secret/network configuration и замены только RWR worker. Heart Slice — новая Story S7.
 
 ### Проход RWR Epic → Story
 
@@ -395,8 +397,20 @@ GHL.S1.T5 — correction16.10.2026 по обратной связи пользо
 | RWR.S4 | Локальная реализация готова к управляемой проверке оператора | Валидированная конфигурация, redacted controls, staged rehearsal и runbook реализованы; production migrations/secret/config/live API/redeploy/enablement остаются за отдельным конкретным заданием. Story review закрыт. |
 | RWR.S5 | Оператор может развернуть изолированный RWR worker и оставить обработку выключенной | Новый worker выполняет только RWR intake/assessment, имеет bounded polling, безопасные миграционные gates и redacted status; rollout не обновляет и не прерывает существующие восемь workers. |
 | RWR.S6 | Оператор видит RWR-поле в существующей production board | Обновлённый board image показывает сохранённый процент, NULL остаётся пустым; порт/роль/доступ и остальные board-сценарии сохраняют прежние ограничения. Короткая недоступность только board согласуется перед переключением image. |
+| RWR.S7 | Пользователь находит и анализирует международную оценку в board, пока worker обрабатывает подходящие вакансии | RWR доступен как числовая сортировка полного снимка и диапазонный фильтр 0–100%; NULL остаётся пустым и сортируется вниз. Worker продолжает всю подходящую ATS/Jev очередь без суточной квоты, сохраняя по одному вызову на цикл, concurrency 1, timeout 30s и retry ceiling 8. Автоматическая обработка не меняет fit, triage, submit или приоритеты. |
 
-S1–S4 реализованы локально и проверены; signed commit `896f4df` создан. S5 зависит от S1/S3/S4 и развёртывается disabled. S6 зависит от S2 и schema S5. Реальные ATS/Jev вызовы и включение control требуют отдельного заключительного gate с подтверждёнными квотами и секретом.
+S1–S4 реализованы локально и проверены; signed commit `896f4df` создан. S5 зависит от S1/S3/S4 и был развёрнут disabled. S6 зависит от S2 и schema S5. S7 зависит от S3–S6; provider secret/network доступность и target-specific staged rehearsal остаются production gates. Пользователь явно снял требование суточной квоты; существующие per-cycle/timeout/retry limits остаются.
+
+### Декомпозиция RWR.S7 → Task
+
+Текущий срез — пользовательская возможность найти значения, которые ранее были пустыми из-за disabled worker, и управлять таблицей по результату. Пользователь снял суточную квоту для ATS/Jev и разрешил весь подходящий backlog; per-cycle bounds остаются.
+
+| ID | Результат Task | Граница |
+|---|---|---|
+| RWR.S7.T1 | RWR-колонка принимает числовую сортировку полного снимка и фильтр в процентах 0–100 | Nullable остаётся отличимым от 0; SQL сравнивает сохранённую Jev fraction с процентными границами; применяется существующий column-filter контекст |
+| RWR.S7.T2 | На lab-do включён существующий RWR worker и выполняется очередь активных подходящих вакансий | Только RWR worker/config; preflight, fake staged rehearsal и redacted наблюдение; no daily quota, batch 1, concurrency 1, timeout 30s, max attempts 8, poll 30s; DB/provider secret/network ACL проверяются до enable |
+
+Зависимость: T1 независим от активации данных; T2 требует S3–S6 и доступности целевого runtime. Heart Core — T1 и T2 совместно: сортировка/фильтр бесполезны без данных, а оценки остаются труднонаходимыми без управления таблицей. Heart Slice — оба Task. Статус 17.10.2026: T1 реализован, unit/API проверен и доставлен на 8095. T2: local fake-provider rehearsal и guarded DB suite прошли; production enablement ждёт точного пользовательского разрешения на отдельную least-privilege DB role/credential и отдельный UID-10001 provider-key mount. Auto-review заблокировал provisioning как постоянное security change. SSH доступ восстановился, board healthy. После разрешения завершить config preflight, включить worker и проверить redacted progress без суточного cap. См. [follow-up evidence](../audit/rwr-lookup-controls-followup.md).
 
 ### Декомпозиция RWR.S2 → Task
 
