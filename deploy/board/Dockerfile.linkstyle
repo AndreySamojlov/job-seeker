@@ -1,0 +1,9 @@
+ARG BASE_IMAGE=job-machine/board:ui-5ea29e3
+FROM ${BASE_IMAGE}
+USER root
+COPY cockpit_engine-0.2.0a7-py3-none-any.whl /tmp/cockpit_engine-0.2.0a7-py3-none-any.whl
+RUN pip install --no-deps --no-cache-dir /tmp/cockpit_engine-0.2.0a7-py3-none-any.whl \
+    && python -c 'from pathlib import Path; p=Path("/app/src/job_machine/board/app.py"); b=p.read_bytes(); old=b"ENGINE_VERSION = \x270.2.0a5\x27"; new=b"ENGINE_VERSION = \x270.2.0a7\x27"; assert b.count(old)==1; p.write_bytes(b.replace(old,new))' \
+    && python -c 'from pathlib import Path; b=Path("/app/src/job_machine/board/app.py").read_bytes(); assert b.count(b"ENGINE_VERSION = \x270.2.0a7\x27")==1' \
+    && rm /tmp/cockpit_engine-0.2.0a7-py3-none-any.whl
+USER 65532:65532
