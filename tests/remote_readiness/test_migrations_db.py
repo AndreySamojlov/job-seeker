@@ -17,10 +17,11 @@ def seed_base_ledger(conn, *, omit=()):
     conn.execute(
         "create table vacancy(vacancy_id uuid primary key, work_mode text, vacancy_status text, verified_at timestamptz)"
     )
-    conn.executemany(
-        "insert into schema_migrations(number,name) values (%s,%s)",
-        [(number, name) for number, name, _ in migrations if number <= 38 and number not in omit],
-    )
+    with conn.cursor() as cursor:
+        cursor.executemany(
+            "insert into schema_migrations(number,name) values (%s,%s)",
+            [(number, name) for number, name, _ in migrations if number <= 38 and number not in omit],
+        )
     conn.commit()
 
 
@@ -54,6 +55,7 @@ def test_preflight_is_read_only_then_apply_is_allowlisted_repeatable(db_schema):
         "remote_work_readiness_intake",
         "remote_work_readiness_control",
     }
+    conn.commit()
     report = preflight(conn)
     assert apply_pending(conn, expected_target=report.target) == ()
     assert conn.execute("select number from schema_migrations order by number desc limit 3").fetchall() == [
