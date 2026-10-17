@@ -1,0 +1,5 @@
+# Minimal offline image correction layered on the production r4 image.
+FROM job-machine/rwr-worker:rwr-20261017-r4
+USER 0:0
+COPY --chown=10001:10001 src/job_machine/remote_readiness/intake_store.py /app/src/job_machine/remote_readiness/intake_store.py
+USER 10001:10001
