@@ -13,6 +13,8 @@ def should_skip_fetch(conn, source_key: str, min_interval_seconds: int) -> bool:
     """True, если с последнего успешного фетча source_key прошло меньше
     min_interval_seconds — вызывающий код должен пропустить проход без ошибки
     (не блокируя остальные источники в общем прогоне)."""
+    if min_interval_seconds <= 0:
+        return False
     with conn.cursor() as cur:
         cur.execute(
             "select last_fetched_at from source_fetch_state where source_key = %s",
