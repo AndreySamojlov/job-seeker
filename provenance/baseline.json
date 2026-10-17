@@ -246,8 +246,8 @@
     {
       "path": "pyproject.toml",
       "source_sha256": "ea19098ddd3b0dda3ac8196ce363d8bdced00d99e7db5c0604498b8e230bf49c",
-      "target_sha256": "60fbe1dfda6b6f7f2f4afac82b8fe719a7b67be536c222d33060e233c2e5d8f9",
-      "adaptation": "S1 board runtime: pin local cockpit-engine0.2.0a2 wheel restoring native shell/table after UI incident; retain FastAPI/Uvicorn group. Source hash preserved. 2026-10-16: reconcile pre-existing committed board change5ea29e3 to cockpit-engine0.2.0a5; pyproject/lock unmodified by JFIT.S1; see audit/vacancy-fit-s1.md."
+      "target_sha256": "55b5906637cdce1c88d18c13f2e0d5ac1ad11499d5f27afcf48f22e82f863893",
+      "adaptation": "S1 board runtime: pin local cockpit-engine0.2.0a2 wheel restoring native shell/table after UI incident; retain FastAPI/Uvicorn group. Source hash preserved. 2026-10-16: reconcile pre-existing committed board change5ea29e3 to cockpit-engine0.2.0a5; pyproject/lock unmodified by JFIT.S1; see audit/vacancy-fit-s1.md. 2026-10-16: pin immutable cockpit-engine 0.2.0a7 link-style wheel; lock tracks its local artifact hash."
     },
     {
       "path": "scripts/requeue_quick_skips.py",
@@ -3036,8 +3036,8 @@
     {
       "path": "uv.lock",
       "source_sha256": "82b560167926d0eaf123af2e24eac0fb9ef8d7c39f896899d52ce101ec3b80b4",
-      "target_sha256": "66b168a74c26ccd04c110e666251a69c916eed92ab79b84d49a843153c033a66",
-      "adaptation": "S1 board runtime: pin local cockpit-engine0.2.0a2 wheel restoring native shell/table after UI incident; retain FastAPI/Uvicorn group. Source hash preserved. 2026-10-16: reconcile pre-existing committed board change5ea29e3 to cockpit-engine0.2.0a5; pyproject/lock unmodified by JFIT.S1; see audit/vacancy-fit-s1.md."
+      "target_sha256": "01be86ef0a983894aeb39a2ef21b171c32009b09cd5ebc8b1fe779ab7aaa2dd7",
+      "adaptation": "S1 board runtime: pin local cockpit-engine0.2.0a2 wheel restoring native shell/table after UI incident; retain FastAPI/Uvicorn group. Source hash preserved. 2026-10-16: reconcile pre-existing committed board change5ea29e3 to cockpit-engine0.2.0a5; pyproject/lock unmodified by JFIT.S1; see audit/vacancy-fit-s1.md. 2026-10-16: pin immutable cockpit-engine 0.2.0a7 link-style wheel; lock tracks its local artifact hash."
     }
   ],
   "excluded": [

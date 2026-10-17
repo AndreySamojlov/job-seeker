@@ -6,6 +6,12 @@
 
 # Project Knowledge
 
+## Международная удалённая работа — 16 октября 2026
+
+Decision: пользователь выбрал отдельный индекс Jev 0–100 по тексту вакансии; Rules — только оболочка вызова и передаёт результат без дополнительных вычислений. Оценка не калибрована как вероятность, отдельна от candidate fit, не влияет на triage и показывается отдельным полем борды. Охват — все вакансии, кроме явно `on-site`; накопленную активную базу перепроверить перед первоначальной оценкой, завершённые индексы не пересчитывать. Географические сигналы различают Europe и EU; неизвестность снижает индекс, но не равна запрету. Владелец требований — [Epic Intent](remote-work-readiness-intent.md), Story-level разрез — [Decomposition Map](decomposition-map.md).
+
+FACT boundary: локальный Cockpit Engine wheel `0.2.0a6` из текущего `pyproject.toml` реализует Rules через AST-сигналы и score, а не готовый вызов Jev. Предложение расширить Rules passthrough-действием записано в [RWR.S1 design](superpowers/specs/2026-10-16-remote-work-readiness-s1-design.md) и ещё не проверено по исходному Cockpit Engine. Ни production-интеграция, ни качество новой Jev-рубрики не проверялись. Новая оценка пока не повышает Trust к существующему fit.
+
 ## Jev fit S1 — 16 октября 2026
 
 Decisions: пользователь выбрал одну информационную оценку Jev, однократность, число при неизвестном со снижением балла, переносимый опыт как прямой с приоритетом установленного обязательного несоответствия; деактивация не отменяет созданные задания. Владелец требований — [Intent](vacancy-fit-intent.md). По отдельному выбору исполнение сабагентное параллельное, review только собранной Story.
@@ -14,7 +20,7 @@ Observations: отдельный адаптер/store/worker реализова�
 
 Lessons: при новой локальной миграции сравнение с production требует раздельного владения подтверждённым production snapshot и точными локальными дополнениями; обновление production fixture без live evidence недопустимо. Fake transport доказывает API parsing/lifecycle, не семантическое качество модели.
 
-Trust: локальный механизм подтверждён1302unit/87smoke/369DB/2regression и независимым review. Это не повышает доверие к фактическим оценкам Jev до реального synthetic inference; API key не задан. Автоматический охват, UI и production остаются открытыми, полномочия не расширяются.
+Trust: локальный механизм подтверждён1302unit/87smoke/369DB/2regression и независимым review. Это не повышает доверие к фактическим оценкам Jev до реального synthetic inference; API key не задан. Автоматический локальный охват подтверждён S2, локальная Jev board — S3; production остаётся открытым, полномочия не расширяются.
 
 Уточнение после предоставления пользователем ключа16.10.2026: доступ к `jev-1.13.0` подтверждён8 реальными synthetic запросами и одним полным worker→Jev→recovery DB сценарием. Сохранён fit99 за одну попытку, второй запуск idle. Первоначальное ограничение отсутствующего ключа устранено локально; калибровка и provider data handling остаются открытыми. Значение ключа — только в ignored runtime-файле. [Evidence](../audit/vacancy-fit-s1.md).
 
@@ -125,3 +131,12 @@ Trust: локальная наблюдаемость подкреплена unit
 
 
 16.10.2026 UI correction доставлен8095: engine0.2.0a5, native фильтры пяти колонок по всей SQL выборке, horizontal top20/company labels/прочее. Independent review исправлен, baseline1248/87PASS, guarded DB345PASS; реальные SQL totals и пользовательский loopback проверены.8workers IDs/images сохранены. [Владелец FACT/evidence](../audit/board-ui-refinement.md). Пользовательская визуальная приёмка остаётся открытой.
+
+
+## Jev board S3 — 16 октября 2026
+
+FACT: локальная Greenhouse board читает завершённый Jev `fit_job` результат выбранного кандидата; 0 сохраняется, NULL остаётся неоценённым, legacy triage score не используется. Полный отфильтрованный набор сортируется в browser runtime до страниц. Snapshot ограничен 100 000 строками, 32 MiB и deadline; превышение явно отклоняет весь ответ. Wheel cockpit-engine 0.2.0a6 — immutable локальный адаптированный successor с opt-in full-set client sort. Пользователь визуально принял synthetic board (колонка, 0/NULL, распределение, pager). Проверки, ограничения и hashes принадлежат [S3 evidence](../audit/vacancy-fit-s3.md). Production delivery and smoke are recorded in [S4 evidence](../audit/vacancy-fit-s4.md).
+
+## Jev S4 production smoke — 17 октября 2026
+
+FACT: на `lab-do` n8n 2.43.6, community MCP 2.47.11. Production workflow `Discovery: Greenhouse` active с `Discover` timeout 1 800 000 ms и сохранёнными retries. После ошибки `Verify` (timeout 300 000 ms, retry трижды) пользователь разрешил увеличить `Verify` timeout до 1 800 000 ms и убрать retries. Из-за ошибки совместимости `sourceWorkflowId` community partial-update отказал до записи; установленный MCP full-update успешно изменил только `Verify`, сохранив workflow nodes/connections/settings. Активная `versionId=activeVersionId=1101e01e-ee89-4180-b51e-fb68cb687025`; timeout 1 800 000 ms, `retryOnFail=false`, `maxTries`/`waitBetweenTries` удалены. Единственный execution `96074` запущен в production через MCP и завершился `success` за 19:23; `Discover` и `Verify` оба success. Board API после него показал по 236 числовых Jev scores на двух активных candidate snapshots по 8 705 строк за последние 30 дней (по 8 469 без оценки), против 46 scores в предыдущем snapshot; окно скользит, поэтому разница — наблюдаемая, но не строго причинная. Полный backfill не выполнен. После ребута Droplet новое SSH-соединение восстановилось; первоначальное community MCP `NO_RESPONSE` было вызвано тем, что MCP стартовал раньше n8n. Детали timeline и ограничения — [S4 audit](../audit/vacancy-fit-s4.md).
