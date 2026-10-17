@@ -43,9 +43,10 @@ def fetch_text(ats, url, client_factory=default_client_factory):
             getattr(client, 'close', lambda: None)()
 
 
-def run_once(conn_factory, *, client_factory=default_client_factory, answer_allowlist=(), clock=lambda: datetime.now(timezone.utc)):
+def run_once(conn_factory, *, client_factory=default_client_factory, answer_allowlist=(), ats_family=None, clock=lambda: datetime.now(timezone.utc)):
     with conn_factory() as conn:
-        job = store.claim_due(conn, now=clock(), lease_seconds=PREPARATION_LEASE_SECONDS)
+        kwargs = {'ats_family': ats_family} if ats_family is not None else {}
+        job = store.claim_due(conn, now=clock(), lease_seconds=PREPARATION_LEASE_SECONDS, **kwargs)
         conn.commit()
     if job is None:
         return 'idle'

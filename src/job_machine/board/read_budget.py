@@ -1,6 +1,14 @@
 """One monotonic budget for admission, source work and response serialization."""
 from time import monotonic
 
+MAX_ROWS = 100000
+MAX_RESPONSE_BYTES = 32 * 1024 * 1024
+
+
+class SnapshotTooLarge(RuntimeError):
+    def __init__(self):
+        super().__init__("snapshot_too_large")
+
 
 def monotonic_ms():
     return monotonic() * 1000

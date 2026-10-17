@@ -153,3 +153,54 @@ def test_synthetic_fixture_filters_the_complete_selection():
         assert p['table']['total_rows'] == 1
         assert len(p['table']['rows']) == 1
         assert p['table']['rows'][0]['title'] == 'Synthetic vacancy 199'
+
+
+def test_synthetic_fixture_returns_all_rows_for_client_pagination():
+    from tests.board.fixture_app import create_app as fixture_app
+    with TestClient(fixture_app()) as client:
+        p = client.get('/api/board/greenhouse', params={'page': 1}).json()
+    assert p['table']['page'] == 1
+    assert p['table']['page_size'] == 100
+    assert p['table']['total_rows'] == 201
+    assert len(p['table']['rows']) == 201
+
+
+def test_response_size_limit_returns_unavailable_without_partial_rows(monkeypatch):
+    monkeypatch.setattr('job_machine.board.app.MAX_RESPONSE_BYTES', 1, raising=False)
+    class Large(Repository):
+        def load(self, filters, page, *, budget=None):
+            from datetime import datetime, timezone
+            return GreenhouseSnapshot(candidate_id='alpha', total_rows=1, rows=[dict(
+                vacancy_id='v1', title='Synthetic', url='https://example.test/v1',
+                discovered_at=datetime(2026, 10, 15, tzinfo=timezone.utc), fit_score=0)])
+    with TestClient(create_app(Large())) as client:
+        response = client.get('/api/board/greenhouse')
+    assert response.status_code == 503
+    assert response.json()['state'] == 'unavailable'
+    assert response.json()['code'] == 'snapshot_too_large'
+    assert 'rows' not in response.json()
+    assert response.headers['cache-control'] == 'no-store'
+
+
+def test_repository_snapshot_limit_is_not_misreported_as_candidate_error():
+    from job_machine.board.read_budget import SnapshotTooLarge
+    class Oversized(Repository):
+        def load(self, filters, page, *, budget=None):
+            raise SnapshotTooLarge()
+    with TestClient(create_app(Oversized())) as client:
+        response = client.get('/api/board/greenhouse')
+    assert response.status_code == 503
+    assert response.json()['code'] == 'snapshot_too_large'
+    assert response.json()['state'] == 'unavailable'
+
+
+def test_snapshot_deadline_is_explicit_unavailable(monkeypatch):
+    from job_machine.board.read_budget import ReadBudget, ReadDeadline
+    def deadline(self):
+        raise ReadDeadline('synthetic timeout')
+    monkeypatch.setattr(ReadBudget, 'check_response_deadline', deadline)
+    with TestClient(create_app(Repository())) as client:
+        response = client.get('/api/board/greenhouse')
+    assert response.status_code == 503
+    assert response.json()['code'] == 'snapshot_timeout'
+    assert response.json()['state'] == 'unavailable'

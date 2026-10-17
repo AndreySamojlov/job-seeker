@@ -41,7 +41,7 @@ class SyntheticRepository:
             bands=[dict(label='Synthetic', count=sum(r['fit_score'] is not None for r in rows)), dict(label='Не оценено', count=sum(r['fit_score'] is None for r in rows))],
             boards=[dict(token='acme', company='Synthetic company', count=total)] if total else [],
             points=[dict(discovered_at=r['discovered_at'], fit_score=r['fit_score'], fit_score_version=r['fit_score_version']) for r in rows if r['fit_score'] is not None],
-            rows=rows[page.page * 100:(page.page + 1) * 100])
+            rows=rows)
 
 
 def create_app():

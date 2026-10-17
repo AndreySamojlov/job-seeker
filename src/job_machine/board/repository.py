@@ -2,7 +2,7 @@
 from datetime import datetime, time, timedelta, timezone
 
 from job_machine.board.models import BoardFilters, GreenhouseSnapshot, MOSCOW, TablePage, ReadStamp
-from job_machine.board.read_budget import ReadBudget
+from job_machine.board.read_budget import MAX_ROWS, ReadBudget, SnapshotTooLarge
 from job_machine.board.column_filters import filter_sql
 
 # Only the persisted per-job API URL proves board identity. Company is not a key.
@@ -13,9 +13,11 @@ WITH source AS (
  FROM vacancy v WHERE v.ats_family = 'greenhouse' AND v.source = 'greenhouse'
 ), selected AS (
  SELECT v.vacancy_id, v.title, v.canonical_url AS url, v.company, v.location,
-        v.work_mode, v.discovered_at, v.board_token, t.fit_score, t.fit_band, t.fit_score_version,
+        v.work_mode, v.discovered_at, v.board_token, t.fit_score,
         'Неизвестно'::text AS availability, NULL::timestamptz AS availability_checked_at
- FROM source v LEFT JOIN triage_result t
+ FROM source v LEFT JOIN (
+   SELECT candidate_id, vacancy_id, score AS fit_score FROM fit_job WHERE status = 'completed'
+ ) t
    ON t.vacancy_id = v.vacancy_id AND t.candidate_id = %(candidate)s
  WHERE v.discovered_at >= %(start)s AND v.discovered_at < %(end)s
    AND (%(board)s::text IS NULL OR v.board_token = %(board)s)
@@ -55,17 +57,17 @@ def load_greenhouse_snapshot(conn, filters: BoardFilters, table_page: TablePage,
         counts = query('SELECT count(*) AS total_rows, count(*) FILTER (WHERE board_token IS NULL) AS unknown_board, '
                        'count(*) FILTER (WHERE fit_score IS NULL) AS unscored FROM selected').fetchone()
         result.total_rows, result.unknown_board, result.unscored = (counts[k] for k in ('total_rows', 'unknown_board', 'unscored'))
+        if result.total_rows > MAX_ROWS:
+            raise SnapshotTooLarge()
         result.daily = query("SELECT (discovered_at AT TIME ZONE 'Europe/Moscow')::date AS day, count(*) AS count "
                              'FROM selected GROUP BY day ORDER BY day').fetchall()
-        result.bands = query("SELECT CASE WHEN fit_score IS NULL THEN 'Не оценено' "
-                             "ELSE coalesce(fit_band, 'Без группы') || ' · ' || coalesce(fit_score_version, 'Версия неизвестна') END AS label, "
-                             'count(*) AS count FROM selected GROUP BY label ORDER BY label').fetchall()
+        result.bands = query("SELECT fit_score::text AS label, count(*) AS count FROM selected "
+                             'WHERE fit_score IS NOT NULL GROUP BY fit_score ORDER BY fit_score').fetchall()
         result.boards = query("SELECT board_token AS token, min(nullif(btrim(company), '')) AS company, "
                               'count(*) AS count FROM selected GROUP BY board_token ORDER BY count DESC, token').fetchall()
-        result.points = query('SELECT discovered_at, fit_score, fit_score_version FROM selected WHERE fit_score IS NOT NULL ORDER BY discovered_at, vacancy_id').fetchall()
-        # These identifiers are validated enums, all values remain bound parameters.
-        result.rows = query(f'SELECT * FROM selected ORDER BY {table_page.sort_key} {table_page.sort_direction} '
-                            f'NULLS LAST, vacancy_id LIMIT 100 OFFSET {table_page.page * 100}').fetchall()
+        result.points = query('SELECT discovered_at, fit_score FROM selected WHERE fit_score IS NOT NULL ORDER BY discovered_at, vacancy_id').fetchall()
+        # Browser sorts and pages the complete snapshot; transport identity is stable.
+        result.rows = query('SELECT * FROM selected ORDER BY vacancy_id').fetchall()
         result.fetched_at = datetime.now(timezone.utc)
         budget.source_remaining_ms()
         return result

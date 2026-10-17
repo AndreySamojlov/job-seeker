@@ -3,6 +3,7 @@ import argparse
 from datetime import datetime, timezone
 import json
 import os
+from pathlib import Path
 from uuid import UUID
 
 import httpx
@@ -16,6 +17,8 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description="Operate assigned vacancy fit jobs")
     commands = parser.add_subparsers(dest="action", required=True)
     commands.add_parser("run-once")
+    commands.add_parser("daemon")
+    commands.add_parser("health")
     commands.add_parser("status")
     commands.add_parser("preparation-status")
     preparation_resume = commands.add_parser("preparation-resume-blocked")
@@ -27,6 +30,19 @@ def main(argv=None):
     args = parser.parse_args(argv)
     clock = lambda: datetime.now(timezone.utc)
     try:
+        if args.action == 'health':
+            from .daemon import healthy
+            ok = healthy()
+            print(json.dumps({'status': 'healthy' if ok else 'unhealthy'}))
+            return 0 if ok else 1
+        if args.action == 'daemon':
+            from .daemon import serve
+            key = Path(os.environ.get('TYPESAFE_API_KEY_FILE', '/run/secrets/typesafe_api_key')).read_text(encoding='utf-8').strip()
+            if not key:
+                raise ValueError('missing_api_key')
+            with httpx.Client() as client:
+                serve(connect, client=client, api_key=key)
+            return 0
         if args.action == "preparation-status":
             with connect() as conn:
                 counts = conn.execute("SELECT status,count(*) FROM fit_prepare GROUP BY status ORDER BY status").fetchall()

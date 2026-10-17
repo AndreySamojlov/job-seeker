@@ -47,15 +47,19 @@ def build_greenhouse_report(snapshot: GreenhouseSnapshot, filters: BoardFilters,
     if len(ranked_boards) > 20:
         board_names.append('Прочее')
         board_counts.append(sum(r['count'] for r in ranked_boards[20:]))
-    by_version = {}
-    for point in snapshot.points:
-        rubric = point.get('fit_score_version') or 'Версия неизвестна'
-        by_version.setdefault(rubric, []).append(dict(x=int(point['discovered_at'].timestamp() * 1000), y=point['fit_score']))
+    frequencies = {}
+    for row in snapshot.rows:
+        score = row.get('fit_score')
+        if score is not None:
+            frequencies[score] = frequencies.get(score, 0) + 1
+    scores = sorted(frequencies)
+    points = [dict(x=int(p['discovered_at'].timestamp() * 1000), y=p['fit_score'])
+              for p in snapshot.points if p.get('fit_score') is not None]
     series = [
         dict(id='timeline', x=[d.isoformat() for d in dates], axis='time', series=[dict(name='Обнаружено', y=daily)]),
-        dict(id='fit', x=[r['label'] for r in snapshot.bands], series=[dict(name='Вакансии', y=[r['count'] for r in snapshot.bands])]),
+        dict(id='fit', x=[str(score) for score in scores], series=[dict(name='Вакансии', y=[frequencies[score] for score in scores])]),
         dict(id='boards', x=board_names, series=[dict(name='Вакансии', y=board_counts)]),
-        dict(id='dates', series=[dict(name=f'Фит · {rubric}', data=points) for rubric, points in sorted(by_version.items())]),
+        dict(id='dates', series=[dict(name='Jev', data=points)]),
     ]
     rows = []
     for source in snapshot.rows:
@@ -88,7 +92,7 @@ def build_greenhouse_report(snapshot: GreenhouseSnapshot, filters: BoardFilters,
                    element=dict(kind='line', data=daily, tip='Впервые обнаружены по календарным дням')),
               dict(label='Средний срок жизни', value='Нет данных')],
         charts=dict(specs=[dict(id='timeline', title='Обнаруженные по дням', encoding='bar', unit='qty', primary=True),
-                          dict(id='fit', title='Распределение по фиту', encoding='pie', unit='qty'),
+                          dict(id='fit', title='Распределение Jev', encoding='bar', unit='qty', caption=f'Не оценено: {snapshot.unscored}'),
                           dict(id='boards', title='Вакансии по компаниям', encoding='hbar', unit='qty',
                                guard=dict(overflow=21, expandedOverflow=21, flatCv=0),
                                caption='20 крупнейших бордов; остальные — Прочее'),
@@ -98,6 +102,6 @@ def build_greenhouse_report(snapshot: GreenhouseSnapshot, filters: BoardFilters,
                                  **({'filterMin': 0, 'filterMax': 100} if kind == 'number' else {'filterMaxLength': 200}),
                                  **({'href_key': 'url'} if key == 'title' else {}))
                    for key, title, kind in [('title', 'Вакансия', 'link'), ('company', 'Компания', 'text'),
-                    ('location', 'Локация', 'text'), ('work_mode', 'Формат', 'text'), ('fit_score', 'Фит', 'number')]],
+                    ('location', 'Локация', 'text'), ('work_mode', 'Формат', 'text'), ('fit_score', 'Jev', 'number')]],
                    filter_param='column_filters', filter_context_key='column_filters', filters=parse_column_filters(filters.column_filters),
-                   row_key='vacancy_id', rows=rows, total_rows=snapshot.total_rows, page=table_page.page, page_size=100))
+                   client_sort=True, row_key='vacancy_id', rows=rows, total_rows=snapshot.total_rows, page=table_page.page, page_size=100))

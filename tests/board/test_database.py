@@ -12,7 +12,7 @@ from tests.conftest import apply_migrations
 pytestmark = pytest.mark.db
 
 
-def test_candidate_isolation_calendar_aggregation_and_server_paging(db_schema):
+def test_candidate_isolation_calendar_aggregation_and_full_snapshot(db_schema):
     conn, _ = db_schema
     apply_migrations(conn)
     conn.execute("INSERT INTO candidate(candidate_id,name) VALUES ('board-alpha','Alpha'),('board-beta','Beta')")
@@ -26,17 +26,21 @@ def test_candidate_isolation_calendar_aggregation_and_server_paging(db_schema):
         if i < 102:
             conn.execute("INSERT INTO triage_result(candidate_id,vacancy_id,verdict,fit_score,fit_band,fit_score_version) "
                          "VALUES ('board-alpha',%s,'skip',0,'low','v1'),('board-beta',%s,'apply',99,'high','v2')", (vacancy_id, vacancy_id))
+            conn.execute("INSERT INTO fit_job(candidate_id,vacancy_id,status,payload,payload_hash,model,rubric_version,score,completed_at) "
+                         "VALUES ('board-alpha',%s,'completed','{}',%s,'synthetic','test',0,now()),"
+                         "('board-beta',%s,'completed','{}',%s,'synthetic','test',99,now())",
+                         (vacancy_id, 'a' * 64, vacancy_id, 'b' * 64))
     conn.commit()
     conn.row_factory = dict_row
     selection = BoardFilters('board-alpha', date(2026, 10, 13), date(2026, 10, 15))
     first = load_greenhouse_snapshot(conn, selection, TablePage(page=0))
     second = load_greenhouse_snapshot(conn, selection, TablePage(page=1))
     assert first.total_rows == second.total_rows == 103
-    assert len(first.rows) == 100 and len(second.rows) == 3
+    assert len(first.rows) == len(second.rows) == 103
     assert first.daily == [dict(day=date(2026, 10, 14), count=103)]
     assert {p['fit_score'] for p in first.points} == {0}
     assert first.unscored == 1 and first.unknown_board == 1
-    assert not ({r['vacancy_id'] for r in first.rows} & {r['vacancy_id'] for r in second.rows})
+    assert first.rows == second.rows
     assert [r['vacancy_id'] for r in first.rows] == sorted(r['vacancy_id'] for r in first.rows)
     beta = load_greenhouse_snapshot(conn, BoardFilters('board-beta', selection.date_from, selection.date_to), TablePage())
     assert {p['fit_score'] for p in beta.points} == {99}

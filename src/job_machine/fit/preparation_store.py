@@ -13,19 +13,19 @@ class ClaimedPreparation:
     attempts: int
 
 
-def claim_due(conn, *, now, lease_seconds=60):
+def claim_due(conn, *, now, lease_seconds=60, ats_family=None):
     if isinstance(lease_seconds, bool) or not isinstance(lease_seconds, int) or lease_seconds <= 0:
         raise ValueError('invalid_lease_seconds')
     row = conn.execute("""with due as (
-      select vacancy_id from fit_prepare where status='pending'
+      select vacancy_id from fit_prepare where (%s::text is null or exists (select 1 from vacancy v where v.vacancy_id=fit_prepare.vacancy_id and v.ats_family=%s)) and (status='pending'
         or (status='retry_wait' and next_attempt_at<=%s)
-        or (status='processing' and lease_until<=%s)
+        or (status='processing' and lease_until<=%s))
       order by created_at,vacancy_id for update skip locked limit 1)
       update fit_prepare p set status='processing', attempts=p.attempts+1,
         lease_token=%s,lease_until=%s,next_attempt_at=null,updated_at=%s
       from due where p.vacancy_id=due.vacancy_id
       returning p.vacancy_id,p.job_text,p.lease_token,p.attempts""",
-      (now, now, uuid4(), now+timedelta(seconds=lease_seconds), now)).fetchone()
+      (ats_family, ats_family, now, now, uuid4(), now+timedelta(seconds=lease_seconds), now)).fetchone()
     return ClaimedPreparation(*row) if row else None
 
 

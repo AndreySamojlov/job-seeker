@@ -1,0 +1,26 @@
+# Build from the exact locally verified production board image. Override only
+# when an operator has separately verified the immutable base image is present.
+ARG BASE_IMAGE=job-machine/board:linkstyle-a7-20261016-r1
+FROM ${BASE_IMAGE}
+ARG BASE_IMAGE
+ARG BASE_IMAGE_ID=sha256:d885700bfbc85ed4e989ab4cd550b3cd2fef2b566b69630584dc3ce8223ef56e
+ARG BOARD_SOURCE_ID=08f226af0ead7f4b21a4ec2c64733bb99806e3dbf2af79b9efd69ef578b9f0dd
+LABEL org.opencontainers.image.title="Job Machine S3 board" \
+      org.opencontainers.image.version="s3" \
+      org.opencontainers.image.base.name="${BASE_IMAGE}" \
+      org.opencontainers.image.base.digest="${BASE_IMAGE_ID}" \
+      org.opencontainers.image.revision="${BOARD_SOURCE_ID}" \
+      org.opencontainers.image.source="local Job Machine repository"
+
+USER root
+COPY vendor/cockpit_engine-0.2.0a7-py3-none-any.whl /tmp/cockpit_engine-0.2.0a7-py3-none-any.whl
+COPY src/job_machine/board/ /app/src/job_machine/board/
+RUN pip install --force-reinstall --no-deps --no-cache-dir /tmp/cockpit_engine-0.2.0a7-py3-none-any.whl \
+    && rm /tmp/cockpit_engine-0.2.0a7-py3-none-any.whl \
+    && python -c "from importlib.metadata import version; from pathlib import Path; assert version('cockpit-engine') == '0.2.0a7'; assert '0.2.0a7' in Path('/app/src/job_machine/board/app.py').read_text()"
+
+ENV PYTHONPATH=/app/src
+ENV PYTHONDONTWRITEBYTECODE=1
+USER 65532:65532
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/healthz',timeout=3)"
+CMD ["python", "-m", "uvicorn", "job_machine.board.server:create_app", "--factory", "--host", "0.0.0.0", "--port", "8080", "--workers", "1", "--no-access-log"]

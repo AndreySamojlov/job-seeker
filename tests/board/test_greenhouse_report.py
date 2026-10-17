@@ -24,7 +24,7 @@ def test_report_preserves_zero_unknowns_versions_and_calendar_days():
     report = build_greenhouse_report(snapshot(), BoardFilters('alpha', date(2026, 10, 13), date(2026, 10, 15)))
     assert [k['value'] for k in report['kpis']] == ['1', 'Нет данных', '1', 'Нет данных']
     assert report['charts']['chart_series'][0]['series'][0]['y'] == [1, 0, 2]
-    assert report['charts']['chart_series'][1]['x'] == ['low · v1', 'high · v2', 'Не оценено']
+    assert report['charts']['chart_series'][1]['x'] == ['0']
     assert report['charts']['chart_series'][3]['series'][0]['data'][0]['y'] == 0
     assert '1' in report['charts']['specs'][3]['caption']
     assert report['table']['total_rows'] == 3
@@ -66,16 +66,20 @@ def test_page_does_not_bound_aggregates():
     assert report['charts']['chart_series'][0]['series'][0]['y'] == [1, 0, 2]
 
 
-def test_scatter_keeps_rubric_versions_distinguishable():
-    stamp = datetime(2026, 10, 15, tzinfo=timezone.utc)
-    report = build_greenhouse_report(snapshot(points=[
-        dict(discovered_at=stamp, fit_score=50, fit_score_version='v1'),
-        dict(discovered_at=stamp, fit_score=50, fit_score_version='v2'),
-        dict(discovered_at=stamp, fit_score=0, fit_score_version=None)]),
+def test_jev_report_numeric_scores_and_full_client_table():
+    rows = [dict(vacancy_id=str(i), fit_score=score, board_token='acme')
+            for i, score in enumerate([0, 1, 100, None])]
+    report = build_greenhouse_report(snapshot(rows=rows, total_rows=4),
         BoardFilters('alpha', date(2026, 10, 13), date(2026, 10, 15)))
-    series = report['charts']['chart_series'][3]['series']
-    assert {s['name'] for s in series} == {'Фит · v1', 'Фит · v2', 'Фит · Версия неизвестна'}
-    assert sum(len(s['data']) for s in series) == 3
+    fit = report['charts']['chart_series'][1]
+    assert fit['x'] == ['0', '1', '100']
+    assert fit['series'][0]['y'] == [1, 1, 1]
+    assert report['charts']['specs'][1]['encoding'] == 'bar'
+    assert report['charts']['specs'][1]['caption'] == 'Не оценено: 1'
+    assert report['table']['client_sort'] is True
+    assert report['table']['columns'][-1]['label'] == 'Jev'
+    assert [r['fit_score'] for r in report['table']['rows']] == [0, 1, 100, None]
+    assert [s['name'] for s in report['charts']['chart_series'][3]['series']] == ['Jev']
 
 
 def test_table_keeps_only_requested_columns():

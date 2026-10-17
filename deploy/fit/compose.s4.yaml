@@ -1,0 +1,25 @@
+services:
+  job-fit:
+    image: job-machine/fit:jev-s4-20261016-r1
+    container_name: greenhouse-runtime-job-fit-1
+    user: "65532:65532"
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
+      TYPESAFE_API_KEY_FILE: /run/secrets/typesafe_api_key
+    volumes:
+      - /root/greenhouse-secrets/typesafe_api_key:/run/secrets/typesafe_api_key:ro
+    networks:
+      - greenhouse-runtime
+      - lab-infra
+    restart: unless-stopped
+    stop_grace_period: 60s
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m,uid=65532,gid=65532
+    mem_limit: 256m
+    cpus: 0.5
+    pids_limit: 64

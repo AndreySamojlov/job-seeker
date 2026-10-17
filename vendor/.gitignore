@@ -1,0 +1,6 @@
+*
+!.gitignore
+!cockpit_engine-0.2.0a6-py3-none-any.whl
+!patches/
+!patches/cockpit-engine-client-sort/
+!patches/cockpit-engine-client-sort/**

@@ -38,16 +38,16 @@ def create_job(conn, input: FitInput) -> bool:
     return row is not None
 
 
-def claim_due(conn, *, now: datetime, lease_seconds: int = 60) -> ClaimedJob | None:
+def claim_due(conn, *, now: datetime, lease_seconds: int = 60, ats_family: str | None = None) -> ClaimedJob | None:
     """Claim one due pair, or reclaim an expired lease without altering its input."""
     if isinstance(lease_seconds, bool) or not isinstance(lease_seconds, int) or lease_seconds <= 0:
         raise ValueError("invalid_lease_seconds")
     row = conn.execute(
         """with due as (
              select candidate_id,vacancy_id from fit_job
-             where status='pending'
+             where (%s::text is null or exists (select 1 from vacancy v where v.vacancy_id=fit_job.vacancy_id and v.ats_family=%s)) and (status='pending'
                 or (status='retry_wait' and next_attempt_at <= %s)
-                or (status='processing' and lease_until <= %s)
+                or (status='processing' and lease_until <= %s))
              order by created_at,candidate_id,vacancy_id
              for update skip locked limit 1
            )
@@ -55,7 +55,7 @@ def claim_due(conn, *, now: datetime, lease_seconds: int = 60) -> ClaimedJob | N
                   attempts=j.attempts+1,next_attempt_at=null,updated_at=%s
            from due where j.candidate_id=due.candidate_id and j.vacancy_id=due.vacancy_id
            returning j.candidate_id,j.vacancy_id,j.payload,j.payload_hash,j.lease_token,j.attempts""",
-        (now, now, uuid4(), now + timedelta(seconds=lease_seconds), now),
+        (ats_family, ats_family, now, now, uuid4(), now + timedelta(seconds=lease_seconds), now),
     ).fetchone()
     return ClaimedJob(*row) if row else None
 
@@ -100,6 +100,21 @@ def fail(conn, job: ClaimedJob, error: FitError, *, now: datetime) -> bool:
         ("retry_wait" if error.retryable else "blocked",
          retry_at if error.retryable else None,
          code, now, job.candidate_id, job.vacancy_id, job.lease_token, now, job.payload_hash),
+    ).fetchone()
+    if row is None:
+        conn.rollback()
+    return row is not None
+
+
+def defer_for_quota(conn, job: ClaimedJob, *, retry_at: datetime, now: datetime) -> bool:
+    """Release only the current unexpired lease without changing its snapshot."""
+    row = conn.execute(
+        """update fit_job set status='retry_wait',next_attempt_at=%s,
+                  last_error_code='quota_exhausted',lease_token=null,lease_until=null,updated_at=%s
+           where candidate_id=%s and vacancy_id=%s and status='processing'
+             and lease_token=%s and lease_until > %s and payload_hash=%s
+           returning candidate_id""",
+        (retry_at, now, job.candidate_id, job.vacancy_id, job.lease_token, now, job.payload_hash),
     ).fetchone()
     if row is None:
         conn.rollback()
