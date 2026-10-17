@@ -43,3 +43,5 @@ Enabling remains incomplete pending explicit approval for a dedicated least-priv
 ## Review and limits
 
 Local tests and the live API contract support the UI change. An independent code review and browser visual check were not performed for this follow-up. Production selected-candidate data parity was not checked. The previous healthy board container is retained for rollback.
+
+The changes are committed locally on `codex/jev-fit-s1`: board controls/docs `ca0befb`, migration-test fixture `214d429`, and zero-interval throttle fix `24815cf`. The repository has no configured Git remote, so no push or PR was created. Final read-only production check: board `running healthy` on r2; RWR worker still `running` with `network=none`; persistent control false; intake/job rows 0; dedicated worker role absent.
