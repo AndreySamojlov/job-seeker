@@ -112,6 +112,25 @@ def test_failed_snapshot_transaction_does_not_complete_intake(intake_db):
     assert conn.execute("select status from remote_work_readiness_intake").fetchone() == ("processing",)
 
 
+def test_gone_vacancy_uses_fixed_audit_function(intake_db):
+    from job_machine.remote_readiness import intake_store
+    conn, _, ids = intake_db
+    intake_store.enqueue_verified(conn, limit=10)
+    conn.commit()
+    claim = intake_store.claim_due(conn, now=NOW)
+    conn.commit()
+
+    assert intake_store.finish_gone(conn, claim, now=NOW)
+    conn.commit()
+
+    assert conn.execute("select vacancy_status from vacancy where vacancy_id=%s", (ids[0],)).fetchone() == ("stale",)
+    assert conn.execute("select status,last_error_code from remote_work_readiness_intake where vacancy_id=%s", (ids[0],)).fetchone() == ("blocked", "vacancy_gone")
+    assert conn.execute(
+        "select entity_type,event_type,payload_json,trace_id from event where entity_id=%s order by event_id desc limit 1",
+        (ids[0],),
+    ).fetchone() == ("vacancy", "vacancy.stale", {}, None)
+
+
 class _Error:
     code = "ats_timeout"
     retryable = True

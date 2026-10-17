@@ -30,3 +30,23 @@ def test_worker_image_has_an_explicit_runtime_copy_allowlist():
     assert "COPY src/job_machine/discovery/store.py /app/src/job_machine/discovery/store.py" in dockerfile
     assert ".runtime" not in ignore
     assert ".env" not in ignore
+
+
+def test_worker_image_pins_pydantic_required_by_greenhouse_adapter():
+    dockerfile = (ROOT / "deploy" / "remote-readiness" / "Dockerfile").read_text(encoding="utf-8")
+    requirements = (ROOT / "deploy" / "remote-readiness" / "requirements.lock").read_text(encoding="utf-8")
+    assert "'pydantic==2.13.4'" in dockerfile
+    for requirement in (
+        "annotated-types==0.7.0",
+        "pydantic==2.13.4",
+        "pydantic-core==2.46.4",
+        "typing-inspection==0.4.2",
+    ):
+        assert requirement in requirements
+
+
+def test_r5_hotfix_only_overlays_the_approved_stale_path():
+    dockerfile = (ROOT / "deploy" / "remote-readiness" / "Dockerfile.r5-hotfix").read_text(encoding="utf-8")
+    assert "FROM job-machine/rwr-worker:rwr-20261017-r4" in dockerfile.splitlines()
+    assert "COPY --chown=10001:10001 src/job_machine/remote_readiness/intake_store.py" in dockerfile
+    assert "USER 10001:10001" in dockerfile

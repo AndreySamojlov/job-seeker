@@ -4,7 +4,6 @@ from datetime import timedelta
 import re
 from uuid import uuid4
 
-from job_machine.discovery import store as discovery_store
 from . import store as readiness_store
 
 MAX_ATTEMPTS = 8
@@ -158,7 +157,7 @@ def finish_gone(conn, job, *, now):
     ).fetchone()
     if owned is None:
         return False
-    discovery_store.mark_stale(conn, job.vacancy_id)
+    conn.execute("select job_rwr_mark_vacancy_stale(%s)", (job.vacancy_id,))
     return _finish_blocked(conn, job, "vacancy_gone", now)
 
 

@@ -12,7 +12,7 @@ from typing import Callable
 
 from job_machine.db.connection import connect
 
-from . import control_store, preparation, worker
+from . import control_store, intake_store, preparation, worker
 from .settings import ReadinessSettings
 
 _SAFE_OUTCOMES = {
@@ -90,6 +90,9 @@ def run_daemon(*, conn_factory=connect, stop_event: Event, wait: Callable[[float
                 provider_key = _provider_key() if api_key is None else api_key
                 if not isinstance(provider_key, str) or not provider_key.strip():
                     raise ValueError("missing_rwr_api_key")
+                with conn_factory() as conn:
+                    intake_store.enqueue_verified(conn, limit=configured.intake_batch_limit)
+                    conn.commit()
                 for _ in range(configured.intake_batch_limit):
                     if stop_event.is_set() or not _still_enabled(configured, conn_factory):
                         state = "disabled"
@@ -112,6 +115,7 @@ def run_daemon(*, conn_factory=connect, stop_event: Event, wait: Callable[[float
                                     conn_factory, client=client, api_key=provider_key,
                                     max_attempts=configured.max_attempts,
                                     timeout_seconds=configured.request_timeout_seconds,
+                                    clock=clock,
                                 )
                                 if outcome == "idle":
                                     break

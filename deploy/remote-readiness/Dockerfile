@@ -16,7 +16,7 @@ COPY deploy/remote-readiness/requirements.lock /tmp/requirements.lock
 COPY vendor/cockpit_engine-0.2.0a8-py3-none-any.whl /tmp/cockpit_engine-0.2.0a8-py3-none-any.whl
 RUN python -m pip install --no-cache-dir --disable-pip-version-check \
       --constraint /tmp/requirements.lock \
-      'httpx==0.28.1' 'psycopg[binary]==3.3.4' 'python-dotenv==1.2.2' \
+      'httpx==0.28.1' 'psycopg[binary]==3.3.4' 'python-dotenv==1.2.2' 'pydantic==2.13.4' \
       /tmp/cockpit_engine-0.2.0a8-py3-none-any.whl \
     && python -m pip check \
     && rm -rf /tmp/requirements.lock /tmp/cockpit_engine-0.2.0a8-py3-none-any.whl

@@ -12,6 +12,9 @@ class Connection:
     def __exit__(self, *args):
         return False
 
+    def commit(self):
+        pass
+
 
 def test_disabled_daemon_has_no_provider_calls_and_reports_redacted_heartbeat(monkeypatch):
     settings = SimpleNamespace(enabled=False, poll_interval_seconds=7,
@@ -46,6 +49,9 @@ def test_enabled_daemon_processes_bounded_fake_provider_work_and_stops(monkeypat
     monkeypatch.setattr(daemon, "_settings", lambda: settings)
     monkeypatch.setattr(daemon.control_store, "is_enabled", lambda _conn: True)
     intake_calls, jev_calls, wait_calls, heartbeats = [], [], [], []
+    enqueue_calls = []
+    monkeypatch.setattr(daemon.intake_store, "enqueue_verified",
+                        lambda _conn, *, limit: enqueue_calls.append(limit) or limit)
     intake_results = iter(["prepared", "idle"])
     jev_results = iter(["completed", "retry_wait", "idle"])
     monkeypatch.setattr(daemon.preparation, "run_once", lambda *a, **kw:
@@ -60,15 +66,18 @@ def test_enabled_daemon_processes_bounded_fake_provider_work_and_stops(monkeypat
         return True
 
     client = object()
+    clock = lambda: datetime(2030, 1, 1, tzinfo=timezone.utc)
     daemon.run_daemon(conn_factory=Connection, stop_event=stop, wait=wait,
                       emit=heartbeats.append, jev_client_factory=lambda actual: client,
-                      api_key="synthetic", clock=lambda: datetime(2030, 1, 1, tzinfo=timezone.utc))
+                      api_key="synthetic", clock=clock)
 
+    assert enqueue_calls == [2]
     assert len(intake_calls) == 2
     assert all(call["max_attempts"] == 4 for call in intake_calls)
     assert len(jev_calls) == 3
     assert all(call["max_attempts"] == 4 and call["timeout_seconds"] == 41 for call in jev_calls)
     assert all(call["client"] is client and call["api_key"] == "synthetic" for call in jev_calls)
+    assert all(call["clock"] is clock for call in jev_calls)
     assert wait_calls == [5]
     assert heartbeats == [{"event": "heartbeat", "at": "2030-01-01T00:00:00+00:00",
                            "state": "active", "intake": {"prepared": 1},

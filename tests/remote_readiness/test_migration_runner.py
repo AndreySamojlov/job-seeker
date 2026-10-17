@@ -20,11 +20,11 @@ BASE_ROWS = [(number, name) for number, name, _ in discover_migrations(MIGRATION
 def test_unrelated_migration_file_is_never_included_in_rwr_plan(tmp_path):
     for name in ALLOWED_MIGRATIONS:
         (tmp_path / name).write_bytes((MIGRATIONS / name).read_bytes())
-    (tmp_path / "0042_unrelated.sql").write_text("drop table vacancy;", encoding="utf-8")
+    (tmp_path / "0043_unrelated.sql").write_text("drop table vacancy;", encoding="utf-8")
 
     validated = validate_migration_files(tmp_path)
 
-    assert [migration.number for migration in validated] == [39, 40, 41]
+    assert [migration.number for migration in validated] == [39, 40, 41, 42]
 
 
 def test_changed_allowlisted_migration_fails_checksum_gate_before_planning(tmp_path):
@@ -42,6 +42,17 @@ def test_board_reader_gets_only_the_completed_result_columns():
     assert "if exists (select 1 from pg_roles where rolname = 'job_board_reader')" in sql
     assert "grant select (vacancy_id, status, value) on remote_work_readiness_job to job_board_reader" in sql
     assert "grant select on remote_work_readiness_job to job_board_reader" not in sql
+
+
+def test_stale_function_has_only_worker_execute_grant_and_no_event_insert_grant():
+    sql = (MIGRATIONS / "0042_remote_work_readiness_mark_stale.sql").read_text(encoding="utf-8").lower()
+
+    assert "security definer" in sql
+    assert "set search_path = pg_catalog" in sql
+    assert "revoke all on function %i.job_rwr_mark_vacancy_stale(uuid) from public" in sql
+    assert "grant execute on function %i.job_rwr_mark_vacancy_stale(uuid) to job_rwr_worker" in sql
+    assert "grant insert on event" not in sql
+    assert "values ('vacancy', p_vacancy_id, 'vacancy.stale', '{}'::jsonb, null)" in sql
 
 
 def test_missing_base_ledger_entry_fails_before_any_rwr_migration_is_selected():
@@ -72,5 +83,5 @@ def test_correct_rwr_ledger_selects_only_missing_allowlisted_suffix():
     plan = plan_from_ledger(rows, migrations)
 
     assert [(migration.number, migration.name) for migration in plan] == [
-        (40, names[40]), (41, names[41])
+        (40, names[40]), (41, names[41]), (42, names[42])
     ]

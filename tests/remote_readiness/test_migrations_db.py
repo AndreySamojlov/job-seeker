@@ -44,12 +44,12 @@ def test_preflight_is_read_only_then_apply_is_allowlisted_repeatable(db_schema):
 
     report = preflight(conn)
 
-    assert [migration.number for migration in report.pending] == [39, 40, 41]
+    assert [migration.number for migration in report.pending] == [39, 40, 41, 42]
     assert conn.execute("select number,name from schema_migrations order by number").fetchall() == before
     assert rwr_tables(conn) == set()
     conn.commit()
 
-    assert apply_pending(conn, expected_target=report.target) == (39, 40, 41)
+    assert apply_pending(conn, expected_target=report.target) == (39, 40, 41, 42)
     assert rwr_tables(conn) == {
         "remote_work_readiness_job",
         "remote_work_readiness_intake",
@@ -58,8 +58,8 @@ def test_preflight_is_read_only_then_apply_is_allowlisted_repeatable(db_schema):
     conn.commit()
     report = preflight(conn)
     assert apply_pending(conn, expected_target=report.target) == ()
-    assert conn.execute("select number from schema_migrations order by number desc limit 3").fetchall() == [
-        (41,), (40,), (39,)
+    assert conn.execute("select number from schema_migrations order by number desc limit 4").fetchall() == [
+        (42,), (41,), (40,), (39,)
     ]
 
 

@@ -1,4 +1,4 @@
-"""Fail-closed migration runner for the three RWR schema migrations."""
+"""Fail-closed migration runner for the RWR schema migrations."""
 from __future__ import annotations
 
 import argparse
@@ -18,6 +18,7 @@ ALLOWED_MIGRATIONS = {
     "0039_remote_work_readiness.sql": "add432b8a3cdb36fd18bdb91f87c1d5113e912044b1c2229c19b5ce1d0f221da",
     "0040_remote_work_readiness_intake.sql": "6a27830fbd153c0652dd856cd727d3539d7a7017f0641bc00fdfbd2bf61cc77f",
     "0041_remote_work_readiness_control.sql": "6bf0f86807b46e5f2de674ac2e512c80a5ba2ef8901ae70ab5c38f62dc8c9a8a",
+    "0042_remote_work_readiness_mark_stale.sql": "a034f2edfef1445ba6aae575268fd7c0ffd4ade5011e743414fe0ec5b576cad6",
 }
 ALLOWED_NAMES = {int(name[:4]): name for name in ALLOWED_MIGRATIONS}
 REQUIRED_BASE_HEAD = 38
@@ -174,7 +175,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser("preflight", help="read-only RWR migration preflight")
-    apply_parser = subparsers.add_parser("apply", help="apply only pinned RWR migrations 0039-0041")
+    apply_parser = subparsers.add_parser("apply", help="apply only pinned RWR migrations 0039-0042")
     apply_parser.add_argument("--expect-target", required=True, help="exact target string from preflight: address:port/database")
     args = parser.parse_args(argv)
 
