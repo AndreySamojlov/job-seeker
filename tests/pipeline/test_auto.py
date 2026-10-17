@@ -1,5 +1,21 @@
 """Тесты авто-конвейера: порядок стадий, LLM-интеграция, per-item изоляция."""
 import json
+from types import SimpleNamespace
+
+import cockpit_engine.rules as engine_rules
+
+if not hasattr(engine_rules, "load_external_decision"):
+    def _load_external_decision(catalog, code):
+        entry = catalog["external_decisions"][code]
+        if entry.get("enabled") is not True:
+            raise ValueError("disabled")
+        return SimpleNamespace(code=code, **{k: entry[k] for k in ("handler", "version", "config")})
+
+    def _invoke_external_decision(decision, state, *, handlers):
+        return handlers[decision.handler](decision, state)
+
+    engine_rules.load_external_decision = _load_external_decision
+    engine_rules.invoke_external_decision = _invoke_external_decision
 
 import pytest
 
@@ -18,6 +34,12 @@ class FakeConn:
     def __init__(self):
         self.rollbacks = 0
         self.commits = 0
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_):
+        return False
 
     def rollback(self):
         self.rollbacks += 1
@@ -103,6 +125,11 @@ def _patch_stages(monkeypatch, *, conn, llm,
     # pipeline-stage tests focused and free of database/network access.
     monkeypatch.setattr(auto.fit_preparation, "run_once", lambda *a, **k: "idle")
     monkeypatch.setattr(auto.fit_worker, "run_once", lambda *a, **k: "idle")
+    monkeypatch.setattr(auto.readiness_intake_store, "enqueue_verified", lambda *a, **k: 0)
+    monkeypatch.setattr(auto.readiness_preparation, "run_once", lambda *a, **k: "idle")
+    monkeypatch.setattr(auto.readiness_worker, "run_once", lambda *a, **k: "idle")
+    monkeypatch.setattr(auto, "_readiness_settings_from_env", lambda: SimpleNamespace(
+        enabled=False, intake_batch_limit=10, jev_batch_limit=10))
 
     # Discovery (мульти-сорс)
     monkeypatch.setattr(
@@ -543,6 +570,10 @@ def test_fit_queues_run_after_verify_before_triage_even_when_this_cycle_verifies
     conn = FakeConn()
     llm = FakeLLM()
     calls = _patch_stages(monkeypatch, conn=conn, llm=llm)
+    monkeypatch.setattr(auto, "_readiness_settings_from_env", lambda: SimpleNamespace(
+        enabled=True, intake_batch_limit=10, jev_batch_limit=10,
+        request_timeout_seconds=47, max_attempts=4))
+    monkeypatch.setattr(auto.readiness_control_store, "is_enabled", lambda conn: True)
     monkeypatch.setattr(
         auto.discovery_service, "run_verify",
         lambda *args: calls.append("verify") or type("S", (), {"verified": 0})(),
@@ -568,6 +599,193 @@ def test_fit_queues_run_after_verify_before_triage_even_when_this_cycle_verifies
     assert calls.index("verify") < calls.index("prepare") < calls.index("jev")
     assert calls.index("jev") < calls.index("triage_pull[cand-1]")
     assert calls.index("prepare") < calls.index("package")
+
+
+def test_readiness_stages_are_bounded_and_run_after_verify_before_fit(monkeypatch):
+    from types import SimpleNamespace
+
+    conn = FakeConn()
+    llm = FakeLLM()
+    calls = _patch_stages(monkeypatch, conn=conn, llm=llm)
+    monkeypatch.setattr(auto, "_readiness_settings_from_env", lambda: SimpleNamespace(
+        enabled=True, intake_batch_limit=10, jev_batch_limit=10,
+        request_timeout_seconds=47, max_attempts=4))
+    monkeypatch.setattr(auto.readiness_control_store, "is_enabled", lambda conn: True)
+    prep_outcomes = iter(["prepared", "existing", "retry_wait", "idle"])
+    jev_outcomes = iter(["completed", "blocked", "idle"])
+    prep_calls, jev_calls = [], []
+    monkeypatch.setattr(auto.readiness_intake_store, "enqueue_verified",
+                        lambda actual, *, limit: calls.append("rwr_enqueue") or 3)
+    monkeypatch.setattr(auto.readiness_preparation, "run_once", lambda *a, **k:
+                        prep_calls.append(k.copy()) or next(prep_outcomes))
+    monkeypatch.setattr(auto.readiness_worker, "run_once", lambda *a, **k:
+                        jev_calls.append(k.copy()) or next(jev_outcomes))
+    monkeypatch.setattr(auto.fit_preparation, "run_once", lambda *a, **k: calls.append("fit_prepare") or "idle")
+    monkeypatch.setattr(auto.fit_worker, "run_once", lambda *a, **k: calls.append("fit_jev") or "idle")
+    monkeypatch.setattr(auto, "load_cloud", lambda c, cid: type("Cloud", (), {
+        "positions": [], "achievements": [], "skills": []
+    })())
+
+    result = auto.run_auto_cycle(
+        conn, llm=llm, browser=object(), pdf=object(), discovery_client=object(),
+        boards=["acme"], limit=3, conn_factory=lambda: conn, fit_client=object(),
+        fit_api_key="synthetic-key",
+    )
+
+    assert len(prep_calls) == len(jev_calls) == 3
+    assert all(call["max_attempts"] == 4 for call in prep_calls)
+    assert all(call["max_attempts"] == 4 for call in jev_calls)
+    assert all(call["timeout_seconds"] == 47 for call in jev_calls)
+    assert result.readiness_enqueued == 3
+    assert (result.readiness_prepared, result.readiness_existing, result.readiness_prepare_retry) == (1, 1, 1)
+    assert (result.readiness_completed, result.readiness_retry, result.readiness_blocked) == (1, 0, 1)
+    assert calls.index("verify") < calls.index("rwr_enqueue") < calls.index("fit_prepare")
+    assert calls.index("rwr_enqueue") < calls.index("triage_pull[cand-1]")
+
+
+def test_zero_limit_makes_no_readiness_external_calls(monkeypatch):
+    conn = FakeConn()
+    llm = FakeLLM()
+    _patch_stages(monkeypatch, conn=conn, llm=llm)
+    monkeypatch.setattr(auto.readiness_intake_store, "enqueue_verified",
+                        lambda *a, **k: pytest.fail("readiness enqueue at zero limit"))
+    monkeypatch.setattr(auto.readiness_preparation, "run_once",
+                        lambda *a, **k: pytest.fail("ATS called at zero limit"))
+    monkeypatch.setattr(auto.readiness_worker, "run_once",
+                        lambda *a, **k: pytest.fail("Jev called at zero limit"))
+    monkeypatch.setattr(auto, "load_cloud", lambda c, cid: type("Cloud", (), {
+        "positions": [], "achievements": [], "skills": []
+    })())
+    auto.run_auto_cycle(conn, llm=llm, browser=object(), pdf=object(),
+                        discovery_client=object(), boards=["acme"], limit=0)
+
+
+def test_readiness_failures_are_redacted_and_do_not_stop_fit_or_triage(monkeypatch, caplog):
+    conn = FakeConn()
+    llm = FakeLLM()
+    calls = _patch_stages(monkeypatch, conn=conn, llm=llm)
+    monkeypatch.setattr(auto, "_readiness_settings_from_env", lambda: SimpleNamespace(
+        enabled=True, intake_batch_limit=10, jev_batch_limit=10,
+        request_timeout_seconds=30, max_attempts=8))
+    monkeypatch.setattr(auto.readiness_control_store, "is_enabled", lambda conn: True)
+    monkeypatch.setattr(auto.readiness_intake_store, "enqueue_verified",
+                        lambda *a, **k: (_ for _ in ()).throw(RuntimeError("secret vacancy payload")))
+    monkeypatch.setattr(auto.fit_preparation, "run_once", lambda *a, **k: calls.append("fit_prepare") or "idle")
+    monkeypatch.setattr(auto.fit_worker, "run_once", lambda *a, **k: calls.append("fit_jev") or "idle")
+    monkeypatch.setattr(auto, "load_cloud", lambda c, cid: type("Cloud", (), {
+        "positions": [], "achievements": [], "skills": []
+    })())
+    result = auto.run_auto_cycle(
+        conn, llm=llm, browser=object(), pdf=object(), discovery_client=object(),
+        boards=["acme"], limit=1, conn_factory=lambda: conn, fit_client=object(),
+        fit_api_key="synthetic-key",
+    )
+    assert any(error == "readiness_enqueue: operation_failed" for error in result.errors)
+    assert "secret" not in caplog.text and "secret" not in repr(result.errors)
+    assert "fit_prepare" in calls and "fit_jev" in calls and "triage_pull[cand-1]" in calls
+
+
+def test_disabled_persisted_control_never_runs_readiness_stages(monkeypatch):
+    conn = FakeConn()
+    llm = FakeLLM()
+    _patch_stages(monkeypatch, conn=conn, llm=llm)
+    monkeypatch.setattr(auto, "_readiness_settings_from_env", lambda: SimpleNamespace(
+        enabled=True, intake_batch_limit=10, jev_batch_limit=10,
+        request_timeout_seconds=30, max_attempts=8))
+    monkeypatch.setattr(auto.readiness_control_store, "is_enabled", lambda conn: False)
+    monkeypatch.setattr(auto.readiness_intake_store, "enqueue_verified",
+                        lambda *a, **k: pytest.fail("disabled RWR enqueued"))
+    monkeypatch.setattr(auto.readiness_preparation, "run_once",
+                        lambda *a, **k: pytest.fail("disabled ATS call"))
+    monkeypatch.setattr(auto.readiness_worker, "run_once",
+                        lambda *a, **k: pytest.fail("disabled Jev call"))
+    monkeypatch.setattr(auto, "load_cloud", lambda c, cid: type("Cloud", (), {
+        "positions": [], "achievements": [], "skills": []
+    })())
+    result = auto.run_auto_cycle(
+        conn, llm=llm, browser=object(), pdf=object(), discovery_client=object(),
+        boards=["acme"], limit=5, conn_factory=lambda: conn,
+    )
+    assert result.readiness_enabled is False
+    assert (result.readiness_enqueued, result.readiness_prepared, result.readiness_completed) == (0, 0, 0)
+
+
+def test_readiness_disable_after_enqueue_fences_later_stages(monkeypatch):
+    """A mid-cycle disable must stop ATS/Jev work after enqueue returns."""
+    from types import SimpleNamespace
+
+    conn = FakeConn()
+    llm = FakeLLM()
+    _patch_stages(monkeypatch, conn=conn, llm=llm)
+    state = {"enabled": True}
+    monkeypatch.setattr(auto, "_readiness_settings_from_env", lambda: SimpleNamespace(
+        enabled=True, intake_batch_limit=3, jev_batch_limit=3,
+        request_timeout_seconds=30, max_attempts=8))
+    monkeypatch.setattr(auto.readiness_control_store, "is_enabled",
+                        lambda _conn: state["enabled"])
+
+    def enqueue(_conn, *, limit):
+        assert state["enabled"] is True
+        state["enabled"] = False
+        return 1
+
+    monkeypatch.setattr(auto.readiness_intake_store, "enqueue_verified", enqueue)
+    monkeypatch.setattr(auto.readiness_preparation, "run_once",
+                        lambda *a, **k: pytest.fail("ATS work started after disable"))
+    monkeypatch.setattr(auto.readiness_worker, "run_once",
+                        lambda *a, **k: pytest.fail("Jev work started after disable"))
+    monkeypatch.setattr(auto, "load_cloud", lambda c, cid: type("Cloud", (), {
+        "positions": [], "achievements": [], "skills": []
+    })())
+
+    result = auto.run_auto_cycle(
+        conn, llm=llm, browser=object(), pdf=object(), discovery_client=object(),
+        boards=["acme"], limit=3, conn_factory=lambda: conn, fit_client=object(),
+    )
+
+    assert result.readiness_enqueued == 1
+    assert result.readiness_enabled is False
+    assert (result.readiness_prepared, result.readiness_completed) == (0, 0)
+
+
+def test_readiness_disable_between_items_prevents_next_claim_and_jev(monkeypatch):
+    """Recheck the persistent gate between bounded ATS items and Jev stage."""
+    from types import SimpleNamespace
+
+    conn = FakeConn()
+    llm = FakeLLM()
+    _patch_stages(monkeypatch, conn=conn, llm=llm)
+    state = {"enabled": True}
+    monkeypatch.setattr(auto, "_readiness_settings_from_env", lambda: SimpleNamespace(
+        enabled=True, intake_batch_limit=3, jev_batch_limit=3,
+        request_timeout_seconds=30, max_attempts=8))
+    monkeypatch.setattr(auto.readiness_control_store, "is_enabled",
+                        lambda _conn: state["enabled"])
+    monkeypatch.setattr(auto.readiness_intake_store, "enqueue_verified",
+                        lambda _conn, *, limit: 1)
+    prep_calls = []
+
+    def prepare(*_args, **_kwargs):
+        prep_calls.append(True)
+        state["enabled"] = False
+        return "prepared"
+
+    monkeypatch.setattr(auto.readiness_preparation, "run_once", prepare)
+    monkeypatch.setattr(auto.readiness_worker, "run_once",
+                        lambda *a, **k: pytest.fail("Jev work started after disable"))
+    monkeypatch.setattr(auto, "load_cloud", lambda c, cid: type("Cloud", (), {
+        "positions": [], "achievements": [], "skills": []
+    })())
+
+    result = auto.run_auto_cycle(
+        conn, llm=llm, browser=object(), pdf=object(), discovery_client=object(),
+        boards=["acme"], limit=3, conn_factory=lambda: conn, fit_client=object(),
+    )
+
+    assert len(prep_calls) == 1
+    assert result.readiness_prepared == 1
+    assert result.readiness_enabled is False
+    assert result.readiness_completed == 0
 
 
 def test_fit_queue_errors_do_not_stop_later_pipeline_stages(monkeypatch):

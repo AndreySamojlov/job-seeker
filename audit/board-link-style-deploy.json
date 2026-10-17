@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-16",
+  "service": "job-machine-board",
+  "url": "http://127.0.0.1:8095/",
+  "deployment": {
+    "engine_version": "0.2.0a7",
+    "wheel_path": "vendor/cockpit_engine-0.2.0a7-py3-none-any.whl",
+    "wheel_sha256": "cc83cf230e1c4390085e0abd1b3234f981c07fc43ac943d7958823442fa1a0f0",
+    "styles_sha256": "6358e81a89855205c07dd90171ff7f7d7e796c670939099328a12546e92afb1d",
+    "image_tag": "job-machine/board:linkstyle-a7-20261016-r1",
+    "image_id": "sha256:d885700bfbc85ed4e989ab4cd550b3cd2fef2b566b69630584dc3ce8223ef56e",
+    "container_id": "fec1ad82335881e257377ffe233e348589a6bcc5277e20d78dd664b821ca4531",
+    "previous_image_id": "sha256:88e7468827c71e9710f129f29dab857b057585f992575cbc00d17fc16466ad10",
+    "previous_container_id": "4011f3901a91ea67a63c199d8ac326c936cba3a4bb1c9dd5667178fa79c8410",
+    "rollback_container": "job-machine-board-rollback-linkstyle-a6"
+  },
+  "http_checks": {
+    "healthz_status": 200,
+    "page_status": 200,
+    "css_status": 200,
+    "css_cache_control": "no-cache",
+    "scoped_table_link_rule_present": true,
+    "solid_underline_rule_present": true,
+    "ink_color_rule_present": true,
+    "tooltip_info_dotted_underline_preserved": true
+  },
+  "workers": {
+    "count": 8,
+    "ids_and_images_unchanged": true,
+    "all_running": true,
+    "health_http_status_all": 200
+  },
+  "limitations": {
+    "browser_visual_capture": "Not performed: the computer-use guard could not determine the browser URL and stopped the session.",
+    "tests": "Not run; project instructions prohibit tests against the active production database and the style deployment did not require them."
+  }
+}

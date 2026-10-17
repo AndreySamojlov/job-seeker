@@ -1,6 +1,6 @@
 # Рабочая борда —16.10.2026
 
-Борда доставлена на lab-do отдельным read-only сервисом и подключена именованным job-board туннелем существующего демона. Пользовательский URL: http://127.0.0.1:8095/ . Health/HTML200 и оба реальных candidate contexts проверены через этот маршрут. Engine0.2.0a4;8существующих desired сохранены, workers IDs/images неизменны. Визуальную проверку пользователь взял на себя. [Доставка и evidence](../audit/greenhouse-board-deploy.md).
+Борда доставлена на lab-do отдельным read-only сервисом и подключена именованным job-board туннелем существующего демона. Пользовательский URL: http://127.0.0.1:8095/ . Текущая сборка Engine `0.2.0a8`; Health/HTML200 и live API проверены после обновления RWR. Восемь существующих Job Machine worker images/IDs неизменны. Старый board container сохранён остановленным как rollback. [Исходная доставка](../audit/greenhouse-board-deploy.md), [обновление RWR и production evidence](../audit/remote-work-readiness-s5-s6-delivery.md). Визуальная проверка пользователем остаётся отдельной от API-проверки.
 
 18768 — synthetic fixture, не рабочая серверная борда. Прежние отказы auto-review сохранены в истории; текущая запись registry и согласованный restart выполнены штатными инструментами без изменения security settings. App-server reconnecting существовал до доставки и не исправлялся в другом проекте.
 

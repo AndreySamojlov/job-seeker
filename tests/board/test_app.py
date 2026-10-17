@@ -143,7 +143,24 @@ def test_column_filters_cover_whole_report_and_context():
         assert p['table']['filters'] == {'company': {'q': 'Acme'}}
         assert p['table']['filter_param'] == 'column_filters'
         assert p['meta']['context']['column_filters'] == '{"company":{"q":"Acme"}}'
-        assert all(c['filter'] in ('text', 'range') for c in p['table']['columns'])
+        readiness = next(c for c in p['table']['columns'] if c['key'] == 'remote_work_readiness')
+        assert readiness['filter'] is None
+        assert readiness['sortable'] is False
+        assert all(c['filter'] in ('text', 'range') for c in p['table']['columns'] if c is not readiness)
+
+
+def test_readiness_column_is_display_only_in_board_contract():
+    with TestClient(create_app(Repository())) as client:
+        response = client.get('/api/board/greenhouse')
+        assert response.status_code == 200
+        columns = response.json()['table']['columns']
+        readiness = next(c for c in columns if c['key'] == 'remote_work_readiness')
+        assert readiness['filter'] is None
+        assert readiness['sortable'] is False
+        rejected_filter = client.get('/api/board/greenhouse', params={
+            'column_filters': '{"remote_work_readiness":{"min":0}}',
+        })
+        assert rejected_filter.status_code == 422
 
 
 def test_synthetic_fixture_filters_the_complete_selection():
@@ -155,24 +172,29 @@ def test_synthetic_fixture_filters_the_complete_selection():
         assert p['table']['rows'][0]['title'] == 'Synthetic vacancy 199'
 
 
-def test_synthetic_fixture_returns_all_rows_for_client_pagination():
+def test_synthetic_fixture_returns_complete_snapshot_for_client_pagination():
     from tests.board.fixture_app import create_app as fixture_app
     with TestClient(fixture_app()) as client:
-        p = client.get('/api/board/greenhouse', params={'page': 1}).json()
-    assert p['table']['page'] == 1
-    assert p['table']['page_size'] == 100
-    assert p['table']['total_rows'] == 201
-    assert len(p['table']['rows']) == 201
+        first = client.get('/api/board/greenhouse', params={
+            'page': 0, 'sort_key': 'title', 'sort_direction': 'asc'}).json()
+        second = client.get('/api/board/greenhouse', params={
+            'page': 1, 'sort_key': 'title', 'sort_direction': 'asc'}).json()
+    assert first['table']['total_rows'] == 201
+    assert first['table']['page'] == 0 and len(first['table']['rows']) == 201
+    assert second['table']['page'] == 1 and len(second['table']['rows']) == 201
+    assert first['table']['client_sort'] is True
+    assert {'fit_score', 'remote_work_readiness'} <= set(first['table']['rows'][0])
 
 
 def test_response_size_limit_returns_unavailable_without_partial_rows(monkeypatch):
+    from datetime import datetime, timezone
     monkeypatch.setattr('job_machine.board.app.MAX_RESPONSE_BYTES', 1, raising=False)
     class Large(Repository):
         def load(self, filters, page, *, budget=None):
-            from datetime import datetime, timezone
             return GreenhouseSnapshot(candidate_id='alpha', total_rows=1, rows=[dict(
                 vacancy_id='v1', title='Synthetic', url='https://example.test/v1',
-                discovered_at=datetime(2026, 10, 15, tzinfo=timezone.utc), fit_score=0)])
+                discovered_at=datetime(2026, 10, 15, tzinfo=timezone.utc), fit_score=0,
+                remote_work_readiness=None)])
     with TestClient(create_app(Large())) as client:
         response = client.get('/api/board/greenhouse')
     assert response.status_code == 503

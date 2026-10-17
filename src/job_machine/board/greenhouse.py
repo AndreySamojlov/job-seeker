@@ -47,17 +47,12 @@ def build_greenhouse_report(snapshot: GreenhouseSnapshot, filters: BoardFilters,
     if len(ranked_boards) > 20:
         board_names.append('Прочее')
         board_counts.append(sum(r['count'] for r in ranked_boards[20:]))
-    frequencies = {}
-    for row in snapshot.rows:
-        score = row.get('fit_score')
-        if score is not None:
-            frequencies[score] = frequencies.get(score, 0) + 1
-    scores = sorted(frequencies)
+    score_bands = sorted(snapshot.bands, key=lambda row: float(row['label']))
     points = [dict(x=int(p['discovered_at'].timestamp() * 1000), y=p['fit_score'])
               for p in snapshot.points if p.get('fit_score') is not None]
     series = [
         dict(id='timeline', x=[d.isoformat() for d in dates], axis='time', series=[dict(name='Обнаружено', y=daily)]),
-        dict(id='fit', x=[str(score) for score in scores], series=[dict(name='Вакансии', y=[frequencies[score] for score in scores])]),
+        dict(id='fit', x=[str(row['label']) for row in score_bands], series=[dict(name='Вакансии', y=[row['count'] for row in score_bands])]),
         dict(id='boards', x=board_names, series=[dict(name='Вакансии', y=board_counts)]),
         dict(id='dates', series=[dict(name='Jev', data=points)]),
     ]
@@ -102,6 +97,8 @@ def build_greenhouse_report(snapshot: GreenhouseSnapshot, filters: BoardFilters,
                                  **({'filterMin': 0, 'filterMax': 100} if kind == 'number' else {'filterMaxLength': 200}),
                                  **({'href_key': 'url'} if key == 'title' else {}))
                    for key, title, kind in [('title', 'Вакансия', 'link'), ('company', 'Компания', 'text'),
-                    ('location', 'Локация', 'text'), ('work_mode', 'Формат', 'text'), ('fit_score', 'Jev', 'number')]],
+                    ('location', 'Локация', 'text'), ('work_mode', 'Формат', 'text'), ('fit_score', 'Jev', 'number')]] +
+                   [dict(key='remote_work_readiness', label='Международная удалёнка', kind='number',
+                         format='percent', sortable=False, filter=None)],
                    filter_param='column_filters', filter_context_key='column_filters', filters=parse_column_filters(filters.column_filters),
                    client_sort=True, row_key='vacancy_id', rows=rows, total_rows=snapshot.total_rows, page=table_page.page, page_size=100))

@@ -25,7 +25,7 @@ class InvalidReport(RuntimeError):
     pass
 
 
-ENGINE_VERSION = '0.2.0a7'
+ENGINE_VERSION = '0.2.0a9'
 
 
 def create_app(repository=None) -> FastAPI:

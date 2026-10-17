@@ -374,3 +374,91 @@ GHL.S2 delivery16.10.2026: T1 и T2 технически доставлены. J
 
 
 GHL.S1.T5 — correction16.10.2026 по обратной связи пользователя: штатные column filters всей выборки,5видимых колонок, horizontal board top20/company labels/прочее. Ready Task в существующей Story; scope и фильтры подтверждены пользователем, детей нет. Один полный staging срез, Heart — полезный отчёт на native механиках. [Bounded design/план/evidence](../audit/board-ui-refinement.md). Технически закрыт: реализация, независимый review, проверки и доставка8095 выполнены16.10.2026; визуальная приёмка пользователем открыта.
+
+## RWR — готовность вакансии к международной удалённой работе
+
+16.10.2026: согласован [Epic Intent](remote-work-readiness-intent.md). Индекс формирует Jev; Cockpit Rules загружает generic external-decision descriptor и ровно один раз вызывает зарегистрированный handler, возвращая его ответ без преобразования. Это реализовано в Engine wheel `0.2.0a8`; оценочные вычисления остаются у Jev. Существующий Jev fit не меняется.
+
+### Staging RWR до декомпозиции
+
+**A — полная локальная реализация Epic.** S1–S4 включают оценку Jev через Rules, отдельное отображение, автоматический охват новых/активных существующих вакансий, durable retries, bounded control и synthetic staged rehearsal. Это выбранный и реализованный срез; все проверки используют synthetic data и разрешённый recovery DB.
+
+**B — рабочая поставка.** Пользователь выбрал отдельный RWR worker на lab-do с первоначальным состоянием disabled. Реальные provider calls не входят в первоначальный rollout; enablement остаётся отдельным gate после read-only preflight, миграций, synthetic rehearsal и проверки status.
+
+### Проход RWR Epic → Story
+
+| ID | Ценность и ответственность | Проверяемый результат и границы |
+|---|---|---|
+| RWR.S1 | Оператор получает индекс одной вакансии через Jev, вызванный оболочкой Rules | Локальная оценка/immutable snapshot прошли синтетические и guarded DB проверки; Story review закрыт. Историческое подробное evidence: [S1 audit](../audit/remote-work-readiness-s1.md), агрегированное текущее evidence: [Epic audit](../audit/remote-work-readiness-epic.md). |
+| RWR.S2 | Оператор видит сохранённый индекс в существующей борде вакансий | Поле показывает только процент; NULL отличается от 0; явно нефильтруемо и несортируемо; нет влияния на triage, очередь или submit. Story review закрыт. |
+| RWR.S3 | Все подходящие вакансии получают однократную оценку автоматически | Свежая проверка активности, durable intake/Jev queues, fenced retry, lease expiry и bounded auto-cycle проверены на synthetic/guarded DB пути. Story review закрыт. |
+| RWR.S4 | Локальная реализация готова к управляемой проверке оператора | Валидированная конфигурация, redacted controls, staged rehearsal и runbook реализованы; production migrations/secret/config/live API/redeploy/enablement остаются за отдельным конкретным заданием. Story review закрыт. |
+| RWR.S5 | Оператор может развернуть изолированный RWR worker и оставить обработку выключенной | Новый worker выполняет только RWR intake/assessment, имеет bounded polling, безопасные миграционные gates и redacted status; rollout не обновляет и не прерывает существующие восемь workers. |
+| RWR.S6 | Оператор видит RWR-поле в существующей production board | Обновлённый board image показывает сохранённый процент, NULL остаётся пустым; порт/роль/доступ и остальные board-сценарии сохраняют прежние ограничения. Короткая недоступность только board согласуется перед переключением image. |
+
+S1–S4 реализованы локально и проверены; signed commit `896f4df` создан. S5 зависит от S1/S3/S4 и развёртывается disabled. S6 зависит от S2 и schema S5. Реальные ATS/Jev вызовы и включение control требуют отдельного заключительного gate с подтверждёнными квотами и секретом.
+
+### Декомпозиция RWR.S2 → Task
+
+Технический проект: [S2 board display](superpowers/specs/2026-10-16-remote-work-readiness-s2-design.md); план: [S2 implementation](superpowers/plans/2026-10-16-remote-work-readiness-s2.md).
+
+| ID | Результат Task | Граница |
+|---|---|---|
+| RWR.S2.T1 | Engine board contract умеет generic percent formatting и несортируемую колонку | Не содержит RWR/Jev/domain semantics; старое поведение колонок по умолчанию не меняется |
+| RWR.S2.T2 | Job Seeker board возвращает raw fraction завершённой оценки в отдельной колонке | Read-only LEFT JOIN, NULL/0 distinct; ключ не сортируется и не фильтруется; никаких данных Rules/rubric |
+| RWR.S2.T3 | Точный consumer wheel интегрирован, board payload/UI и регрессия проверены | Provenance, unit/API/DB/DOM проверки; merge review на границе Story |
+
+Маршрут S2: T1 и T2 независимы и выполняются параллельно; T3 следует за обоими.
+
+### Декомпозиция RWR.S3 → Task
+
+Технический проект: [S3 automatic coverage](superpowers/specs/2026-10-16-remote-work-readiness-s3-design.md); план: [S3 implementation](superpowers/plans/2026-10-16-remote-work-readiness-s3.md).
+
+| ID | Результат Task | Граница |
+|---|---|---|
+| RWR.S3.T1 | Durable bounded intake queue для активной проверки/получения текста | Только состояния/lease/retry/error code без текста; атомарное создание S1 snapshot и intake completion |
+| RWR.S3.T2 | Preparation worker делает свежий ATS `check_job`, затем получает и нормализует текст | Snapshot только после live + валидного текста; failed/unknown остаются без результата |
+| RWR.S3.T3 | Auto pipeline безопасно дренирует intake и Jev очередь | Ограничение `limit`, независимые счётчики/ошибки, конфигурация существующим Jev key; без влияния на triage/fit/submit |
+| RWR.S3.T4 | Recovery DB end-to-end подтверждает новый и исторический путь | Синтетические ATS/Jev, bounded повтор, идемпотентность и безопасные логи; Story merge review |
+
+Маршрут S3: T1→T2→T3; T4 — интеграционная проверка после выполнения компонентов. S3 следует за контрактом S1; S2 остаётся независимым read-only consumer.
+
+Зависимости: S2 зависит от S1 и сохраняемого результата; S3 зависит от S1, затем наполняет поток для S2; S4 зависит от интегрированных и локально проверенных S1–S3. S5 доставляет самостоятельный runtime, S6 — consumer уже сохранённых оценок. Циклов нет. Story-boundary review S1–S4 и Epic review выполнены; два Epic review замечания исправлены и подтверждены. Текущее агрегированное evidence: [RWR Epic audit](../audit/remote-work-readiness-epic.md).
+
+### Декомпозиция RWR.S4 → Task
+
+Технический проект: [S4 operating readiness](superpowers/specs/2026-10-16-remote-work-readiness-s4-design.md); план: [S4 implementation](superpowers/plans/2026-10-16-remote-work-readiness-s4.md). Декомпозиция ограничивает текущий исполнимый срез локальной подготовкой и staged rehearsal. Production rollout — отдельный будущий контур с собственным заданием и границей разрешения.
+
+| ID | Результат Task | Граница |
+|---|---|---|
+| RWR.S4.T1 | Валидированная runtime-конфигурация и конечные лимиты intake/Jev, timeout/retry; concurrency фиксирована на 1 | Существующий secret channel; некорректные настройки отвергаются до provider call; конкретные production values подтверждаются preflight |
+| RWR.S4.T2 | Redacted status и идемпотентные enable/disable/rearm controls | Очереди и completed results сохраняются; нет текста/секретов в диагностике; no-provider-call при disabled |
+| RWR.S4.T3 | Воспроизводимый operating package и обратимая процедура | Локальные шаблоны/provenance и gates; без применения production config/migrations/redeploy |
+| RWR.S4.T4 | Изолированная synthetic rehearsal и Story evidence | Guarded recovery DB, fake ATS/Jev, lease recovery, bounded execution, безопасный rollback; затем единый Story-boundary review |
+
+Зависимости: T1→T2→T3; T4 проверяет связанный результат T1–T3 и интеграцию с S1–S3. Heart/Core S4 — T1/T2 (управляемость и наблюдаемость); слой1 — T3/T4 (поставка и доказательство). Heart Slice — все четыре Task. **Task reached.** Маршрут: T1 → T2 → T3 → T4, затем Story-boundary review. Реальная production migration/configuration/secret, API call, redeploy и enablement не авторизованы этой декомпозицией; для них требуется отдельное конкретное поручение с идентификацией сервиса/образа и воздействия.
+
+**Heart Statement:** оператор может безопасно понять, включить, ограничить и при необходимости приостановить оценку в целевом контуре, сохранив уже полученные результаты. **Heart Core / слой0:** S1 и S2. **Слой1:** S3 — полный автоматический охват вакансий. **Слой2:** S4 — эксплуатационная управляемость. **Слой3:** S5 и S6 — доставка изолированного worker и отображения в production board. **Heart Slice A:** S1+S2; полный Epic дополнительно требует S3–S6. Маршрут поставки: S5 (worker disabled) → S6 (board consumer), затем финальный rollout gate. S5/S6 не включают provider calls или активирование RWR.
+
+### Декомпозиция RWR.S5 и RWR.S6 → Task
+
+Выбранный маршрут: отдельный worker на lab-do, развёрнутый disabled. Production deployment разрешён как цель текущего поручения, но только после read-only проверки target/ledger, безопасного миграционного механизма, точного image/config и синтетического smoke. Никаких реальных ATS/Jev запросов или включения RWR в рамках первой доставки.
+
+**RWR.S5 — изолированный production worker, disabled.** Зависит от S1/S3/S4; создаёт автономный bounded polling runtime только для RWR, безопасное read-only preflight и allowlisted применение 0039–0041 с checksum/ledger gates, image и operator evidence. Не обновляет/перезапускает существующие workers. Результат disabled подтверждается контейнерным health/status без внешнего provider запроса.
+
+| ID | Исполнимый результат | Доказательство |
+|---|---|---|
+| RWR.S5.T1 | Изолированная RWR daemon-команда с bounded polling, graceful stop, disabled guard и redacted heartbeat | fake clock/providers: disabled = 0 calls; один bounded cycle; stop без потери lease/queue; таймер ограничен конфигурацией |
+| RWR.S5.T2 | RWR-only migration preflight/apply для точного набора 0039–0041 | Recovery DB: preflight read-only, exact checksum allowlist, no unrelated migration, missing/changed/out-of-order ledger отказ до DDL, repeat безопасен |
+| RWR.S5.T3 | Hardened отдельный image/service config и воспроизводимая сборка | build/config checks: non-root, read-only FS, no published ports, explicit secret/runtime mounts, bounded resources, disabled by default; не трогает существующие сервисы |
+| RWR.S5.T4 | Target-specific disabled deploy rehearsal и production rollout evidence | Сначала read-only ops/API preflight; затем миграционный gate, deploy только нового сервиса, synthetic smoke без provider calls, точный image id, redacted status; Story review |
+
+**RWR.S6 — доступность оценки в существующей board на lab-do.** Зависит от S2 и общей схемы S5; read-only потребитель persisted fraction, пустое значение при NULL. Не сортирует/фильтрует и не влияет на рабочие решения.
+
+| ID | Исполнимый результат | Доказательство |
+|---|---|---|
+| RWR.S6.T1 | Обновлённый board image включает проверенные S2 UI/contract и Cockpit Engine a8 | provenance/hash и unit/API/DOM regression; source commit не зависит от незакоммиченной fit-ветки |
+| RWR.S6.T2 | Read-only preflight и переключение только board image на lab-do | health/port/identity/config до и после; оценка воздействия; явное подтверждение перед кратким downtime только board |
+| RWR.S6.T3 | Board acceptance и Epic-level consistency review | percent/NULL=пусто, no-sort/no-filter, остальная board функциональность и workers здоровы; Story review, затем Epic merge review |
+
+S5 task order: T1/T2 параллельно; T3 после T1, T2; T4 после T1–T3. S6.T1 параллельно с S5; S6.T2 после S5.T2 и S6.T1; S6.T3 после интеграции обоих Stories. Story reviews выполняются только на границах S5 и S6, затем один Epic-to-Stories merge review.

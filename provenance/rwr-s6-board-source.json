@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "purpose": "RWR.S6 board source reconciliation",
+  "source": {
+    "service": "job-machine-board",
+    "image": "job-machine/board:jev-s4-20261016-r1",
+    "image_id": "sha256:a05274af6da97675e12022bae91133346b8acc138aa51a91ca833be0e51890c6",
+    "cockpit_engine_version": "0.2.0a7"
+  },
+  "adaptation": "Retain the running production board implementation, including its read and response safety limits and Jev data model. Set ENGINE_VERSION to Cockpit Engine a8, add only the RWR display-only column and completed-result join, and restore validated server-side sort/pagination required by a8 (the live a7 client-side contract is not supported by a8).",
+  "target_changes": [
+    "ENGINE_VERSION to 0.2.0a8",
+    "Display-only international remote-work percentage column",
+    "Read completed remote_work_readiness_job.value without sort/filter support",
+    "Validated server-side page/sort with stable vacancy_id tie-breaker to satisfy a8 response contract"
+  ],
+  "files": [
+    {
+      "path": "src/job_machine/board/__init__.py",
+      "production_source_sha256": "f82a1a268b7661092ea5e35c1beb746fb17b63efedd58b83b0c35d86a4fd623f",
+      "target_sha256": "f82a1a268b7661092ea5e35c1beb746fb17b63efedd58b83b0c35d86a4fd623f"
+    },
+    {
+      "path": "src/job_machine/board/app.py",
+      "production_source_sha256": "e89a600154e7e3985b304adf73f8c4db0a58c5dd9b2ab370b314369ed2434190",
+      "target_sha256": "3a645a8f21d480af35fd93bc52c79ad04923c2ae945d8cf0e0e9e3b37d78812d"
+    },
+    {
+      "path": "src/job_machine/board/column_filters.py",
+      "production_source_sha256": "8c2452b97ad2519966e26511022274dc79750f6ba67d3eda08ac32d05c8cd76b",
+      "target_sha256": "8c2452b97ad2519966e26511022274dc79750f6ba67d3eda08ac32d05c8cd76b"
+    },
+    {
+      "path": "src/job_machine/board/config.py",
+      "production_source_sha256": "6afb165e8e06a4fe1e30b5b1c68da25edbb32de9e3e614e5c9918b1b880cb858",
+      "target_sha256": "6afb165e8e06a4fe1e30b5b1c68da25edbb32de9e3e614e5c9918b1b880cb858"
+    },
+    {
+      "path": "src/job_machine/board/context.py",
+      "production_source_sha256": "1a99948bd274066ea58f7add822acae061096ddece507ba9f869707d5cec66b4",
+      "target_sha256": "1a99948bd274066ea58f7add822acae061096ddece507ba9f869707d5cec66b4"
+    },
+    {
+      "path": "src/job_machine/board/greenhouse.py",
+      "production_source_sha256": "502bb80e39fb04946d6ae6fd583e9580fdfaeac78b50f732993053d7cc5dbcd8",
+      "target_sha256": "a9c5e9650e90a0615b995e4b8db89b35429fad088ef1982cc65826d57b87f0ae"
+    },
+    {
+      "path": "src/job_machine/board/models.py",
+      "production_source_sha256": "df7aef41cd6cd790d7712ac7c13c0998d2532806b6421ac2248b6ed96d4aaa8f",
+      "target_sha256": "8241717cbe1d35504cca145016cc49e7a56d0615a5c50b90dfb6c67bfc83d1fb"
+    },
+    {
+      "path": "src/job_machine/board/read_budget.py",
+      "production_source_sha256": "40074d04fd4ed44f539aa8a9713f7cf93659e4eb8b71cc6da6df630103e5d0ce",
+      "target_sha256": "40074d04fd4ed44f539aa8a9713f7cf93659e4eb8b71cc6da6df630103e5d0ce"
+    },
+    {
+      "path": "src/job_machine/board/read_runtime.py",
+      "production_source_sha256": "805299bbc9c3d13b4fee794e8d3ea46a4edce4f296f24fa35f1eb0e7f97c1be2",
+      "target_sha256": "805299bbc9c3d13b4fee794e8d3ea46a4edce4f296f24fa35f1eb0e7f97c1be2"
+    },
+    {
+      "path": "src/job_machine/board/repository.py",
+      "production_source_sha256": "5d60aa05fdfff0c9b112ca1b483e23e3f222814e6ecaa61ae4eefb2332fa3d85",
+      "target_sha256": "09940050deaf607e754cf7f83fd06e8ac85b6254aea16654e671725ed60aa165"
+    },
+    {
+      "path": "src/job_machine/board/server.py",
+      "production_source_sha256": "24520f36248d89f41c594848d652ebd1b837605f38ba12d3e10030c77a731631",
+      "target_sha256": "24520f36248d89f41c594848d652ebd1b837605f38ba12d3e10030c77a731631"
+    }
+  ]
+}

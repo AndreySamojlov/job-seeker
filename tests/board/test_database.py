@@ -31,6 +31,17 @@ def test_candidate_isolation_calendar_aggregation_and_full_snapshot(db_schema):
                          "('board-beta',%s,'completed','{}',%s,'synthetic','test',99,now())",
                          (vacancy_id, 'a' * 64, vacancy_id, 'b' * 64))
     conn.commit()
+    # Only completed RWR values are visible to the read model. Zero is distinct
+    # from NULL, and an in-progress result must behave like no result.
+    readiness_values = [0.0, 0.3141592653589793, None, None]
+    for i, (status, value) in enumerate((('completed', readiness_values[0]),
+                                         ('completed', readiness_values[1]),
+                                         ('pending', readiness_values[2]))):
+        vacancy_id = uuid.UUID(int=i + 1)
+        conn.execute("INSERT INTO remote_work_readiness_job(vacancy_id,status,payload,payload_hash,model,rubric_version,value,completed_at) "
+                     "VALUES (%s,%s,'{}',%s,'jev-1.13.0','rwr-1',%s,CASE WHEN %s='completed' THEN now() ELSE NULL END)",
+                     (vacancy_id, status, f'{i + 1:064x}', value, status))
+    conn.commit()
     conn.row_factory = dict_row
     selection = BoardFilters('board-alpha', date(2026, 10, 13), date(2026, 10, 15))
     first = load_greenhouse_snapshot(conn, selection, TablePage(page=0))
@@ -40,6 +51,11 @@ def test_candidate_isolation_calendar_aggregation_and_full_snapshot(db_schema):
     assert first.daily == [dict(day=date(2026, 10, 14), count=103)]
     assert {p['fit_score'] for p in first.points} == {0}
     assert first.unscored == 1 and first.unknown_board == 1
+    readiness_by_id = {int(row['vacancy_id'].int): row['remote_work_readiness'] for row in first.rows}
+    assert readiness_by_id[1] == 0.0
+    assert readiness_by_id[2] == 0.3141592653589793
+    assert readiness_by_id[3] is None  # pending is intentionally not exposed
+    assert readiness_by_id[4] is None  # no readiness row
     assert first.rows == second.rows
     assert [r['vacancy_id'] for r in first.rows] == sorted(r['vacancy_id'] for r in first.rows)
     beta = load_greenhouse_snapshot(conn, BoardFilters('board-beta', selection.date_from, selection.date_to), TablePage())

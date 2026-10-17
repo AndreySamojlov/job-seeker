@@ -1,0 +1,42 @@
+--- a/cockpit_engine/web/static/table-engine.js
++++ b/cockpit_engine/web/static/table-engine.js
+@@ -1272,10 +1272,11 @@
+   const th = el("th", { class: ((o.cls ? o.cls + " " : "") + "thx").trim() });
+   const lab = el("span", { class: "thlab" }, o.label != null ? o.label : col.label);
+   th.append(lab);
+-  th.classList.add("sortable");
+-  const sorted = cs.sortKey === col.key;
++  const sortable = col.sortable !== false;
++  if (sortable) th.classList.add("sortable");
++  const sorted = sortable && cs.sortKey === col.key;
+   if (sorted) th.classList.add("sorted-" + cs.sortDir);
+-  lab.addEventListener("click", () => { tblCycleSort(cs, col.key); rerender("sort"); });
++  if (sortable) lab.addEventListener("click", () => { tblCycleSort(cs, col.key); rerender("sort"); });
+   // Подложка с кнопками управления колонкой (конструкция владельца 16.08).
+   // Кнопки живут НА НЕЙ и потому целиком вне потока — именно это снимает
+   // ограничение, в которое упёрлись три предыдущих круга: невидимые «×» и
+@@ -1291,14 +1292,16 @@
+   // НИКАКОГО признака, что её вообще можно сортировать, — жест держался на
+   // догадке «кликну по подписи и посмотрю». Теперь у покоя есть свой знак «⇅»
+   // (две противоположные стрелки), у активной — стрелка направления.
+-  const sortBtn = el("button", { class: "thsort" + (sorted ? " on" : ""), type: "button",
+-    title: sorted ? (cs.sortDir === "asc" ? "Сортировка: по возрастанию"
+-      : "Сортировка: по убыванию") : "Сортировать" },
+-    sorted ? (cs.sortDir === "asc" ? "↑" : "↓") : "⇅");
+-  sortBtn.addEventListener("click", (e) => {
+-    e.stopPropagation(); tblCycleSort(cs, col.key); rerender("sort");
+-  });
+-  tools.append(sortBtn);
++  if (sortable) {
++    const sortBtn = el("button", { class: "thsort" + (sorted ? " on" : ""), type: "button",
++      title: sorted ? (cs.sortDir === "asc" ? "Сортировка: по возрастанию"
++        : "Сортировка: по убыванию") : "Сортировать" },
++      sorted ? (cs.sortDir === "asc" ? "↑" : "↓") : "⇅");
++    sortBtn.addEventListener("click", (e) => {
++      e.stopPropagation(); tblCycleSort(cs, col.key); rerender("sort");
++    });
++    tools.append(sortBtn);
++  }
+   // Воронка фильтра — ТОЛЬКО у колонки, которую домен объявил фильтруемой
+   // (col.filter). Не объявлена — воронки нет никогда. Аффорданс скрыт до
+   // наведения, но при АКТИВНОМ фильтре виден постоянно: иначе применённый

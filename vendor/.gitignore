@@ -1,7 +1,12 @@
 *
 !.gitignore
+!cockpit_engine-0.2.0a9-py3-none-any.whl
 !fit-s3/
 !fit-s3/**
 !patches/
 !patches/cockpit-engine-client-sort/
 !patches/cockpit-engine-client-sort/**
+!patches/cockpit-engine-link-style/
+!patches/cockpit-engine-link-style/**
+!patches/cockpit-engine-board-s3/
+!patches/cockpit-engine-board-s3/**

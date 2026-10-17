@@ -246,8 +246,8 @@
     {
       "path": "pyproject.toml",
       "source_sha256": "ea19098ddd3b0dda3ac8196ce363d8bdced00d99e7db5c0604498b8e230bf49c",
-      "target_sha256": "55b5906637cdce1c88d18c13f2e0d5ac1ad11499d5f27afcf48f22e82f863893",
-      "adaptation": "S1 board runtime: pin local cockpit-engine0.2.0a2 wheel restoring native shell/table after UI incident; retain FastAPI/Uvicorn group. Source hash preserved. 2026-10-16: reconcile pre-existing committed board change5ea29e3 to cockpit-engine0.2.0a5; pyproject/lock unmodified by JFIT.S1; see audit/vacancy-fit-s1.md. 2026-10-16: pin immutable cockpit-engine 0.2.0a7 link-style wheel; lock tracks its local artifact hash."
+      "target_sha256": "3aad70225cec454ac4a764ce5e1311e289271185be088ccc01889eae8141e561",
+      "adaptation": "S1 board runtime: pin local cockpit-engine0.2.0a2 wheel restoring native shell/table after UI incident; retain FastAPI/Uvicorn group. Source hash preserved. 2026-10-16: reconcile pre-existing committed board change5ea29e3 to cockpit-engine0.2.0a5; pyproject/lock unmodified by JFIT.S1; see audit/vacancy-fit-s1.md. 2026-10-16: pin immutable cockpit-engine 0.2.0a7 link-style wheel; lock tracks its local artifact hash. 2026-10-17: pin merged Cockpit Engine 0.2.0a9, retaining RWR S2 board runtime and Fit S3 full-set sorting, with the accepted link stylesheet; uv.lock records the exact local wheel hash."
     },
     {
       "path": "scripts/requeue_quick_skips.py",
@@ -3036,8 +3036,8 @@
     {
       "path": "uv.lock",
       "source_sha256": "82b560167926d0eaf123af2e24eac0fb9ef8d7c39f896899d52ce101ec3b80b4",
-      "target_sha256": "01be86ef0a983894aeb39a2ef21b171c32009b09cd5ebc8b1fe779ab7aaa2dd7",
-      "adaptation": "S1 board runtime: pin local cockpit-engine0.2.0a2 wheel restoring native shell/table after UI incident; retain FastAPI/Uvicorn group. Source hash preserved. 2026-10-16: reconcile pre-existing committed board change5ea29e3 to cockpit-engine0.2.0a5; pyproject/lock unmodified by JFIT.S1; see audit/vacancy-fit-s1.md. 2026-10-16: pin immutable cockpit-engine 0.2.0a7 link-style wheel; lock tracks its local artifact hash."
+      "target_sha256": "d422420b0935df03d6e1dd101eb8e4e73b9b5612ba4cc9b93b5976009f840d99",
+      "adaptation": "S1 board runtime: pin local cockpit-engine0.2.0a2 wheel restoring native shell/table after UI incident; retain FastAPI/Uvicorn group. Source hash preserved. 2026-10-16: reconcile pre-existing committed board change5ea29e3 to cockpit-engine0.2.0a5; pyproject/lock unmodified by JFIT.S1; see audit/vacancy-fit-s1.md. 2026-10-16: pin immutable cockpit-engine 0.2.0a7 link-style wheel; lock tracks its local artifact hash. 2026-10-17: pin merged Cockpit Engine 0.2.0a9, retaining RWR S2 board runtime and Fit S3 full-set sorting, with the accepted link stylesheet; uv.lock records the exact local wheel hash."
     }
   ],
   "excluded": [

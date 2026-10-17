@@ -2,11 +2,13 @@
   "archive": "job-seeker-handoff-0.2.0a1.zip",
   "archive_sha256": "f4b37b86c1f3cd3016151735268f84019e020f9c5172c70a55bbb39c356b7fe1",
   "wheel": {
-    "path": "vendor/cockpit_engine-0.2.0a7-py3-none-any.whl",
-    "sha256": "cc83cf230e1c4390085e0abd1b3234f981c07fc43ac943d7958823442fa1a0f0",
-    "source_commit": "5e1e0f1db5d37c604cac7e7e8a0a2ce47864c8d8",
-    "source_branch": "master",
-    "adaptation": "Immutable 0.2.0a7 derived from consumer 0.2.0a6; replaces only cockpit_engine/web/static/styles.css with Cockpit Engine working-tree source (sha256 6358e81a89855205c07dd90171ff7f7d7e796c670939099328a12546e92afb1d)."
+    "path": "vendor/cockpit_engine-0.2.0a9-py3-none-any.whl",
+    "sha256": "b1e4883ac1f636a8b09ae7bb1fdfedf1e630b4908d34ec889a7ccae1ba5c3916",
+    "source_commit": null,
+    "source_branch": "codex/jev-fit-s1 + codex/rwr-s1-story",
+    "input_wheel_path": "vendor/cockpit_engine-0.2.0a8-py3-none-any.whl",
+    "input_wheel_sha256": "263e176692debe4a41dbe0a4bec6118946e6b37af1b88dce3901ba0160f00fc4",
+    "adaptation": "Merged immutable consumer wheel: retains RWR S2 table runtime; adds Fit S3 complete-snapshot sorting/pagination and restores the accepted table link stylesheet. See a9_adaptation."
   },
   "documents": [
     {
@@ -67,15 +69,70 @@
     {
       "path": "vendor/cockpit_engine-0.2.0a5-py3-none-any.whl",
       "sha256": "aec5195b43cd0ac3d59ceb2d9b8c62202e6874b0515bc6bd6304097d54548630",
-      "adaptation": "Immediate input wheel for immutable 0.2.0a6 client-sort adaptation."
+      "source_commit": "fe842546f712417ccc3d418b4e5d99f53ebba922",
+      "source_branch": "codex/portable-board-s1",
+      "adaptation": "Native text/range funnels route to full-selection server filters; canonical numeric context, pending-menu ordering, no page-local filtering."
+    },
+    {
+      "path": "vendor/cockpit_engine-0.2.0a6-py3-none-any.whl",
+      "sha256": "f23305d541535c7043aab30441685552b474b462078cd30bfd9519624f84616c",
+      "adaptation": "Pinned Engine source wheel used to build consumer a7."
+    },
+    {
+      "path": "vendor/cockpit_engine-0.2.0a7-py3-none-any.whl",
+      "sha256": "ebec7bd70d91f805311bdcd444b240fd4f2603fd66c1624a850f17c734ee3044",
+      "adaptation": "Immutable input wheel for a8; includes the preserved a6 client-sort assets and a7 link-style adaptation."
     },
     {
       "path": "vendor/fit-s3/cockpit_engine-0.2.0a6-py3-none-any.whl",
       "sha256": "aee09b66b37433772b2a31df8d2e699c258b6f38d2e90755ba2013540d1f66d9",
-      "adaptation": "Input wheel for immutable 0.2.0a7 table link-style successor."
+      "adaptation": "Fit S3 full-set client-sort adaptation; retained separately because the RWR S1 base also uses the version label 0.2.0a6."
+    },
+    {
+      "path": "vendor/cockpit_engine-0.2.0a8-py3-none-any.whl",
+      "sha256": "263e176692debe4a41dbe0a4bec6118946e6b37af1b88dce3901ba0160f00fc4",
+      "adaptation": "Pinned RWR S2 input to merged board wheel 0.2.0a9."
     }
   ],
-  "s3_adaptation": {
+  "rwr_s1_consumer_adaptation": {
+    "builder_path": "vendor/patches/cockpit-engine-rwr-s1/build.py",
+    "builder_sha256": "713a89410c934f5b9dfd5277894ea5a186c75ad90f50d28219c4e5e3f0ab8d46",
+    "input_wheel_path": "vendor/cockpit_engine-0.2.0a6-py3-none-any.whl",
+    "input_wheel_sha256": "f23305d541535c7043aab30441685552b474b462078cd30bfd9519624f84616c",
+    "asset_provenance": "prior project provenance board-s1.json, s3_adaptation.source_assets; copied byte-identically from vendor/patches/cockpit-engine-client-sort/",
+    "source_assets": {
+      "board-table.js": "ec6f3cc19444829bc5134fe3ca186270db819721ece9b6d530ac297788953cb9",
+      "board-runtime.js": "c0682f7261fef4b6cd55cb8609416e6e32073eee0ecc960866645564cb1d6ea1"
+    },
+    "patch_path": "vendor/patches/cockpit-engine-rwr-s1/client-sort.patch",
+    "patch_sha256": "d226bb134fbae0a1c7732bbb8865418777e4133a55caec9a8d69f133a618f03c",
+    "engine_a6_diff_patches": {
+      "board-table.js.patch": "a1a2d09937748236f1bbb22092af9de9920bad4dd8d4e8983d34e3ed1698c6c0",
+      "board-runtime.js.patch": "6d8e9777293ea0abb7e462932599c18de554573e44c8fb1494e2730491f9d251"
+    }
+  },
+  "rwr_s2_consumer_adaptation": {
+    "builder_path": "vendor/patches/cockpit-engine-rwr-s2/build.py",
+    "builder_sha256": "423fae1dc59ef3a5468c59fbb7054884a3dc24532a03cc1e76cf35127ce2c7b9",
+    "input_wheel_path": "vendor/cockpit_engine-0.2.0a7-py3-none-any.whl",
+    "input_wheel_sha256": "ebec7bd70d91f805311bdcd444b240fd4f2603fd66c1624a850f17c734ee3044",
+    "output_wheel_path": "vendor/cockpit_engine-0.2.0a8-py3-none-any.whl",
+    "output_wheel_sha256": "263e176692debe4a41dbe0a4bec6118946e6b37af1b88dce3901ba0160f00fc4",
+    "engine_source_base_commit": "fe842546f712417ccc3d418b4e5d99f53ebba922",
+    "engine_source_branch": "codex/remote-work-readiness-s1",
+    "adaptation": "Only the three generic board rendering assets were replaced; the immutable a7 client-sort and link-style assets and all remaining wheel files were retained byte-identically. Wheel metadata and RECORD were regenerated deterministically.",
+    "source_assets": {
+      "board-runtime.js": "81acbf8250228b11920d204ca269a9d06a1e4da33aaae195b5b04c7724b852e1",
+      "board-table.js": "f0fac844fd256f3aba52f580a9b205bb61c543f143b19562efa1493cd966b400",
+      "table-engine.js": "a7e4a3d65cb289439c1bcba4a2130740110711e9ba7611e5e9ad2ed4bb28b9b8"
+    },
+    "patches": {
+      "board-runtime.js.patch": "7262291ef770d2218c433e8a01ce4f8ad91133ed5658bf68d9dc81e5d1cf3da8",
+      "board-table.js.patch": "6567a5c6054908ebff479d36858006fa475395ebcfe1e63dcd329277e268c6c8",
+      "table-engine.js.patch": "9cd5398b5338f394dd735e922e82b87fc11639e116b70900d8f4919ab8e7a275"
+    }
+  },
+  "fit_s3_adaptation": {
     "patch_path": "vendor/patches/cockpit-engine-client-sort/client-sort.patch",
     "patch_sha256": "d226bb134fbae0a1c7732bbb8865418777e4133a55caec9a8d69f133a618f03c",
     "builder_path": "vendor/patches/cockpit-engine-client-sort/build.py",
@@ -83,9 +140,13 @@
     "source_assets": {
       "board-table.js": "ec6f3cc19444829bc5134fe3ca186270db819721ece9b6d530ac297788953cb9",
       "board-runtime.js": "c0682f7261fef4b6cd55cb8609416e6e32073eee0ecc960866645564cb1d6ea1"
-    }
+    },
+    "input_wheel_path": "vendor/cockpit_engine-0.2.0a5-py3-none-any.whl",
+    "input_wheel_sha256": "aec5195b43cd0ac3d59ceb2d9b8c62202e6874b0515bc6bd6304097d54548630",
+    "output_wheel_path": "vendor/fit-s3/cockpit_engine-0.2.0a6-py3-none-any.whl",
+    "output_wheel_sha256": "aee09b66b37433772b2a31df8d2e699c258b6f38d2e90755ba2013540d1f66d9"
   },
-  "a7_adaptation": {
+  "legacy_link_style_delivery": {
     "builder_path": "vendor/patches/cockpit-engine-link-style/build.py",
     "builder_sha256": "41a9acf7251bca5fd54cda7513c57153103ae7326f75e3fefb8028a05cf46df8",
     "input_wheel_sha256": "aee09b66b37433772b2a31df8d2e699c258b6f38d2e90755ba2013540d1f66d9",
@@ -95,6 +156,24 @@
     "deployment_dockerfile_sha256": "734e09bea484df543c1d3d9726ce9bdd842926235f28365424fc7cd4ccf4ba9a",
     "deployment_base": "job-machine/board:ui-5ea29e3",
     "deployed_image_tag": "job-machine/board:linkstyle-a7-20261016-r1",
-    "deployed_image_id": "sha256:d885700bfbc85ed4e989ab4cd550b3cd2fef2b566b69630584dc3ce8223ef56e"
+    "deployed_image_id": "sha256:d885700bfbc85ed4e989ab4cd550b3cd2fef2b566b69630584dc3ce8223ef56e",
+    "historical_output_path": "vendor/cockpit_engine-0.2.0a7-py3-none-any.whl",
+    "historical_output_sha256": "cc83cf230e1c4390085e0abd1b3234f981c07fc43ac943d7958823442fa1a0f0",
+    "note": "Historical link-style deployment. The wheel filename/version collided with RWR S1 consumer wheel 0.2.0a7, so the deployed style is re-applied to the RWR a8 base in a9."
+  },
+  "a9_adaptation": {
+    "builder_path": "vendor/patches/cockpit-engine-link-style/build.py",
+    "builder_sha256": "409321d0a586e7cd6f77b6e69d8e57cdd159c2d094ed12d7353879a90a8e2207",
+    "input_wheel_path": "vendor/cockpit_engine-0.2.0a8-py3-none-any.whl",
+    "input_wheel_sha256": "263e176692debe4a41dbe0a4bec6118946e6b37af1b88dce3901ba0160f00fc4",
+    "output_wheel_path": "vendor/cockpit_engine-0.2.0a9-py3-none-any.whl",
+    "output_wheel_sha256": "b1e4883ac1f636a8b09ae7bb1fdfedf1e630b4908d34ec889a7ccae1ba5c3916",
+    "styles_path": "vendor/patches/cockpit-engine-link-style/styles.css",
+    "styles_sha256": "6358e81a89855205c07dd90171ff7f7d7e796c670939099328a12546e92afb1d",
+    "board_assets": {
+      "board-runtime.js": "3dce8accb6516053ff45a496637bc0cdbba4621ef87a0cd785a8b9866a49a12c",
+      "board-table.js": "7b3c6431c462769aaf3d6c13f010a39085f65bb118797154e6006315b9067bd4"
+    },
+    "adaptation": "Deterministic successor to RWR a8. Replaces only board-runtime.js, board-table.js, and styles.css; carries all remaining a8 files byte-identically, including table-engine.js."
   }
 }

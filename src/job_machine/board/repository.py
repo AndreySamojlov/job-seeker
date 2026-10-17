@@ -13,18 +13,19 @@ WITH source AS (
  FROM vacancy v WHERE v.ats_family = 'greenhouse' AND v.source = 'greenhouse'
 ), selected AS (
  SELECT v.vacancy_id, v.title, v.canonical_url AS url, v.company, v.location,
-        v.work_mode, v.discovered_at, v.board_token, t.fit_score,
+        v.work_mode, v.discovered_at, v.board_token, t.fit_score, r.value AS remote_work_readiness,
         'Неизвестно'::text AS availability, NULL::timestamptz AS availability_checked_at
  FROM source v LEFT JOIN (
    SELECT candidate_id, vacancy_id, score AS fit_score FROM fit_job WHERE status = 'completed'
  ) t
    ON t.vacancy_id = v.vacancy_id AND t.candidate_id = %(candidate)s
+ LEFT JOIN remote_work_readiness_job r
+   ON r.vacancy_id = v.vacancy_id AND r.status = 'completed'
  WHERE v.discovered_at >= %(start)s AND v.discovered_at < %(end)s
    AND (%(board)s::text IS NULL OR v.board_token = %(board)s)
    /* column_filters */
 )
 """
-
 
 def load_greenhouse_snapshot(conn, filters: BoardFilters, table_page: TablePage, *, budget=None) -> GreenhouseSnapshot:
     budget = budget or ReadBudget()

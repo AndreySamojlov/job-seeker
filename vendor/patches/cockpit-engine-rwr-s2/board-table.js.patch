@@ -1,0 +1,51 @@
+--- a/cockpit_engine/web/static/board-table.js
++++ b/cockpit_engine/web/static/board-table.js
+@@ -3,7 +3,11 @@
+ function formatBoardCell(column, row, timezone = "Europe/Moscow") {
+   const value = row[column.key];
+   let text = value == null || value === "" ? "вЂ”" : String(value);
+-  if (column.kind === "number" && value != null) text = new Intl.NumberFormat("ru-RU", {maximumSignificantDigits: 21}).format(value);
++  if (column.kind === "number" && value != null) {
++    text = column.format === "percent"
++      ? new Intl.NumberFormat("ru-RU", {style:"percent", minimumFractionDigits:1, maximumFractionDigits:1}).format(value).replace(/[\u00a0\u202f]%/g, "%")
++      : new Intl.NumberFormat("ru-RU", {maximumSignificantDigits: 21}).format(value);
++  }
+   if (column.kind === "datetime" && value != null) {
+     const date = new Date(value);
+     text = Number.isFinite(date.getTime()) ? new Intl.DateTimeFormat("ru-RU", {dateStyle:"short", timeStyle:"short", timeZone:timezone}).format(date) : "вЂ”";
+@@ -15,29 +19,8 @@
+   return {text, href};
+ }
+
+-// Opt-in complete-snapshot sorting; NULL remains last in both directions.
+-function boardTablePage(columns, rows, options={}) {
+-  if (!options.clientSort) return rows;
+-  const column=columns.find(c=>c.key===options.sortKey) ||
+-    (options.sortKey==="discovered_at"?{key:"discovered_at",kind:"datetime"}:null);
+-  const textCompare=(a,b)=>a<b?-1:a>b?1:0;
+-  const compare=(a,b)=>{
+-    let order=0;
+-    if(column){
+-      const av=a[column.key],bv=b[column.key];
+-      if(av==null||bv==null){if(av==null&&bv!=null)return 1;if(bv==null&&av!=null)return -1;}
+-      else order=column.kind==='number'?av-bv:textCompare(String(av),String(bv));
+-    }
+-    if(order)return options.sortDirection==='desc'?-order:order;
+-    return textCompare(String(a[options.rowKey]??''),String(b[options.rowKey]??''));
+-  };
+-  const size=options.pageSize||100,page=options.page||0;
+-  return [...rows].sort(compare).slice(page*size,(page+1)*size);
+-}
+-
+ function renderBoardTable(container, columns, rows, options) {
+   const o = options || {};
+-  rows = boardTablePage(columns, rows, o);
+   const cs = o.columnState || tblColState();
+   cs.sortKey = o.sortKey || cs.sortKey;
+   cs.sortDir = o.sortDirection || cs.sortDir;
+@@ -128,4 +111,4 @@
+   update(columns,rows,options);
+   return {update,captureViewState,restoreViewState,invalidate,destroy(){disposed=true;invalidate();}};
+ }
+-if (typeof module !== "undefined") module.exports = {formatBoardCell, renderBoardTable,mountBoardTable,boardTablePage};
++if (typeof module !== "undefined") module.exports = {formatBoardCell, renderBoardTable,mountBoardTable};

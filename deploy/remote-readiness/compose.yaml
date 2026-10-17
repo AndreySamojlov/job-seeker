@@ -1,0 +1,23 @@
+services:
+  rwr-worker:
+    image: ${RWR_IMAGE:?set the immutable RWR image reference}
+    user: "10001:10001"
+    command: ["daemon"]
+    restart: unless-stopped
+    network_mode: none
+    stop_grace_period: ${RWR_STOP_GRACE_PERIOD:?set a grace period for the bounded in-flight request}
+    read_only: true
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=${RWR_TMPFS_SIZE:?set bounded temporary storage},uid=10001,gid=10001
+    mem_limit: ${RWR_MEMORY_LIMIT:?set a measured memory limit}
+    cpus: ${RWR_CPU_LIMIT:?set a measured CPU limit}
+    pids_limit: ${RWR_PIDS_LIMIT:?set a bounded process limit}
+    environment:
+      RWR_ENABLED: "false"
+      RWR_INTAKE_BATCH_LIMIT: ${RWR_INTAKE_BATCH_LIMIT:-1}
+      RWR_JEV_BATCH_LIMIT: ${RWR_JEV_BATCH_LIMIT:-1}
+      RWR_REQUEST_TIMEOUT_SECONDS: ${RWR_REQUEST_TIMEOUT_SECONDS:-30}
+      RWR_MAX_ATTEMPTS: ${RWR_MAX_ATTEMPTS:-8}
+      RWR_POLL_INTERVAL_SECONDS: ${RWR_POLL_INTERVAL_SECONDS:-30}

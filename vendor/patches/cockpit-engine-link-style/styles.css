@@ -1,0 +1,1322 @@
+@font-face{font-family:"Golos Text";font-style:normal;font-weight:400;font-display:swap;
+  src:url("/static/fonts/golos-text-cyrillic-400.woff2") format("woff2"),
+      url("/static/fonts/golos-text-latin-400.woff2") format("woff2")}
+@font-face{font-family:"Golos Text";font-style:normal;font-weight:500;font-display:swap;
+  src:url("/static/fonts/golos-text-cyrillic-500.woff2") format("woff2"),
+      url("/static/fonts/golos-text-latin-500.woff2") format("woff2")}
+@font-face{font-family:"Golos Text";font-style:normal;font-weight:600;font-display:swap;
+  src:url("/static/fonts/golos-text-cyrillic-600.woff2") format("woff2"),
+      url("/static/fonts/golos-text-latin-600.woff2") format("woff2")}
+@font-face{font-family:"Golos Text";font-style:normal;font-weight:700;font-display:swap;
+  src:url("/static/fonts/golos-text-cyrillic-700.woff2") format("woff2"),
+      url("/static/fonts/golos-text-latin-700.woff2") format("woff2")}
+:root{
+  --page:#EDEBE7; --sheet:#FFFFFF; --ink:#1C1C1A; --ink-soft:#54514B; --muted:#6F6C65;
+  --hair:#E7E5E0; --hair-strong:#D8D5CE;
+  --petrol:#0E5C58; --petrol-tint:#EAF1F0;
+  --terra:#C2410C; --ochre:#B45309; --grass:#15803D;
+  --sev-crit:#C2410C; --sev-warn:#E0A106; --sev-ok:#15803D;
+  --r:8px; --r-lg:12px;
+  --fs-2xs:11px; --fs-xs:12px; --fs-sm:13px; --fs-base:14px;
+  --fs-md:16px;  --fs-lg:18px; --fs-xl:25px; --fs-2xl:30px;
+  --shadow:0 1px 3px rgba(28,22,10,.05),0 14px 40px rgba(28,22,10,.07);
+  --font:"Golos Text",system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--page);color:var(--ink);line-height:1.5;
+  -webkit-font-smoothing:antialiased;padding:36px 20px;font-variant-numeric:tabular-nums}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+
+/* Каркас неподвижной рамки (task-main-97, epic-main-21, спека §Модель прокрутки):
+   html{height:100%} безвреден глобально (сам по себе не клипует), а вот
+   overflow:hidden+display:flex на body СКОПЛЕНЫ на классе .report-shell, а не на
+   голом body — офлайн-демо (mock/finance-mock/settlement-mock/debug)
+   кладут .sheet БЕЗ #sheet-scroll и без этой обёртки; голый body{overflow:hidden}
+   лишил бы их какой-либо прокрутки вовсе. Расхождение навигационных языков между
+   отчётом и офлайн-демо принято §5 CLAUDE.md («Соседние страницы» спеки) — не
+   чинится тихо в этом срезе. */
+html{height:100%}
+/* padding:10px 20px (решение владельца после живого показа) — вертикальные поля
+   страницы сведены к минимуму: белые блоки (лист и панель) должны доходить почти до
+   края экрана, а не плавать в 36px воздуха сверху и снизу. Горизонтальные 20px
+   остаются — без них лист упирался бы в край окна. Скоплено здесь же, на
+   .report-shell: офлайн-демо сохраняют прежние поля голого body. */
+body.report-shell{height:100%;display:flex;flex-direction:column;overflow:hidden;
+  padding:10px 20px}
+
+/* skip-link (task-main-97, доступность): панель в DOM идёт ПОСЛЕ отчёта (визуальный
+   порядок совпадает с порядком чтения) — первым фокусируемым элементом страницы
+   обязан быть переход прямо к ней, иначе Tab протабывает сотни строк таблицы
+   сигналов, прежде чем дойти до переключателя домена. Классический
+   визуально-скрытый-до-фокуса паттерн (за пределами экрана, пока не получит фокус). */
+.skip-link{position:absolute;left:-999px;top:-999px;width:1px;height:1px;overflow:hidden}
+.skip-link:focus{left:8px;top:8px;width:auto;height:auto;z-index:1000;background:var(--sheet);
+  color:var(--petrol);font-weight:600;font-size:var(--fs-sm);padding:8px 14px;
+  border-radius:var(--r);box-shadow:var(--shadow)}
+
+/* page-shell (task-main-96/epic-main-21): .sheet и .rail — сиблинги в одной flex-строке,
+   пара центрируется общим max-width+margin:auto. 1240 (лист) + 264 (панель) + 20 (gap) =
+   1524 — на 1366-ноутбуке (минус padding body) лист получает ~1060px вместо старых 940,
+   панель добавляется СБОКУ, а не отнимает у контента (спека §Ширина).
+   align-items:stretch (было flex-start, task-main-97): .sheet и .rail обязаны получить
+   ОДИНАКОВУЮ высоту — растянутую до высоты .page-shell (та, в свою очередь, растянута
+   flex:1;min-height:0 до остатка высоты body.report-shell) — иначе рамке нечем мерить
+   свою прокручиваемую область. flex:1;min-height:0 здесь безвредны на страницах без
+   .report-shell (свойство просто не участвует ни в каком flex-расчёте вне контекста).
+   width:100% (task-main-97, найдено измерением в браузере) — .page-shell САМ стал
+   flex-item'ом body.report-shell (той теперь flex-колонка); auto-маргины по бокам на
+   flex-item БЕЗ явной ширины означают "не тянись, центрируйся по контенту" (это иначе
+   работает, чем в обычном блочном потоке, где было раньше) — .page-shell схлопывался
+   в fit-content (наблюдался collapse .sheet до 2px). width:100% даёт item реальную
+   базовую ширину, которую max-width уже клэмпит, а margin:auto центрирует остаток —
+   классический ".container{width:100%;max-width;margin:0 auto}" внутри flex-родителя. */
+.page-shell{width:100%;max-width:1214px;margin:0 auto;display:flex;align-items:stretch;gap:10px;
+  flex:1;min-height:0}
+/* 940px — прежняя ширина отчёта, возвращена по решению владельца после живого показа:
+   расширение до 1240px (task-main-95) делало строки текста и таблицы непривычно
+   широкими. Панель теперь честно отнимает свои 264px у общей строки, а не добавляется
+   сбоку — это принято сознательно. max-width — не фиксированный width, лист остаётся
+   резиновым и сжимается на узких экранах.
+   flex:1 1 auto+min-width:0 — лист занимает
+   остаток строки после фикс-ширины .rail (task-main-96), а не свою собственную auto-ширину.
+   container-type/container-name (report): .sheet — контейнер-контекст для брейкпойнтов
+   отчёта ниже — брейкпойнты мерят ЕГО рендер-ширину, а не окна (см. @container report). */
+/* margin:0 auto (блокер 3, ревью task-main-96): центрирование переехало на
+   .page-shell, но .page-shell есть только в index.html — mock/finance-mock/
+   settlement-mock/debug кладут .sheet БЕЗ обёртки и без него
+   прижаты к левому краю. Во flex-контексте .page-shell auto-маргины безвредны
+   (flex:1 1 auto уже управляет распределением строки). */
+.sheet{flex:1 1 auto;min-width:0;max-width:940px;margin:0 auto;background:var(--sheet);
+  border:1px solid var(--hair);
+  border-radius:var(--r-lg);box-shadow:var(--shadow);overflow:hidden;
+  container-type:inline-size;container-name:report;
+  opacity:0;transform:translateY(10px);animation:in .6s cubic-bezier(.2,.7,.2,1) forwards}
+@keyframes in{to{opacity:1;transform:none}}
+
+/* .page-shell .sheet (task-main-97, каркас): флекс-колонка ТОЛЬКО когда лист лежит
+   внутри .page-shell (т.е. в index.html) — офлайн-демо кладут голый .sheet без этой
+   обёртки и без .sheet-scroll, флекс-каркас им не нужен (см. body.report-shell выше).
+   min-height:0 — лист обязан клэмпиться к растянутой .page-shell высоте, а не расти по
+   контенту, иначе .sheet-scroll ниже никогда не получит собственную прокрутку.
+   Вне прокрутки остался только .accent-top (3px индикатор загрузки) — бренд-полоса и
+   заголовок отчёта переехали ВНУТРЬ .sheet-scroll по решению владельца и уезжают
+   вместе с содержимым. */
+.page-shell .sheet{display:flex;flex-direction:column;min-height:0}
+.page-shell .sheet>.accent-top{flex:none}
+
+/* .sheet-scroll — ЕДИНСТВЕННАЯ прокручиваемая область каркаса (task-main-97, §Модель
+   прокрутки): страница (body) не прокручивается вовсе, шапка листа и панель неподвижны
+   потому что лежат ВНЕ этого узла, а не потому что подклеены к движущемуся полотну.
+   overscroll-behavior:contain — прокрутка колесом на конце содержимого не протекает
+   дальше (страницы всё равно нет, но привычка правильная). role/aria-label/tabindex —
+   в index.html (доступность §6: overflow:hidden на body ломает Space/PgDn/End, если
+   фокус и скролл явно не переведены на этот вложенный контейнер). */
+.sheet-scroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+.sheet-scroll:focus-visible{outline:2px solid var(--petrol);outline-offset:-2px}
+/* Узкая приглушённая полоса прокрутки — правила ниже, в конце секции панели (после
+   всех её layout-правил): помещены туда намеренно, чтобы составной селектор не оказался
+   первым текстовым вхождением класс-с-фигурной-скобкой раньше своего layout-правила
+   (тест-хелпер _rail_css_block читает первое вхождение). */
+
+.accent-top{height:3px;background:var(--petrol)}
+.accent-top.is-loading{background:linear-gradient(90deg,var(--petrol) 0%,var(--petrol) 40%,
+  var(--petrol-tint) 50%,var(--petrol) 60%,var(--petrol) 100%);background-size:250% 100%;
+  animation:accent-sweep 1.1s linear infinite}
+@keyframes accent-sweep{from{background-position:100% 0}to{background-position:-50% 0}}
+/* Заголовок отчёта (блокер 2, ревью task-main-96): первый смысловой блок .sheet,
+   НАД #pad — так лежал в прототипе, который утверждал владелец (до среза правой
+   панели заголовок жил в .nav-bar, см. history 152bad28). НЕ в .app-bar — та
+   схлопнута до 52px с одним брендом (task-main-96). #nav-sub наполняет
+   updateNavSub (app.js) текстом navSub активного домена (декларация домена, ось 2
+   доктрины унификации) — сам блок домена не знает. */
+.report-head{padding:40px 48px 0}
+.report-title{font-size:29px;font-weight:700;letter-spacing:-.02em;color:var(--ink)}
+.report-sub{margin-top:10px;font-size:14.5px;color:var(--muted);max-width:62ch;line-height:1.5}
+@container report (max-width:640px){.report-head{padding:24px 22px 0}}
+
+.pad{padding:44px 48px}
+/* #pad, не .pad: на mock/debug-страницах отчёт лежит во вложенном #pad без класса .pad —
+   JS-хук setLoading() всегда бьёт по id, селектор должен совпадать с ним. */
+#pad.is-loading{opacity:.55;transition:opacity .15s ease}
+@container report (max-width:640px){.pad{padding:26px 22px}}
+
+/* Верхняя полоса схлопнута до 52px с одним брендом (task-main-96, epic-main-21):
+   вся навигация (домены/фильтры/оглавление/статус) переехала в .rail сбоку. */
+.app-bar{display:flex;align-items:center;height:52px;min-height:52px;
+  padding:0 32px;background:var(--petrol-tint);border-bottom:1px solid #C5DAD8}
+.brand{font-weight:700;font-size:var(--fs-md);letter-spacing:.02em;display:flex;align-items:center;gap:9px}
+.brand .mk{width:16px;height:16px;border-radius:4px;background:var(--petrol);display:inline-block}
+/* Уведомление о сбросе среза: категория, отсутствующая в справочнике нового кабинета,
+   сбрасывается ВИДИМО (спека §3) — промах считается дефектом словарей, не нормой.
+   Боковые отступы = отступы .pad (48px/22px на узком контейнере, пункт 7 ревью
+   task-main-96): плашка — сиблинг #pad внутри .sheet (app.js вставляет её перед
+   #pad, не .sheet.prepend), сама её горизонтальных паддингов не наследует. */
+.slice-reset{margin:14px 48px 0;padding:8px 12px;border:1px solid #D2A878;background:#FBF3E8;
+  border-radius:8px;font-size:var(--fs-xs);color:#6B4F2A}
+@container report (max-width:640px){.slice-reset{margin-left:22px;margin-right:22px}}
+/* .meta-inline живёт теперь в подвале .rail (узкая колонка 264px) — без nowrap,
+   иначе «Правила v5 · Категория: …» резалось бы окном без переноса. */
+.meta-inline{font-size:var(--fs-xs);color:var(--muted);line-height:1.5}
+
+/* ===== Правая панель навигации (task-main-96, epic-main-21) =====
+   Общий движок (rail.js) — см. доктрину унификации ось 2 в шапке файла rail.js. */
+/* Гейт вместимости (ревью-блокер 1, фаза 2-3 эпика): панель целиком несла свой
+   overflow-y:auto — регрессия, снятая здесь. Пока прокручивалась вся панель целиком,
+   «Данные» и «Статус» были flex:none, но при переполнении .rail-toc-zone (даже на
+   своём полу min-height) суммарная content-height панели превышала доступную высоту,
+   и весь .rail включал СВОЙ скролл на всю колонку сразу — «Данные»/«Статус» уезжали
+   вверх вместе с остальным (живой замер: 1418×702 → panel scrollHeight 736 vs доступно 588,
+   перелив 148px, «Статус» обрезан; тот же провал на 1366×768/1440×900). Панель сама
+   теперь НЕ прокручивается (overflow:hidden) — прокручиваются ПО ОТДЕЛЬНОСТИ две зоны:
+   «Домены» (.rail-domains-zone, уступает место первой — переключают редко) и
+   «Разделы» (.rail-toc-zone, растёт на всё оставшееся место, пол не даёт схлопнуться
+   в один заголовок). «Данные» и «Статус» — flex:none, гарантированно видны при любой
+   высоте: 267 («Данные») + 84 (пол «Разделов») + 131 («Статус») + усечённые «Домены»
+   укладываются в 588px, доступные даже на 1418×702. */
+.rail{flex:0 0 264px;width:264px;min-height:0;background:var(--sheet);border:1px solid var(--hair);
+  border-radius:var(--r-lg);box-shadow:var(--shadow);overflow:hidden;
+  display:flex;flex-direction:column}
+/* «Домены» — первая секция, уступает место остальным при нехватке высоты: сжимается
+   (flex:0 1 auto;min-height:0) и получает собственную прокрутку, вместо того чтобы
+   раздувать панель целиком. Список переключают редко — не жалко показать неполным. */
+.rail-domains-zone{flex:0 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden}
+/* Вертикальная плотность панели подобрана по живому замеру на 1440×800 (высота
+   ноутбучного экрана): при прежних 18px/12px четыре секции — Домены (7 пунктов),
+   Данные (4 поля), Разделы, Статус — не помещались, «Месяц» и всё оглавление
+   уезжали за нижний край, то есть АС1 не выполнялся без прокрутки панели. */
+.rail-sec{padding:11px 16px}
+.rail-sec+.rail-sec{border-top:1px solid var(--hair)}
+.rail-h{font-size:var(--fs-2xs);font-weight:600;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:7px}
+
+/* «Данные» — кабинет/юнит/категория/месяц (АС1) обязаны быть видны на любой глубине
+   прокрутки панели: flex:none, секция никогда не сжимается и не уезжает. */
+.rail-data-zone{flex:none}
+/* «Разделы» — растущая зона панели: flex:1 забирает всё, что осталось после «Данные»/
+   «Статус»/усечённых «Домены». Пол в 84px обязателен: без него оглавление схлопнулось
+   бы в один заголовок раньше, чем начнут сжиматься «Домены» (замер на 1440×800). Сверх
+   пола — собственная прокрутка (overflow-y:auto), если контента больше, чем осталось
+   места. border-top не задан явно — тот же .rail-sec+.rail-sec ниже уже даёт его
+   (зона несёт оба класса). */
+.rail-toc-zone{flex:1 1 auto;min-height:84px;overflow-y:auto;overscroll-behavior:contain}
+/* «Статус» — свежесть данных (АС5): flex:none, видна всегда, как и «Данные». Не несёт
+   класса .rail-sec сама (обёртывает один вложенный .rail-sec), поэтому граница сверху
+   — явная, не через .rail-sec+.rail-sec. */
+.rail-status-zone{flex:none;border-top:1px solid var(--hair)}
+
+/* --- Домены: renderDomainSwitcher (app.js) эмитит .dtab внутрь #domain-switcher,
+   тот же домен-нейтральный код, что раньше рисовал горизонтальные табы — здесь
+   только визуальный оверрайд под вертикальный список с планкой активного. */
+.rail-domains{display:flex;flex-direction:column;gap:1px}
+.rail-domains .dtab{display:block;width:100%;text-align:left;font:inherit;
+  font-size:var(--fs-base);font-weight:500;color:var(--ink-soft);background:transparent;
+  border:none;border-left:3px solid transparent;border-radius:0 6px 6px 0;
+  margin:0;padding:4px 12px 4px 11px;cursor:pointer;transition:.15s}
+.rail-domains .dtab:hover{background:#F6F4EF;color:var(--ink)}
+/* border-bottom:none обязателен (пункт 6 ревью task-main-96): легаси .dtab.on
+   (styles.css, горизонтальные табы) и .rail-domains .dtab (border:none выше) —
+   РАВНАЯ специфичность (по 2 класса), .dtab.on ниже по файлу и потому побеждает
+   на свойстве border-bottom конкретно — рисовалась и левая планка, и подчёркивание
+   на всю ширину. .rail-domains .dtab.on (3 класса) явной декларацией здесь гасит
+   именно её. */
+.rail-domains .dtab.on{background:var(--petrol-tint);border-left-color:var(--petrol);
+  border-bottom:none;color:var(--petrol);font-weight:600}
+
+/* --- Данные: поля из декларативного списка RAIL_FILTERS (rail.js). Неприменимый
+   фильтр не исчезает (ось 3) — .rail-field-disabled гасит цвет, но пункт остаётся
+   и объясняет причину через title (app.js/shared.js ставят его при синхронизации). */
+.rail-filters{display:flex;flex-direction:column;gap:8px}
+.rail-field{position:relative;border:1px solid var(--hair);border-radius:var(--r);
+  background:#FBFAF8;padding:4px 10px 5px}
+.rail-field-lbl{display:block;font-size:var(--fs-2xs);color:var(--muted)}
+.rail-field-val{display:block;font-size:var(--fs-sm);font-weight:600;color:var(--ink);
+  margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:14px}
+.rail-field select{position:absolute;inset:0;opacity:0;width:100%;height:100%;
+  cursor:pointer;border:none;background:transparent}
+/* Шеврон (пункт 8 ревью task-main-96): без него у поля панели нет ни одного
+   визуального признака, что это <select> — было у старого .fp-arr до среза
+   правой панели. Абсолютное позиционирование — новый layout поля колоночный
+   (лейбл над значением), а не строчный, как был у .filter-pill. */
+.rail-field-arr{position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  font-size:10px;color:var(--muted);pointer-events:none}
+.rail-field.rail-field-disabled{opacity:.55;background:var(--page)}
+.rail-field.rail-field-disabled .rail-field-val{color:var(--muted);font-weight:500}
+.rail-field.rail-field-disabled select{cursor:default;pointer-events:none}
+/* Обрезка (overflow/ellipsis в .rail-field-val выше) теперь общая для всех 4 полей —
+   раньше 16ch-лимит был точечным для категории (epic-main-19), в узкой 264px-колонке
+   панели того же требует любое длинное значение. Полное имя — в title поля. */
+
+/* --- Разделы: оглавление из tocEntries() (module-registry.js), см. renderRailToc
+   (rail.js). Клик перехватывается (rail.js, task-main-97): своя прокрутка
+   .sheet-scroll + якорь через replaceState, не нативный переход по якорю. Активная
+   глава подсвечивается классом .on тем же IntersectionObserver'ом (см. rail.js). */
+.rail-toc{list-style:none;display:flex;flex-direction:column;gap:1px}
+.rail-toc li{display:block}
+.rail-toc a{display:flex;align-items:baseline;gap:8px;padding:5px 6px;border-radius:6px;
+  text-decoration:none;color:var(--ink-soft);font-size:var(--fs-sm);transition:.15s}
+.rail-toc a:hover{background:#F6F4EF;color:var(--ink)}
+.rail-toc a.on{background:var(--petrol-tint);color:var(--petrol);font-weight:600}
+.rail-toc-n{font-size:var(--fs-2xs);color:var(--muted);font-weight:600;flex:none;width:14px}
+.rail-toc-t{flex:1}
+/* Бейдж — только у «Что требует внимания», только по критическим сигналам (спека
+   §Бейджи): ноль -> без бейджа, во время загрузки -> renderRailToc не зовут вовсе. */
+.rail-badge{flex:none;background:var(--terra);color:#fff;font-size:10px;font-weight:700;
+  border-radius:999px;padding:1px 7px;line-height:1.5}
+
+/* --- Статус: свежесть данных (rail-status-row) + срез категорий (meta-inline) +
+   ввод данных (rail-input). Точка/подпись/дата — ОДНА строка (правка владельца
+   25.08): раньше подпись «Обновлено» жила отдельной строкой над рядом
+   точка+дата, теперь дублирование убрано, точка ведёт строку. */
+.rail-status{font-size:var(--fs-xs);color:var(--muted);display:flex;flex-direction:column;gap:8px}
+.rail-status-row{display:flex;align-items:center;gap:7px;font-size:var(--fs-sm);
+  font-weight:600;color:var(--ink)}
+/* Своя стилизация внутри строки статуса (не наследует font-weight:600/color:ink
+   родителя — explicit-декларация на самом элементе всегда бьёт inherited, порядок
+   правил тут не имеет значения) и переиспользуется подписью «Ввод данных» ниже. */
+.rail-status-lbl{font-size:var(--fs-2xs);font-weight:500;color:var(--muted)}
+/* Дефолт нейтральный (--muted), не зелёный (пункт 8 ревью task-main-96): ложный
+   «свежо» хуже отсутствия цвета вовсе (АС5). */
+.rail-status-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex:none}
+/* Версия/дата правил сняты из meta-inline (правка владельца 25.08, shared.js::
+   renderMeta) -- пустой узел (нет активного среза категорий) схлопывается, а не
+   держит пустую строку на весь line-height. */
+.meta-inline:empty{display:none}
+
+/* --- Ввод данных (правка владельца 25.08): плейсхолдер трёх кнопок директивного
+   ввода — сейчас disabled (dead click хуже явного disabled), unified-файл и его
+   бэкенд/формат — отдельный архитектурный срез (CLAUDE.md §5), вне этой правки. */
+.rail-input{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.rail-input-btns{display:flex;align-items:center;gap:6px}
+.rail-input-btn{display:inline-flex;align-items:center;justify-content:center;
+  width:26px;height:26px;padding:0;border:1px solid var(--hair-strong);border-radius:6px;
+  background:var(--sheet);color:var(--ink-soft);cursor:not-allowed;opacity:.55}
+
+/* --- Тост результата директивной загрузки (правка 25.08): плавающий оверлей
+   поверх страницы, НЕ входит в flex-раскладку rail — секция «Статус» там
+   flex:none (гейт вместимости панели, epic-main-21), переменная по длине
+   строка результата (ошибки/unmapped сразу по нескольким формам) внутри неё
+   реинкарнировала бы тот же баг переполнения. Тост живёт вне DOM, который
+   подменяется при переключении домена (#pad/renderSkeleton) — переживает
+   навигацию, пока запрос идёт/только завершился. */
+.dfe-toast{position:fixed;top:16px;right:16px;z-index:100;max-width:420px;
+  display:flex;align-items:flex-start;gap:10px;padding:12px 14px;
+  background:var(--ink);color:#fff;border-radius:var(--r);
+  box-shadow:0 6px 24px rgba(28,28,26,.25);font-size:var(--fs-sm);line-height:1.5}
+.dfe-toast-msg{flex:1;min-width:0}
+.dfe-toast-close{flex:none;background:transparent;border:none;color:#fff;
+  opacity:.7;font-size:18px;line-height:1;cursor:pointer;padding:0 2px}
+.dfe-toast-close:hover{opacity:1}
+
+/* Три состояния статуса данных (task-main-170) на точке у даты: нейтральный
+   дефолт остаётся (сбой расчёта/нет снимка -> не гадаем), .fresh/.stale уехали
+   вместе с сигналом «расчёт отстал» -- его показывает баннер «Пересчитать».
+
+   ФОРМА — ВТОРОЙ КАНАЛ КОДИРОВАНИЯ, НЕ УКРАШЕНИЕ (ревью 13.08 вернуло свойство,
+   которое ревью task-main-104 уже защищало у снятых меню-бейджей): --terra и
+   --ochre на точке 7px почти неразличимы в grayscale и для дальтоника, а после
+   этого среза точка осталась ЕДИНСТВЕННЫМ носителем статуса — бейджи у доменов
+   сняты решением владельца. Красный — квадрат с тёмной обводкой, жёлтый — круг,
+   зелёный/нейтральный — круг. Палитра проекта не меняется. */
+.rail-status-dot.c-green{background:var(--grass)}
+.rail-status-dot.c-yellow{background:var(--ochre)}
+.rail-status-dot.c-red{background:var(--terra);border-radius:2px;
+  border:1.5px solid rgba(28,22,10,.55);box-sizing:border-box}
+
+/* Узкая приглушённая полоса прокрутки (решение владельца): дефолтные ~17px на Windows
+   режут ширину контента и шумят. Тот же тон, что уже у .tblwrap. Firefox — через
+   scrollbar-width/color, WebKit — через ::-webkit-scrollbar. Блок стоит в конце секции
+   панели, ПОСЛЕ всех её layout-правил, намеренно: тест-хелпер _rail_css_block читает
+   первое текстовое вхождение селектора, а составной селектор ниже несёт те же токены —
+   здесь он уже не первый и layout-правила не перехватываются. */
+.rail,.sheet-scroll,.rail-toc-zone{scrollbar-width:thin;scrollbar-color:rgba(28,22,10,.22) transparent}
+.rail::-webkit-scrollbar,.sheet-scroll::-webkit-scrollbar,.rail-toc-zone::-webkit-scrollbar{width:6px}
+.rail::-webkit-scrollbar-track,.sheet-scroll::-webkit-scrollbar-track,.rail-toc-zone::-webkit-scrollbar-track{background:transparent}
+.rail::-webkit-scrollbar-thumb,.sheet-scroll::-webkit-scrollbar-thumb,.rail-toc-zone::-webkit-scrollbar-thumb{background:rgba(28,22,10,.2);border-radius:999px}
+.rail::-webkit-scrollbar-thumb:hover,.sheet-scroll::-webkit-scrollbar-thumb:hover,.rail-toc-zone::-webkit-scrollbar-thumb:hover{background:rgba(28,22,10,.35)}
+
+/* ===== Узкий экран < 1080px (task-main-98, epic-main-21, спека §Модель прокрутки) =====
+   Каркас неподвижной рамки — привилегия широкого экрана, где панель помещается сбоку.
+   Ниже порога каркас распускается: страница возвращается к обычной прокрутке целиком,
+   #sheet-scroll перестаёт быть отдельным скролл-контейнером, а панель ложится
+   горизонтальной полосой НАД отчётом и прилипает к верху — единственное место в проекте,
+   где sticky уместен (шапка листа НЕ липкая — прямое требование владельца, "шапка едет
+   вместе со страницей"). rail.js пересобирает IntersectionObserver на пересечении этого
+   же порога через matchMedia (см. rail.js, RAIL_NARROW_QUERY) — число 1080 обязано
+   совпадать в обоих файлах, тесты сверяют оба места.
+   .page-shell{flex-direction:column-reverse} — приём без переупорядочивания DOM: .rail
+   в разметке идёт ПОСЛЕ .sheet (index.html, skip-link/tab-order task-main-97 не трогаем),
+   а column-reverse рисует ПОСЛЕДНИЙ flex-item первым — визуальный порядок расходится с
+   DOM-порядком, панель оказывается сверху безо всякой правки index.html. */
+@media(max-width:1080px){
+  body.report-shell{height:auto;overflow:visible;display:block}
+  .page-shell{display:flex;flex-direction:column-reverse;flex:none;min-height:0;
+    max-width:none;width:auto;margin:0;gap:16px}
+  .sheet{max-width:none;margin:0}
+  /* .page-shell .sheet возвращается к обычному блочному потоку (не флекс-колонка
+     фиксированной высоты, task-main-97) — шапка листа течёт вместе со страницей. */
+  .page-shell .sheet{display:block;min-height:0}
+  .sheet-scroll{flex:none;min-height:0;overflow-y:visible;overscroll-behavior:auto}
+
+  /* Панель: горизонтальная липкая полоса. Заголовки секций скрыты (спека "заголовки
+     секций скрываются"), поведение (клик по домену/фильтру/главе) не меняется — тот
+     же DOM, те же обработчики rail.js, просто другая геометрия.
+     .rail остаётся flex-колонкой (как на широком экране, task-main-97) — секции
+     СТОПКОЙ полос во всю ширину, а не бок-о-бок: side-by-side вариант ломался при
+     живом замере на 600px — flex:none у 7 доменных вкладок задаёт им max-content
+     ширину БЕЗ учёта переноса (перенос учитывается только для фактического layout,
+     не для intrinsic-размера flex-контейнера), сумма 7 вкладок шире вьюпорта, и
+     секция "Домены" вылезала за правый край вместо переноса на вторую строку.
+     Стопка полос этого не может: у каждой полосы ширина = 100% (align-items:stretch
+     по колонке), перенос происходит ВНУТРИ полосы (rail-domains/rail-filters/rail-toc
+     ниже), которая всегда ограничена этой полной шириной.
+     max-height:260px (ревью-блокер 2, фаза 2-3 эпика): без потолка полоса росла вместе
+     с контентом — 215px на 900px и 332px на 600px (≈47% экрана), читать отчёт
+     становится нечем. overflow:hidden, НЕ auto — та же модель приоритета, что у
+     широкой панели (правило .rail выше по файлу, вне @media): «Домены»/«Разделы»
+     уступают место (сжимаются и прокручиваются каждая внутри себя, базовые правила
+     rail-domains-zone/rail-toc-zone НЕ переопределяются здесь), «Данные»/«Статус» —
+     flex:none, видны всегда (АС1/АС5). Число ОБЯЗАНО совпадать с RAIL_NARROW_STICKY_H
+     (rail.js) и со scroll-margin-top блоков глав ниже — это одна и та же величина
+     "сколько узкий экран теряет сверху под липкой полосой", использованная трижды. */
+  .rail{position:sticky;top:0;z-index:5;flex:none;width:100%;max-height:260px;
+    display:flex;flex-direction:column;align-items:stretch;
+    overflow:hidden;border-radius:0}
+  .rail-h{display:none}
+  .rail-sec{padding:8px 14px}
+
+  /* Внутри каждой секции — строка с переносом, не колонка: 7 доменных вкладок, 4 поля
+     фильтров, пункты оглавления и статус текут горизонтально и переносятся сами —
+     полоса остаётся узкой (несколько строк максимум), а не растягивает страницу по
+     горизонтали ни на одной проверенной ширине (900px и 600px). */
+  .rail-domains,.rail-filters,.rail-toc,.rail-status{flex-direction:row;flex-wrap:wrap}
+  .rail-domains .dtab{width:auto}
+  .rail-field{flex:1 1 130px;min-width:110px}
+  .rail-toc li{flex:none}
+
+  /* scroll-margin-top (ревью-блокер 2): клик по главе/восстановление якоря целится
+     через scrollIntoView({block:"start"}) в верх блока — на узком экране липкая
+     полоса (position:sticky сверху) закрывает эти же ~260px чужим содержимым, замер
+     на 900×800 показал заголовок главы на −4px и ~220px содержимого под полосой.
+     Число совпадает с max-height .rail выше — полоса физически не может быть выше
+     этого потолка, поэтому отступ гарантированно достаточен на любом наборе глав. */
+  #pad .block{scroll-margin-top:260px}
+}
+
+.howto{margin-top:24px;display:flex;gap:0;border:1px solid var(--hair);border-radius:var(--r);background:#FCFBF9}
+.howto .h{padding:13px 18px;border-right:1px solid var(--hair);flex:1}
+.howto .h:last-child{border-right:none}
+.howto .n{color:var(--petrol);font-weight:700;font-size:var(--fs-xs)}
+.howto .x{margin-top:3px;font-size:var(--fs-sm);color:var(--ink-soft)}
+@container report (max-width:640px){.howto{flex-direction:column}.howto .h{border-right:none;border-bottom:1px solid var(--hair)}}
+
+.block{padding:34px 0;border-top:1px solid var(--hair)}
+.block:first-of-type{border-top:none}
+.h-sec{font-size:var(--fs-xs);font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:18px}
+
+/* Виджет «Главные показатели» (эпик kpi-widgets, спека §3.2): видимая граница +
+   одинаковые внутренние поля — все карточки ряда совпадают по устройству и высоте.
+   Прежний вид (тонкий разделитель слева, без рамки) снят решением владельца 16.08. */
+.kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+/* min-width:0 (находка 2 ревью, блокирующая): грид-айтем без него не сжимается уже
+   min-content — а при .kpi .lbl/.kpi .s white-space:nowrap min-content равен полной
+   длине строки, многоточие не включается никогда, вместо этого раскрываются колонки
+   и карточки уходят за правый край .sheet (overflow:hidden режет их молча). */
+.kpi .k{border:1px solid var(--hair);border-radius:var(--r);padding:13px 14px 11px;
+  display:flex;flex-direction:column;gap:8px;min-width:0}
+/* Заголовок и подпись — СТРОГО одна строка (критерий приёмки 1): длинный текст режется
+   многоточием, а не переносится, иначе виджеты в ряду разъезжаются по высоте. */
+.kpi .lbl{font-size:var(--fs-sm);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* .v — общий родитель числа и элемента микро-графики (спека §3.2: элемент СПРАВА от
+   числа, в одном ряду с ним, не отдельной строкой); position:relative — точка отсчёта
+   для абсолютно спозиционированной плашки тултипа .k-tip. */
+.kpi .v{font-size:var(--fs-2xl);font-weight:600;letter-spacing:-.02em;
+  display:flex;align-items:center;justify-content:space-between;gap:8px;position:relative}
+.kpi .v .u{font-size:var(--fs-md);color:var(--muted);font-weight:500;margin-left:2px}
+/* Сжатое число («7,99» + «млн») переносить нельзя: замер на Тесте 16.08 показал, что
+   у карточки с линейным графиком суффикс уезжал на вторую строку и ряд виджетов
+   разъезжался по высоте. min-width:0 оставляет числу право сжаться раньше элемента. */
+.kpi .v .vnum{white-space:nowrap;min-width:0}
+.kpi .s{font-size:var(--fs-xs);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpi .s.up{color:var(--grass);font-weight:600}.kpi .s.dn{color:var(--terra);font-weight:600}
+/* Элемент виджета: flex:none — не сжимается числом; при нехватке ширины сужается сам
+   SVG-примитив (micro-graphics.js), не эта обёртка (спека §3.2). cursor:pointer — тап
+   открывает подсказку (единственный носитель смысла элемента на тач-экране). */
+.kpi .k-el{flex:none;display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.kpi .k-tri{font-size:var(--fs-sm);font-weight:600}
+.kpi .k-tri.up{color:var(--grass)}.kpi .k-tri.dn{color:var(--terra)}.kpi .k-tri.muted{color:var(--muted)}
+/* Сильное движение («▲▲»/«▼▼») — две строки одна над другой, не два символа в ряд
+   (правка владельца 17.08): font-size чуть меньше на каждой строке, иначе стопка
+   двух полноразмерных треугольников выше самого числа карточки. */
+.kpi .k-tri.stack{display:flex;flex-direction:column;align-items:center;line-height:.75}
+.kpi .k-tri.stack span{font-size:.85em}
+/* Плашка тултипа по тапу (спека §3.2) — та же подсказка, что и в aria-label/title,
+   просто видимая без наведения; закрывается повторным тапом по элементу. */
+.kpi .k-tip{position:absolute;right:0;top:100%;margin-top:4px;z-index:5;
+  background:var(--ink);color:#fff;font-size:var(--fs-xs);padding:6px 9px;
+  border-radius:6px;max-width:240px;white-space:normal}
+.bar{height:5px;background:var(--hair);border-radius:3px;overflow:hidden}
+.bar>i{display:block;height:100%;width:100%;background:var(--petrol);border-radius:3px}
+.kpi .v.unreliable{color:var(--muted)}
+.kpi .v .badge{display:inline-block;font-size:var(--fs-2xs);font-weight:600;color:var(--terra);
+  border:1px solid var(--terra);border-radius:5px;padding:1px 6px;margin-left:8px;
+  vertical-align:middle;letter-spacing:.02em}
+@container report (max-width:640px){.kpi{grid-template-columns:repeat(2,1fr);gap:10px}}
+
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:34px}
+@container report (max-width:640px){.charts{grid-template-columns:1fr;gap:28px}}
+.ch h3{font-size:var(--fs-base);font-weight:600;margin-bottom:14px;color:var(--ink)}
+.ch .cwrap{position:relative;height:260px}
+@container report (max-width:640px){.ch .cwrap{height:200px}}
+.ch-value{display:flex;flex-direction:column;justify-content:center;height:260px;
+  background:#F1EFE8;border-radius:var(--r);padding:18px 22px}
+.ch-value-num{font-size:var(--fs-2xl);font-weight:600;color:var(--ink)}
+.ch-value-note{font-size:var(--fs-sm);color:var(--muted);margin-top:6px}
+.ch-foot{border-left:2px solid var(--petrol);padding:4px 0 4px 12px;border-radius:0;
+  margin-top:10px;font-size:var(--fs-xs);font-style:italic;color:var(--muted)}
+/* Ф1 движка · сцена: симметричные карточки, жёсткая увязка высоты колонок */
+/* Обе колонки — явная высота (--stage-h): cwrap-flex везде определён, Chart.js
+   не уходит в петлю роста, левая и правая всегда равны по высоте. */
+.ch-stage{display:grid;grid-template-columns:1fr 300px;gap:28px;--stage-h:440px}
+.ch-main{border:1px solid var(--hair);border-radius:var(--r);padding:15px 17px;
+  display:flex;flex-direction:column;height:var(--stage-h)}
+.ch-main>.ch{flex:1;display:flex;flex-direction:column;min-height:0}
+.ch-main .cwrap{flex:1;min-height:0;height:auto}
+.ch-main .ch-value{flex:1;min-height:0;height:auto}
+.ch-head{position:relative}
+.ch-main .ch-head{margin-bottom:6px}
+.ch-main .ch-head h3{margin-bottom:0;padding-right:140px}
+/* Слот действий вне потока: кнопка не растит шапку и не сжимает заголовок —
+   главный график мерит cwrap по финальной высоте шапки. */
+/* Флекс, а не блок: кнопка развёртывания встаёт В РЯД с сегментами оверлеев,
+   иначе она уехала бы под них и растила бы шапку. */
+.ch-head-actions{position:absolute;top:0;right:0;display:flex;gap:8px;align-items:flex-start}
+.ch-head-actions .ov-ctrl{margin-top:0}
+.ch-cap{font-size:var(--fs-sm);color:var(--muted);margin:0 0 12px;line-height:1.45}
+.ch-minis{display:grid;grid-auto-rows:1fr;gap:16px;height:var(--stage-h)}
+.ch-mini{cursor:pointer;border:1px solid var(--hair);border-radius:var(--r);
+  padding:12px 14px;transition:border-color .15s,box-shadow .15s;
+  display:flex;flex-direction:column;min-height:0}
+.ch-mini:hover{border-color:var(--petrol)}
+.ch-mini:focus-visible{outline:2px solid var(--petrol);outline-offset:2px}
+.ch-mini h3{font-size:var(--fs-sm);margin-bottom:8px}
+.ch-mini .cwrap{flex:1;min-height:0;height:auto}
+.ch-mini .ch-value{flex:1;min-height:0;height:auto}
+/* Ряд «остальных» графиков под сценой: домен объявил больше, чем помещается в
+   колонку сцены — показываем всё, а не режем (no silent caps). Явная высота
+   карточки — по той же причине, что и --stage-h: Chart.js нужен определённый
+   контейнер. auto-FIT (не fill): единственный «остаточный» график занимает всю
+   ширину, а не жмётся в узкую карточку при пустом ряду — а именно данноёмкие
+   графики (много категорий) обычно и выпадают из колонки. */
+.ch-rest{display:grid;grid-template-columns:repeat(auto-fit,minmax(232px,1fr));
+  gap:16px;margin-top:22px;--rest-h:212px}
+.ch-rest>.ch-mini{height:var(--rest-h)}
+/* Развёрнутый график (chart-modal.js). Нативный <dialog> живёт в top-layer, вне
+   .sheet, поэтому @container report сюда НЕ доезжает — только медиа-запросы. */
+.ch-exp{display:flex;align-items:center;justify-content:center;width:28px;height:26px;
+  padding:0;border-radius:7px;border:1px solid var(--hair-strong);
+  background:var(--sheet);color:var(--muted);cursor:pointer}
+.ch-exp:hover{border-color:var(--petrol);color:var(--petrol)}
+/* margin:auto — не косметика: UA центрует модальный диалог именно им (inset:0 +
+   авто-поля), а универсальный сброс `*{margin:0}` выше его затирает, и диалог
+   падает в левый верхний угол. Найдено скриншотом, тестами не ловится. */
+.ch-modal{border:0;padding:0;margin:auto;background:transparent;
+  max-width:none;max-height:none;
+  width:min(1400px,94vw);height:min(860px,90vh)}
+.ch-modal::backdrop{background:rgba(28,28,26,.45)}
+.ch-modal-box{position:relative;height:100%;display:flex;flex-direction:column;
+  background:var(--sheet);border-radius:var(--r-lg);box-shadow:var(--shadow);
+  padding:18px 22px}
+.ch-modal-box>.ch{flex:1;display:flex;flex-direction:column;min-height:0}
+.ch-modal-box .cwrap{flex:1;min-height:0;height:auto}
+.ch-modal-box .ch-head{margin-bottom:6px}
+.ch-modal-box .ch-head h3{margin-bottom:0;padding-right:190px}
+/* Слот действий сдвинут влево, чтобы не столкнуться с крестиком закрытия. */
+.ch-modal-box .ch-head-actions{right:38px}
+.ch-modal-close{position:absolute;top:16px;right:20px;z-index:1;width:26px;height:26px;
+  display:flex;align-items:center;justify-content:center;font-size:18px;line-height:1;
+  border:1px solid var(--hair-strong);border-radius:7px;background:var(--sheet);
+  color:var(--muted);cursor:pointer}
+.ch-modal-close:hover{border-color:var(--petrol);color:var(--petrol)}
+@media (max-width:900px){
+  .ch-modal{width:100vw;height:100vh}
+  .ch-modal-box{border-radius:0;padding:14px}
+  .ch-modal-box .cwrap{flex:none;height:60vh}
+  .ch-modal-box .ch-head h3{padding-right:150px}
+}
+@container report (max-width:760px){
+  .ch-rest{grid-template-columns:1fr}
+  .ch-rest>.ch-mini{height:auto}
+  .ch-stage{grid-template-columns:1fr;gap:22px}
+  .ch-main{height:auto}
+  .ch-main .cwrap{flex:none;height:300px}
+  .ch-minis{height:auto;grid-auto-rows:auto}
+  .ch-mini .cwrap{flex:none;height:140px}
+}
+@container report (max-width:640px){.ch-main .cwrap{height:240px}}
+
+.tbl-title{font-size:var(--fs-md);font-weight:600;margin:0 0 4px}
+.tbl-title.gap{margin-top:30px}
+table{width:100%;border-collapse:collapse;font-size:var(--fs-base);margin-top:12px}
+th{text-align:left;font-weight:600;color:var(--muted);font-size:var(--fs-2xs);text-transform:uppercase;letter-spacing:.04em;
+  padding:0 14px 9px 0;border-bottom:1px solid var(--hair-strong)}
+th.r,td.r{text-align:right}
+td{padding:13px 14px 13px 0;border-bottom:1px solid var(--hair)}
+tr:last-child td{border-bottom:none}
+td.r{font-variant-numeric:tabular-nums;font-weight:500}
+/* padding-left переехал на платформенное `:first-child` первой колонки
+   (`.tblwrap.tbleng table th/td:first-child`, task-main-192, П2) — один
+   источник истины, число не задвоено. Здесь `.lead` держит только маркер
+   состояния (::before) и жирность; отступ от левого края больше НЕ его
+   забота, даже когда `.lead` используется вне таблиц движка (голый td/th
+   выше по файлу), где универсального :first-child правила нет и отступ
+   такой ячейке не гарантирован платформой — это не задел этого среза (13
+   живых объявлений `lead:true`/`lead:True`: 12 в JS-доменах на таблицах
+   движка, см. commerce.js и другие, плюс одно в Python —
+   `domains/settlement/api_report.py:559`, `sku_table.columns`,
+   `product_name`, тоже первое в своём списке; в DOM не попадает — рендер
+   `sku_table` в settlement.js удалён, страж — тест
+   test_settlement_js_has_no_grain_sku_branch (номер строки не называем: имя
+   уникально и грепается, а номер здесь протухал уже дважды подряд). */
+.lead{position:relative;font-weight:600}
+.lead::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:18px;border-radius:2px}
+.lead.crit::before{background:var(--sev-crit)}.lead.warn::before{background:var(--sev-warn)}.lead.ok::before{background:var(--sev-ok)}
+.bad{color:var(--terra);font-weight:600}.warnv{color:var(--sev-warn);font-weight:600}.okv{color:var(--grass);font-weight:600}
+
+.counts{display:flex;flex-wrap:wrap;gap:6px 6px;margin-bottom:22px}
+.counts .c{display:flex;align-items:baseline;gap:8px;font-size:var(--fs-sm);color:var(--ink-soft)}
+.counts .c .d{width:8px;height:8px;border-radius:2px;position:relative;top:1px}
+.counts .c b{font-weight:600;color:var(--ink);font-size:var(--fs-md)}
+
+.fc{margin-top:30px}
+.fc .row{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid var(--hair)}
+.fc .row:last-child{border-bottom:none}
+.fc .nm{font-weight:600;font-size:var(--fs-base)}.fc .mt{font-size:var(--fs-sm);color:var(--muted);margin-top:2px}
+.pill{font-size:var(--fs-xs);font-weight:600;padding:4px 11px;border-radius:6px;white-space:nowrap}
+.pill.crit{background:#FBEAE2;color:var(--terra)}.pill.warn{background:#FBF1E1;color:var(--ochre)}.pill.ok{background:#E6F1EB;color:var(--grass)}
+
+/* AI conclusion — flat, single row type */
+.concl{padding:0}
+.concl .k{font-size:var(--fs-xs);font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--petrol);margin-bottom:12px}
+.concl .lede{font-size:var(--fs-lg);line-height:1.55;max-width:68ch;color:var(--ink);font-weight:500}
+.grp-l{font-size:var(--fs-xs);text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);font-weight:600;margin:24px 0 4px}
+.item{display:flex;gap:11px;padding:11px 0;border-top:1px solid #DCE8E6}
+.item .mk{width:6px;height:6px;border-radius:2px;background:var(--petrol);margin-top:8px;flex:none}
+.item .tx{font-size:var(--fs-base);color:var(--ink-soft);max-width:74ch}
+.item .tx b{color:var(--ink);font-weight:600}
+.item .tx .tag{color:var(--muted);font-weight:500}
+.byai{margin-top:18px;padding-top:14px;border-top:1px solid #DCE8E6;font-size:var(--fs-xs);color:var(--muted)}
+/* === AI Executive Brief === */
+.ai-attr{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--muted);margin-bottom:12px;letter-spacing:.02em}
+.ai-attr.stale{opacity:.65}
+.ai-state{font-size:var(--fs-base);line-height:1.65;color:var(--ink-soft);margin-bottom:16px}
+.ai-strip{display:flex;gap:0;margin-bottom:16px;border-top:1px solid #D4E4E2;border-bottom:1px solid #D4E4E2;padding:10px 0}
+.ai-strip-item{flex:1;padding:0 14px;border-right:1px solid #D4E4E2}
+.ai-strip-item:first-child{padding-left:0}
+.ai-strip-item:last-child{border-right:none}
+.asi-name{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
+.asi-val{font-size:17px;font-weight:700;color:var(--ink);letter-spacing:-.01em;line-height:1.1}
+.asi-val.ok{color:var(--grass)}
+.asi-val.warn{color:var(--ochre)}
+.asi-val.crit{color:var(--terra)}
+.asi-sub{font-size:10px;color:var(--muted);margin-top:2px}
+.ai-sigs{font-size:var(--fs-sm);line-height:1.6;color:var(--ink-soft);margin-bottom:0}
+.sec-div{border:none;border-top:1px solid #D4E4E2;margin:20px 0}
+.ac-ai{font-size:var(--fs-xs);color:var(--petrol);font-style:italic;border-top:.5px solid #D8EAE7;padding-top:5px;line-height:1.45;margin-top:2px}
+.ac-ai-mark{font-style:normal;font-size:10px;opacity:.7;margin-right:3px}
+
+.cta{display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;
+  background:#FAF9F6;border-top:1px solid var(--hair-strong);padding:30px 48px}
+@container report (max-width:640px){.cta{padding:24px 22px}}
+.cta .ct{font-size:var(--fs-lg);font-weight:600}.cta .cs{font-size:var(--fs-base);color:var(--ink-soft);margin-top:4px}
+.cta a{background:var(--petrol);color:#fff;font-weight:600;font-size:var(--fs-base);padding:13px 26px;border-radius:var(--r);
+  text-decoration:none;white-space:nowrap;transition:.18s}
+.cta a:hover{background:#107069}
+.foot{text-align:center;color:var(--muted);font-size:var(--fs-xs);margin-top:22px}
+/* В каркасе подвал прижат к нижнему краю: 22px воздуха там, где всего 10px поля
+   страницы, съедали бы высоту прокручиваемой области ни за что. */
+body.report-shell>.foot{margin-top:6px}
+::selection{background:rgba(14,92,88,.16)}
+.empty{padding:40px 0;text-align:center;color:var(--muted);font-size:var(--fs-base)}
+/* S12 — интерактивные сигналы: чипы-кнопки, аккордеон, контролы, пагинация */
+.counts .chip{display:flex;align-items:baseline;gap:6px;font-size:var(--fs-sm);color:var(--ink-soft);
+  background:none;border:1px solid transparent;border-radius:8px;padding:5px 9px;cursor:pointer;
+  font-family:inherit;white-space:nowrap}
+.counts .chip:hover{background:#F6F4EF}
+.counts .chip.active{border-color:var(--hair);background:#F6F4EF}
+.counts .chip .d{width:8px;height:8px;border-radius:2px;position:relative;top:1px}
+.counts .chip .d.crit{background:var(--sev-crit)}.counts .chip .d.warn{background:var(--sev-warn)}.counts .chip .d.ok{background:var(--sev-ok)}
+.counts .chip b{font-weight:600;color:var(--ink);font-size:var(--fs-md)}
+.sig-panel{margin-top:4px}
+.sig-panel .expand{margin-top:12px;font-size:var(--fs-sm);font-weight:600;color:var(--petrol);
+  background:none;border:none;cursor:pointer;font-family:inherit;padding:4px 0}
+.sig-panel .expand:hover{text-decoration:underline}
+.pager{display:flex;align-items:center;gap:12px;margin-top:12px}
+.pager .pg{font-family:inherit;font-size:var(--fs-sm);padding:5px 12px;border:1px solid var(--hair);
+  border-radius:7px;background:var(--sheet);color:var(--ink);cursor:pointer}
+.pager .pg[disabled]{opacity:.4;cursor:default}
+.pager .pgi{font-size:var(--fs-sm);color:var(--muted)}
+
+/* ===== S14 · debug-страница: родословная элементов ===== */
+.dbg-bar { display: flex; align-items: center; margin: 10px 0 4px; }
+.dbg-link { margin-left: auto; color: #8a6d3b; text-decoration: none; font-weight: 600; }
+.block-wrap { display: flex; flex-direction: column; gap: 12px; }
+/* Карточки-блоки — только на debug-странице «Механика» (внутри .block-wrap).
+   Без скоупа правило перекрывало домашний .block (styles.css:61, разделитель
+   border-top) и протекало рамками-боксами на главную — регрессия S14. */
+.block-wrap .block { border: 1px solid #e6ddd0; border-radius: 12px; background: #fff; overflow: hidden; }
+.block-head { width: 100%; text-align: left; font: inherit; font-weight: 700; color: #2e2820;
+  cursor: pointer; border: 0; background: transparent; padding: 13px 16px; }
+.block-head:hover { background: #faf6f0; }
+.block-head:focus-visible { outline: 2px solid #8a6d3b; outline-offset: -2px; }
+.block-body { padding: 0 16px 16px; }
+.part { margin-top: 12px; }
+.part-h { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: #9a8f7e; margin-bottom: 6px; }
+.part-sub { font-size: 13px; color: #7a6f60; margin: 10px 0 4px; }
+.kpi-cards { display: flex; gap: 10px; flex-wrap: wrap; }
+.kc { border: 1px solid #ece4d7; border-radius: 8px; padding: 8px 14px; min-width: 120px; }
+.kc .kl { font-size: 12px; color: #8a7f70; }
+.kc .kv { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; color: #2e2820; }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chips .chip { background: #f4efe7; border-radius: 999px; padding: 4px 10px; font-size: 14px; }
+.mini-wrap { height: 220px; max-width: 640px; }
+.schema-note { font-size: 12px; color: #b08a3a; margin-bottom: 4px; }
+.dbg-tbl { border-collapse: collapse; width: 100%; margin-top: 4px; font-size: 14px; }
+.dbg-tbl th, .dbg-tbl td { padding: 4px 8px; border-bottom: 1px solid #f0ebe2; text-align: left; vertical-align: top; }
+.dbg-tbl td.num, .dbg-tbl th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.dbg-tbl.lineage { font-size: 13px; }
+.dbg-tbl.lineage th { white-space: nowrap; color: #4a4032; }
+.dbg-tbl.lineage td { color: #5a5142; }
+.dbg-tbl.lineage .ai-row td { font-style: italic; color: #6c6052; }
+.ai-out h4 { margin: 10px 0 4px; }
+.muted { color: #8a7f70; }
+
+.dtab { border: none; background: transparent; color: var(--muted); cursor: pointer;
+        padding: 18px 0 14px; margin-right: 28px; border-bottom: 2px solid transparent;
+        margin-bottom: -1px; font: inherit; font-weight: 500; font-size: var(--fs-base);
+        transition: color .15s; }
+.dtab:hover { color: var(--ink); }
+.dtab.on { color: var(--petrol); font-weight: 600; border-bottom: 2px solid var(--petrol); }
+
+/* ===== S17: табы уровней, балл, точки правил ===== */
+.lvl-tabs { display: flex; gap: 0; border-bottom: 2px solid #E7E5E0; margin: 4px 0 10px; }
+/* «Скачать» и «⊞» — в строке табов уровней, справа (task-main-194, П4 спеки
+   2026-08-18, «полный аналог gama», слова владельца): тулбар движка объявлен
+   туда через exportInfo.toolsHost, здесь остаётся только прижать его к
+   правому краю строки и выровнять по её базовой линии. Переехало из частного
+   ID-селектора gama-daily.css (#lvl-tabs .tbltools) — тот узел несёт ОБА
+   признака (id="lvl-tabs" class="lvl-tabs"), у блока сигналов есть только
+   класс; побочная выгода унификации — минус один ID-селектор в частной
+   вёрстке (ось 2 доктрины). */
+.lvl-tabs .tbltools{margin-left:auto;align-self:center;padding:0 0 4px}
+.ltab { padding: 6px 14px; font: inherit; font-size: 13px; color: #6F6C65;
+  background: none; border: none; cursor: pointer; }
+.ltab.on { color: #0E5C58; font-weight: 600;
+  border-bottom: 2px solid #0E5C58; margin-bottom: -2px; }
+/* Общий бар-примитив (bar-widget.js): трек+заливка(+риска), домен красит
+   только смыслом через inline color/width -- ни одного модификатор-класса
+   тут не заводится специально (color -- CSS-значение, не имя состояния).
+   Заменяет три независимые копии одной формы: score-бар "Что требует
+   внимания" (.score ниже отдаёт бару только отступ), "Готовность" и "MDE"
+   продукта mp_cockpit (recon-levers.js/css). Правка по живому ревью
+   владельца: вдвое длиннее и вдвое тоньше исходных 42×7 -- изменение
+   одного места правит все три бара сразу (в этом и был смысл унификации). */
+.bw { position: relative; display: inline-block; width: 84px; height: 3.5px;
+  background: #F0EEE9; border-radius: 3px; vertical-align: middle; overflow: hidden; }
+.bw-notch { position: absolute; top: 0; width: 2px; height: 100%; background: var(--sheet); }
+.bw-fill { position: absolute; left: 0; top: 0; height: 100%; border-radius: 3px 0 0 3px; }
+.score .bw { margin-right: 6px; }
+.hitsc .hit { width: 9px; height: 9px; border-radius: 50%; display: inline-block;
+  margin-right: 4px; }
+.hitsc .hit.crit{background:var(--sev-crit)}.hitsc .hit.warn{background:var(--sev-warn)}.hitsc .hit.ok{background:var(--sev-ok)}
+.hitsc .hit-more{font-size:var(--fs-xs);color:var(--muted);font-weight:600;vertical-align:1px}
+.rdesc { margin: 0 0 10px; color: #6B6863; font-size: 13px; line-height: 1.4;
+  max-width: 62ch; }
+tr.drill { cursor: pointer; }
+/* Полупрозрачная подсветка строки под курсором: непрозрачный фон закрывал
+   собой подсветку выделенных ячеек целиком (у hover-правила специфичность
+   выше), и пользователь терял из виду свой диапазон, ведя мышь над таблицей.
+   Теперь оба слоя видны одновременно — правка владельца 2026-08-15. */
+tr.drill:hover td { background: rgba(28,22,10,.035); }
+
+/* S20 срез C — интерактив колонок: сортировка, скрытие, ширина.
+   Аффордансы скрыты до наведения (узкий визуал колонки), появляются на hover;
+   стрелка ↑/↓ — только на активно отсортированной колонке (индикатор состояния). */
+th.thx { position: relative; white-space: nowrap; }
+th.sortable .thlab { cursor: pointer; }
+/* Индикатора-псевдоэлемента больше нет: направление сортировки показывает
+   кнопка «⇅»/«↑»/«↓» на подложке (см. .thtools ниже). Прежний `::after` был
+   невидим у неотсортированной колонки — сортируемость приходилось угадывать,
+   а у активной колонки стрелка ещё и раздвигала подпись, пока её не вывели
+   из потока в task-main-183. Кнопка решает обе задачи разом и места в потоке
+   не занимает вовсе. */
+/* Раскладка, посчитанная движком: ширины приходят на <col>, и браузеру
+   остаётся их соблюсти — без table-layout:fixed он продолжил бы делить место
+   по-своему. Класс вешает сам движок, поэтому чужие потребители .tblwrap
+   (matrix-table.js — матрица P&L, data-catalog.js, flat-table.js) остаются на
+   прежней авто-раскладке: у матрицы подписи длиннее данных, и это правило
+   ухудшило бы её вылет с 3356 до 6126px (обоснованное исключение спеки). */
+.tblwrap.tblw-auto table { table-layout: fixed; }
+/* Не влезшее содержимое — многоточие с подсказкой (решение владельца 3), а не
+   перенос на вторую строку: лента в 800 строк потеряла бы ритм. Числовые
+   ячейки (.r) под обрезку не попадают НИКОГДА — обрезанное многоточием число
+   читается как другое число.
+   ЗАГОЛОВКИ под обрезку не попадают вовсе — «подписи не режутся» (решение
+   владельца 6), и правило это гарантирует: ширина колонки никогда не меньше
+   ширины её шапки. Пока заголовки входили в этот селектор, любое расхождение
+   мерок превращалось в «ДЕНЬ…» вместо «ДЕНЬ» — многоточие маскировало дефект
+   расчёта вместо того, чтобы его показать. */
+.tblwrap.tblw-auto td:not(.r) {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ===== task-main-190: единая плотность строки + закреплённая шапка ЛЮБОЙ
+   таблицы движка. Дискриминатор — класс `tbleng`, который tblWrap() ставит
+   САМ (table-engine.js): голый `.tblwrap` этому не отвечает и остаётся вне
+   охвата — под него подпадают flat-table.js/matrix-table.js, обоснованное
+   исключение (свои раскладки, не зовут tblWrap). Эталон плотности — витрина
+   GA.MA (решение владельца 17.08): её частные правила `.gama-tbl` отсюда и
+   переехали, вычищены из gama-daily.css. =====
+
+   Паддинг снимает асимметрию платформенного `th{padding:0 14px 9px 0}`
+   (низ 9, верх 0) — обе ячейки переходят на дневную плотность витрины.
+   line-height у th — ОБЯЗАТЕЛЕН, паддинг сам по себе не выравнивает строчные
+   боксы: кегль подписи (--fs-2xs=11px) даёт 16.5px интерлиньяжа, кегль данных
+   (--fs-base=14px) — 21px, и симметричный паддинг без этой строки всё равно
+   давал бы 8+16.5+8+1=33.5 против 8+21+8+1=38 — шапка ниже строки данных.
+   Кегль подписи при этом НЕ меняется (шапка остаётся мелкой и капительной).
+   Итог: th==td≈38px (живой эталон GA.MA — 37.67px при дробном devicePixelRatio).
+
+   Левый паддинг (`0` здесь) — ОТДЕЛЬНОЕ правило ниже (task-main-192, П2,
+   владелец 18.08), не часть этой плотности. Регрессия: `.lead{padding-left:
+   15px}` (специфичность 0,1,0) проигрывала этому правилу (0,2,2), текст
+   слипался с цветной полоской-маркером (task-main-190 ввёл симметричный
+   `padding:8px 10px 8px 0`, обнулив левую сторону там, где платформа её
+   раньше объявляла отдельным классом). Чинится на уровне причины: левый
+   отступ — заявка ПЕРВОЙ КОЛОНКИ таблицы (текст не должен липнуть к краю
+   листа, есть там маркер `.lead` или нет — просьба владельца «универсальный,
+   даже если пометки нет»), а не заявка КАЖДОЙ ячейки. Только у первой
+   колонки текст физически граничит с краем; у остальных зазор уже даёт
+   `padding-right:10px` соседа слева. Отсюда `:first-child`, а не общий
+   `td`/`th` — цена универсального паддинга на КАЖДУЮ колонку входила бы в
+   `minSum` (`tblColumnWidths`, table-engine.js) на L×N, у GA.MA (10 колонок)
+   это +150px при ~902 доступных; на первой колонке цена +15px НА ТАБЛИЦУ. */
+.tblwrap.tbleng table th { padding: 8px 10px 8px 0;
+                           line-height: calc(var(--fs-base) * 1.5); }
+.tblwrap.tbleng table td { padding: 8px 10px 8px 0; }
+.tblwrap.tbleng table th:first-child,
+.tblwrap.tbleng table td:first-child { padding-left: 15px; }
+
+/* margin-top переехал СО СТОЛА НА ЛЕНТУ. Платформенный `table{margin-top:12px}`
+   (выше по файлу) внутри скролл-контейнера означал, что шапка до прокрутки
+   стоит на 12px ниже верха ленты, а после первых 12px скролла прилипает —
+   «два положения шапки» (найдено на GA.MA, шестой раунд правки щели/прыжка
+   шапки 17.08). Внешний зазор остаётся тем же, внутренний исчезает.
+   border-collapse:separate — известный дефект Chromium в паре со sticky:
+   схлопнутые границы принадлежат сетке строк, а не ячейкам, и при скролле
+   граница уезжает вместе со строкой, пока прилипшая ячейка стоит на месте —
+   на кромке шапки/подвала виден движущийся срез. separate отдаёт границу
+   самой ячейке. Идёт на `.tbleng`, не на `.tblcap` — нужен и капнутой, и
+   некапнутой ленте. Задвоения границ не будет: в таблицах движка объявлен
+   только border-bottom (th/td), вертикальных границ нет, border-spacing:0
+   снимает зазоры (греп-гейт границ — критерий 7a спеки 2026-08-17). */
+.tblwrap.tbleng { margin-top: 12px; }
+.tblwrap.tbleng > table { margin-top: 0; border-collapse: separate; border-spacing: 0; }
+/* will-change:transform — слой под sticky-ячейку создаётся ЗАРАНЕЕ: без него
+   переход из обычного потока в композитный слой происходит в момент начала
+   скролла, и на экране с дробным масштабом (125/150%) это рисуется со сдвигом
+   на дробный пиксель — шапка «прыгает» (найдено на GA.MA, 17.08). */
+.tblwrap.tbleng thead th { position: sticky; top: 0; z-index: 2;
+  background: var(--sheet); box-shadow: 0 1px 0 0 var(--sheet); will-change: transform; }
+.tblwrap.tbleng tfoot th { position: sticky; bottom: 0; z-index: 2;
+  background: var(--sheet); box-shadow: 0 -1px 0 0 var(--sheet); will-change: transform; }
+/* Кап — ОТДЕЛЬНЫЙ класс (`tblCapRows`, table-engine.js),
+   а не часть `.tbleng`: у таблицы ≤ visibleRows строк капа нет вовсе (см.
+   функцию), и sticky-шапка тогда просто стоит первой строкой некапнутого
+   потока — тоже законное состояние. `.tblwrap` уже скролл-контейнер по
+   вертикали (overflow-x:auto ниже по файлу переводит вычисленный overflow-y
+   в auto по CSS Overflow L3), поэтому max-height здесь — единственное, что
+   реально включает прокрутку; без него sticky нечему прилипать (развилка §5
+   спеки 2026-08-17, закрыта живым экспериментом 18.08). */
+.tblwrap.tblcap { overflow-y: auto; max-height: var(--tbl-max, none); }
+/* Ниже 1080px рамка распускается (см. @media(max-width:1080px) дальше по
+   файлу) — .sheet-scroll перестаёт быть скролл-контейнером, а правая панель
+   ложится липкой полосой сверху. sticky-шапка таблицы (top:0;z-index:2) ушла
+   бы под эту полосу и стала невидимой на первых её пикселях, поэтому sticky
+   снимается тоже. КАП СНИМАЕТСЯ С НЕЙ ЗА КОМПАНИЮ (решено 18.08, Р8 спеки
+   2026-08-17): альтернатива top:260px требует четвёртого места, где
+   синхронизировать высоту узкой панели (сегодня их три — RAIL_NARROW_STICKY_H
+   в rail.js, этот же @media в styles.css, scroll-margin-top глав), а
+   капнутая лента БЕЗ sticky хуже сегодняшнего поведения. max-height:none —
+   ровно то, что узкий экран получает и без этого среза, то есть нулевой
+   регресс: движок продолжает считать --tbl-max и класс tblcap, медиа-запрос
+   просто перестаёт их читать.
+   СКОУП `.sheet-scroll` (правка ревью общего шва 18.08, найдено рядом с
+   BLOCKER'ом капа). Голый `.tbleng`/`.tblcap` без предка задевал бы и
+   витрину GA.MA (`gama-daily.html`/`body.gama-daily-showcase`) — у неё
+   сегодня НЕТ ни `.sheet-scroll`, ни `.rail` вовсе (отдельная страница;
+   проверено по факту разметки — `.pad` лежит прямо в `.sheet`, без
+   промежуточной обёртки), то есть конфликта sticky-шапки со sticky-полосой
+   `.rail`, ради которого карвеаут вообще существует, у неё физически нет.
+   До среза GA.MA держала sticky+кап на ЛЮБОЙ ширине окна; голый `.tbleng`
+   отобрал бы это в диапазоне ~700–1080px (обычный ноутбучный 1024) — прямой
+   регресс на витрине-эталоне плотности, недопустимый критерием 14b спеки.
+   `.sheet-scroll` — селектор, которым сегодня размечены ВСЕ доменные шеллы
+   (`index.html`, `unix-settlement.html` — оба проверены по факту разметки,
+   не на слово) и которого нет у GA.MA; `.pad` (общий предок любого
+   `.tblwrap` внутри отчёта) лежит ВНУТРИ `.sheet-scroll` в обоих файлах, то
+   есть потомственный селектор бьёт ровно по множеству таблиц с реальным
+   конфликтом и не задевает витрину, у которой его нет. */
+@media (max-width: 1080px) {
+  .sheet-scroll .tblwrap.tbleng thead th,
+  .sheet-scroll .tblwrap.tbleng tfoot th { position: static; }
+  .sheet-scroll .tblwrap.tblcap { max-height: none; }
+}
+
+/* Подложка с кнопками управления колонкой (конструкция владельца 16.08).
+   Зачем она вообще: невидимые «×» и воронка стояли В ПОТОКЕ шапки и потому
+   занимали место ВСЕГДА — 27px в каждой колонке, 252px из 893 у GA.MA, то
+   есть 28% ширины таблицы. Ровно в это упирались три круга попыток убрать
+   горизонтальный скролл: сокращать подписи можно только в пределах
+   оставшихся 541px. На подложке кнопки лежат вне потока, и ширину колонки
+   определяет одна лишь подпись.
+   Подложка держится у ПРАВОГО края (left не задан) и при наведении ложится
+   поверх хвоста длинной подписи. Обрывом это не выглядит благодаря
+   градиенту: слева фон уходит в прозрачность, и текст под ним растворяется,
+   а не упирается в кнопку. Цвет — фон самой шапки (--sheet), поэтому под
+   подложкой не видно ни границ, ни полос; у акцентной колонки фон свой, и он
+   переопределён ниже. */
+/* max-width считается С УЧЁТОМ сдвига right:5px — иначе подложка шириной в
+   целую колонку вылезает на эти 5px за её левый край и красит фоном заголовок
+   соседа (замер ревью: 13px вылета у колонки, суженной ресайзом до минимума).
+   bottom:0 (task-main-190, было `9px` — компенсация асимметричного паддинга
+   голого `th{padding:0 14px 9px 0}` выше, актуального только вне таблиц
+   движка). Таблицы движка (класс `tbleng`) с этого среза несут СИММЕТРИЧНЫЙ
+   паддинг (`8px 10px 8px 0`, ниже по файлу) — центр content-box подписи и
+   центр ячейки совпадают сами собой, подложке, центрируемой flex'ом по ВСЕЙ
+   высоте ячейки (top:0/bottom:0), больше нечего компенсировать. Раньше это
+   было верно только у витрины GA.MA (`.gama-tbl thead th .thtools{bottom:0}`
+   в gama-daily.css) — теперь платформенное значение само стало этим числом,
+   частное переопределение снято как дубль. */
+/* justify-content:flex-end (bug-main-47, task-main-192) — без него кнопки
+   пакуются от ЛЕВОГО края бокса (умолчание flex-start), а сам бокс зажат у
+   правого края `th` (`right:5px` + `max-width` выше). На колонке уже ~52px
+   суммарная ширина кнопок (растяжка + иконки) больше max-width, флекс-дети не
+   сжимаются ниже intrinsic-ширины — лишнее уезжает ВПРАВО за `th`, в
+   прокручиваемое переполнение ленты (живой сценарий — фокус на узком правиле
+   блока сигналов, последняя колонка короткая числовая). flex-end пакует от
+   ПРАВОГО края бокса — переполнение, если остаётся, уходит влево, внутрь
+   колонки, а не наружу за таблицу. Проверено ревью замером на
+   PRICING_CORE_SKU (фокусный вид): overflow 6px → 0px; нефокусный вид не
+   двигается побайтово. */
+th .thtools { position: absolute; right: 5px; top: 0; bottom: 0;
+  max-width: calc(100% - 5px); justify-content: flex-end;
+  display: flex; align-items: center; gap: 2px; padding-left: 22px;
+  opacity: 0; transition: opacity .12s; pointer-events: none;
+  background: linear-gradient(to right, transparent 0, var(--sheet) 22px); }
+/* Клики ловят САМИ КНОПКИ, а не подложка целиком: её прозрачная левая часть
+   обязана пропускать клик к подписи под собой. Иначе наведение и клик
+   становятся неразделимы — подложка получает pointer-events ровно тогда,
+   когда курсор над заголовком, и клик по имени колонки уходит в «×»,
+   скрывающий эту колонку (замер ревью общего шва: подпись недостижима мышью
+   в 6 колонках из 10, правый край подписи попадал в «×» во всех 10). */
+th:hover .thtools { opacity: 1; }
+th:hover .thtools > * { pointer-events: auto; }
+th .thtools.on { opacity: 1; }
+th .thtools.on > .on { pointer-events: auto; }
+/* Вне наведения на подложке остаётся ТОЛЬКО признак состояния — стрелка
+   сортировки либо зажжённая воронка. Подложка узкая, ПОТОМУ ЧТО на ней один
+   элемент (`> :not(.on){display:none}` ниже прячет остальные три); полная
+   подложка (`padding-left:22px`, как у наведения) — только под наведением.
+   Разворот решения task-main-190 (П1/Р1-A, владелец 18.08): было
+   `background:none;padding-left:0` вовсе без заливки — но на узкой колонке
+   стрелка наезжала на хвост подписи (замер 18.08: колонка «Отмена» 83px,
+   наезд 3.5px). Рампа 8px возвращает подложку под индикатор, но узкую:
+   ширина в покое 8 (растяжка) + ~11 (сам знак) = 19px против 56px у
+   наведения. Цена честная и посчитана: активная колонка теряет ~10px
+   читаемого хвоста подписи против вчерашнего `background:none` — но только
+   ОДНА колонка и только пока у неё есть состояние. Для сравнения полная
+   подложка на 22px (отклонённый вариант B, владелец 18.08) закрашивала бы
+   «Продажи ₽» на 44 из 70px — здесь на порядок дешевле. */
+th .thtools.on { padding-left: 8px;
+  background: linear-gradient(to right, transparent 0, var(--sheet) 8px); }
+th .thtools.on > :not(.on) { display: none; }
+th:hover .thtools.on { padding-left: 22px;
+  background: linear-gradient(to right, transparent 0, var(--sheet) 22px); }
+th:hover .thtools.on > :not(.on) { display: block; }
+/* Кнопка сортировки. У покоя свой знак «⇅» — прежде состояние нёс невидимый
+   `::after`, и у неотсортированной колонки не было никакого признака, что её
+   можно сортировать. Активная показывает направление и остаётся видна без
+   наведения (класс `on` на подложке выше). */
+th .thsort { background: none; border: none; cursor: pointer;
+  color: var(--muted); font-size: 13px; line-height: 1; padding: 0 1px;
+  transition: color .12s; }
+th .thsort:hover { color: var(--petrol); }
+th .thsort.on { color: var(--petrol); }
+th .thhide { background: none; border: none; cursor: pointer;
+  color: var(--muted); font-size: 15px; line-height: 1;
+  padding: 0 1px; transition: color .12s; }
+th .thhide:hover { color: var(--terra); }
+th .thgrip { position: absolute; right: 0; top: 0; bottom: 0; width: 5px;
+  cursor: col-resize; opacity: 0; }
+th:hover .thgrip { opacity: 1; }
+/* Задача 3 табличного движка: воронка фильтра колонки. Показывается по
+   наведению — шапка уже несёт сортировку, «×» и ручку ширины, и постоянная
+   четвёртая иконка ломала бы самую узкую колонку витрины (приёмка 9). При
+   АКТИВНОМ фильтре видна всегда: невидимый фильтр значил бы, что урезанная
+   таблица читается как полная. Воронки нет вовсе у колонки, которую домен не
+   объявил фильтруемой (col.filter). */
+th .thfilt { background: none; border: none; cursor: pointer;
+  color: var(--muted); font-size: 10px; line-height: 1;
+  padding: 0 1px; transition: color .12s; }
+th .thfilt:hover { color: var(--petrol); }
+th .thfilt.on { color: var(--petrol); }
+/* Меню фильтра живёт в <body> с position:fixed, не внутри .tblwrap: обёртка
+   ленты режет и по горизонтали (overflow-x), и по вертикали (--tbl-max) —
+   ровно та ловушка, на которой в задаче 1 обрезался абсолютный тулбар. */
+.tblfmenu { position: fixed; z-index: 40; background: var(--sheet);
+  border: 1px solid var(--hair-strong); border-radius: var(--r);
+  box-shadow: 0 6px 18px rgba(28, 22, 10, .14); padding: 8px; min-width: 168px;
+  display: flex; flex-direction: column; gap: 6px; }
+.tblfmenu-t { font-size: 11px; font-weight: 600; color: var(--muted); }
+.tblfmenu select, .tblfmenu input { font-family: inherit; font-size: 12px;
+  padding: 5px 7px; border: 1px solid var(--hair); border-radius: 6px;
+  background: var(--sheet); color: var(--ink); width: 100%; box-sizing: border-box; }
+.tblfrow { display: flex; gap: 6px; }
+/* Строка-тир воронки тяжести (task-main-196): кружок-подпись + название тира +
+   список «все / ≥ k / нет». Кружок повторяет визуальный словарь ячеек
+   (.hitsc .hit.*) — строка меню читается как подпись к тому, что видно в
+   таблице. САМ ЦВЕТ приходит декларацией домена (col.filterTiers несёт
+   var(--sev-*)) и ложится инлайновым background — второй копии палитры в общем
+   шве не заводится; здесь только форма. Тир, объявленный БЕЗ цвета
+   («пусто», color:null), движок рисует контурным кружком: смысла он не
+   изобретает, а читает декларацию. */
+.tblftier { align-items: center; }
+.tblftier .tblfval { flex: 1; min-width: 0; }
+.tblftlab { font-size: 12px; color: var(--ink); flex: 0 0 34px; }
+.tblfdot { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto;
+  display: inline-block; box-sizing: border-box; }
+/* Модификатор `hollow`, а НЕ `empty`: голое `.empty` в этом же файле (:604)
+   уже занято плейсхолдером «Нет данных» с padding:40px — кружок под ним
+   вытягивался в эллипс высотой 82px (поймано живым скрином, замер в браузере;
+   ни один строковый гейт такую коллизию не видит). В общем шве generic-имена
+   класса не берём. Страж — DOM-тест на размеры всех четырёх кружков. */
+.tblfdot.hollow { background: transparent; border: 1px solid var(--hair-strong); }
+.tblfbtn { font-family: inherit; font-size: 12px; font-weight: 600; flex: 1;
+  color: var(--petrol); background: var(--sheet); border: 1px solid var(--hair-strong);
+  border-radius: 6px; padding: 4px 8px; cursor: pointer; }
+.tblfbtn.ghost { color: var(--muted); font-weight: 500; }
+.tblfbtn:hover { border-color: var(--petrol); background: var(--petrol-tint); }
+/* .tblpick/.tblpick-option — общий ВИД прокручиваемого списка чекбоксов
+   (task-main-197, П5 спеки 2026-08-18, Р6-размещение): переиспользуется
+   мультивыборным меню фильтра "values" (_tblFilterMenu выше) И страничным
+   селектором категорий (.category-picker/.tblpick-apply, app.js, ниже в этом
+   файле) — числа max-height/overflow заданы ОДИН раз, комбинированным
+   селектором ниже (не задваиваются). Общий только вид: обработчики и
+   структура вокруг списка у каждой всплывашки свои (новый JS-компонент/общая
+   зависимость app.js<->table-engine.js не заводятся). У меню фильтра список —
+   ЕДИНСТВЕННАЯ прокручиваемая часть: "Применить"/"Сбросить" стоят СНАРУЖИ и
+   остаются видны всегда. overscroll-behavior:contain — та же идиома, что
+   .sheet-scroll (:114) и .rail-toc-zone (:201): докрутка колесом до конца
+   списка не должна утекать в scroll-chaining на страницу — иначе
+   платформенный фикс task-main-195 (закрытие по СТРАНИЧНОМУ скроллу —
+   обязано остаться рабочим) поймал бы этот протёкший скролл и закрыл
+   всплывашку прямо посреди докрутки колесом. */
+.tblpick, .category-picker { max-height: 420px; overflow: auto; overscroll-behavior: contain; }
+.tblpick-option { display: flex; align-items: center; gap: 8px; padding: 6px 2px;
+  font-size: var(--fs-sm); cursor: pointer; }
+/* `.tblfmenu select, .tblfmenu input` выше стилизует текстовые/числовые поля
+   text/range (width:100%, паддинг, рамка) — без сброса он же растягивал бы
+   чекбокс "values" в широкую полосу на всю строку (найдено живым скриншотом
+   task-main-197, не структурным DOM-тестом: .checked/textContent такую
+   геометрию не видят). Чекбокс — свой маленький квадрат, как и у страничного
+   селектора категорий (.category-picker-option там ничего похожего не
+   переопределяет, потому что не наследует этот общий инпут-рул вовсе). */
+.tblfmenu input[type="checkbox"] { width: auto; flex: 0 0 auto; padding: 0;
+  border: 0; background: none; border-radius: 0; }
+/* Кросс-колоночный поиск НАД таблицей (движковый tblSearchBar) — примитив
+   движка, не UI блока сигналов (task-main-191 снял оттуда строку поиска
+   целиком, механику НЕ удалил — см. шапку signals-table.js). Остаётся
+   базовым правилом для будущего/временного потребителя. */
+.tblsearch { font-family: inherit; font-size: var(--fs-sm); padding: 7px 10px;
+  border: 1px solid var(--hair); border-radius: 7px; background: var(--sheet);
+  color: var(--ink); }
+/* Обёртка ленты: скролл + якорь для .tbltools (тулбар в потоке, комментарий
+   ниже) и .tblselbar (строка состояния выделения, задача 2). */
+.tblwrap { position: relative; overflow-x: auto;
+  scrollbar-width: thin; scrollbar-color: transparent transparent; }
+/* Задача 2 табличного движка: своя подсветка диапазона заменяет нативное
+   текстовое выделение — взамен работает Ctrl+C → TSV. Класс .tblsel-on
+   ставит САМ tblEnableSelection (JS), только когда выделение реально
+   подключено И устройство/ширина окна его допускают (AC8) — голый селектор
+   .tblwrap table бил бы по ЧУЖИМ потребителям .tblwrap (flat-table.js,
+   matrix-table.js — P&L Взаиморасчётов), которые tblEnableSelection не
+   зовут: те теряли бы нативное выделение текста, не получая взамен ничего
+   (находка ревью общего шва, Блокер 2). */
+.tblwrap.tblsel-on table { user-select: none; }
+/* Выделение — ПОЛУПРОЗРАЧНЫЙ СЛОЙ поверх фона ячейки (inset-тень во всю
+   клетку), а не собственный background: фон уже занят подсветкой строки под
+   курсором, и два непрозрачных фона на одной ячейке взаимно исключались —
+   выигрывал тот, чья специфичность выше (hover), и диапазон пропадал из вида
+   под курсором. Слой складывается с любым фоном: видно и строку, и выделение
+   (правка владельца 2026-08-15). */
+.tblwrap td.tblsel, .tblwrap tr.totals th.tblsel { box-shadow: inset 0 0 0 999px rgba(14,92,88,.14); }
+/* Сумма/среднее/непустых выделенного диапазона. Стоит СЕСТРОЙ .tblwrap, ПОД
+   полосой горизонтальной прокрутки (правка владельца 16.08): внутри обёртки
+   строка лежала над полосой и уезжала вбок вместе с таблицей — сумму
+   приходилось читать, домотав ленту обратно влево. Прижата вправо: числа
+   диапазона ищут глазами там же, где стоят сами числовые колонки.
+   Место под строку зарезервировано ВСЕГДА, когда выделение реально подключено
+   (правка владельца 17.08): по умолчанию display:none (нулевая высота), а
+   .tblwrap.tblsel-on + .tblselbar включает display:block БЕЗ УСЛОВИЙ на
+   содержимое — так первое же выделение не раздвигает layout и не толкает
+   вниз то, что стоит под таблицей. Класс .tblsel-on ставит САМ tblEnableSelection
+   и только когда гейт устройства/ширины пройден (AC8) — у ЧУЖИХ потребителей
+   .tblwrap (flat-table.js, matrix-table.js), которые .tblsel-on не получают,
+   резерва нет вовсе: мёртвая полоса пустоты под их таблицами была бы им ни за
+   чем не нужна. Пустой bar (:empty — нет выделения, _tblRenderSelection кладёт
+   "") гасится visibility:hidden, а не display — так высота строки не меняется
+   от появления/исчезновения текста. box-sizing:border-box + фиксированный
+   height (не min-height!) — ЖЁСТКО детерминированная высота: с min-height
+   пустой bar (без строки текста, без anonymous line box) и bar с текстом
+   (реальный line box поверх min-height) мерились РАЗНОЙ высотой — на
+   min-height 1.4em измерено 16.8px пустым и 22.8px с текстом, те же 6px,
+   что и padding-top, то есть сам резерв ещё и не резервировал (регресс,
+   пойман DOM-тестом на getBoundingClientRect до фикса). nowrap/ellipsis
+   страхуют от переноса на вторую строку (текст «Скопировано · …» длиннее
+   базового) — перенос тоже сдвинул бы контент ниже. */
+.tblselbar { display: none; box-sizing: border-box; font-size: 12px;
+  color: var(--muted); padding: 6px 2px 0; text-align: right;
+  height: 24px; line-height: 18px; white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis; }
+.tblwrap.tblsel-on + .tblselbar { display: block; }
+.tblwrap.tblsel-on + .tblselbar:empty { visibility: hidden; }
+.tblwrap:hover { scrollbar-color: rgba(28,22,10,.22) transparent; }
+.tblwrap::-webkit-scrollbar { height: 6px; }
+.tblwrap::-webkit-scrollbar-track { background: transparent; }
+.tblwrap::-webkit-scrollbar-thumb { background: transparent; border-radius: 999px; transition: background .15s; }
+.tblwrap:hover::-webkit-scrollbar-thumb { background: rgba(28,22,10,.2); }
+.tblwrap::-webkit-scrollbar-thumb:hover { background: rgba(28,22,10,.35); }
+/* Инструменты ленты (возврат колонок + экспорт) — обычная строка НАД
+   таблицей, не поверх неё (ревью общего шва 2026-08-15): прежний абсолютный
+   якорь в правом верхнем углу обрезался вертикальным overflow ленты
+   (#panel .tblwrap{overflow-y:auto}, gama-daily.css) и прятался под sticky-
+   шапкой (тот же z-index:2, шапка позже в DOM-порядке — красилась поверх).
+   В нормальном потоке кнопки не обрезаются НИКОГДА (видимая часть ленты
+   всегда начинается с них) и не спорят местом со шапкой: та цепляется за
+   верх ленты, только когда лента уже прокручена мимо этой строки. Высота
+   строки учтена в tblCapRows (--tbl-max), поэтому лента по-прежнему
+   показывает ровно N строк, не N-1. */
+.tbltools { display: flex; align-items: center; justify-content: flex-end;
+  gap: 8px; padding: 0 0 6px; }
+.colrestore { background: none;
+  border: none; cursor: pointer; color: var(--muted); font-size: 14px; line-height: 1;
+  padding: 2px; opacity: .55; transition: opacity .12s; }
+.colrestore:hover { opacity: 1; color: var(--petrol); }
+/* Кнопка «Скачать» CSV (Задача 1 табличного движка) — тихая, тон .dform-btn. */
+.tblexport { font-family: inherit; font-size: 12px; font-weight: 600;
+  color: var(--petrol); background: var(--sheet); border: 1px solid var(--hair-strong);
+  border-radius: var(--r); padding: 3px 10px; cursor: pointer; opacity: .85;
+  transition: .15s; display: inline-flex; align-items: center; gap: 4px; }
+.tblexport:hover { opacity: 1; border-color: var(--petrol); background: var(--petrol-tint); }
+/* Универсальная пометка «в ячейке есть проблемы/ошибки вычислений»
+   (tblMarkIssue, table-engine.js; задача 3 доводки движка, П3, владелец
+   18.08). Раньше — частная `.warn-gap` витрины GA.MA с псевдоэлементом «!»
+   (gama-daily.css, снят целиком в этом срезе): подчёркивание остаётся
+   ЕДИНСТВЕННЫМ знаком, восклицательный знак не восстанавливается нигде.
+   cursor:help — ИЗМЕНЕНИЕ ПОВЕДЕНИЯ, не переименование: у `.warn-gap` его не
+   было. Домен формулирует ПРИЧИНУ строкой в title, движок только красит. */
+.tblissue { text-decoration: underline dotted var(--ochre); text-underline-offset: 3px;
+  cursor: help; }
+/* Ссылки в таблицах движка сохраняют нейтральный цвет текста; сплошная
+   охристая линия отличает переход от пунктирной пометки-подсказки `.tblissue`. */
+.tblwrap.tbleng table td a,
+.tblwrap.tbleng table td a:visited { color: var(--ink); text-decoration-line: underline;
+  text-decoration-style: solid; text-decoration-color: var(--ochre);
+  text-underline-offset: 3px; }
+.tblwrap.tbleng table td a:hover { color: var(--ink); text-decoration-color: var(--ochre); }
+/* Компактные строки по умолчанию: контент в одну строку (минимальная высота строк),
+   колонки тянутся под содержимое — переносы минимизируются. Длинные имена режутся «…». */
+#signals td { white-space: nowrap; }
+#signals td.clip { max-width: 26ch; overflow: hidden; text-overflow: ellipsis; }
+
+/* ===== карточки eligible_actions в блоке «Вывод и действия» ===== */
+.act-card { background: var(--sheet); border: 0.5px solid var(--hair-strong);
+  border-radius: var(--r); padding: 14px 16px; display: flex; flex-direction: column; gap: 9px; }
+.act-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.act-card-title { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; flex: 1; min-width: 0; }
+.act-card-icon { color: var(--petrol); font-size: 11px; flex: none; }
+.act-card-label { font-weight: 600; font-size: var(--fs-sm); color: var(--ink); }
+.act-card-target { font-size: var(--fs-xs); color: var(--muted); font-weight: 500;
+  background: var(--page); border-radius: 4px; padding: 1px 6px; white-space: nowrap; }
+/* строка «Рычаг» — точка + текст (вместо тинт-бокса) */
+.act-card-lever { display: flex; align-items: center; gap: 7px;
+  font-size: var(--fs-xs); color: var(--ink-soft); }
+/* строки осей */
+.act-card-row { display: flex; align-items: center; gap: 10px; }
+.act-card-row-lbl { font-size: var(--fs-xs); color: var(--muted); flex: none; width: 70px; }
+/* полоса полезности */
+.act-card-bar-wrap { display: flex; align-items: center; gap: 8px; flex: 1; }
+.act-card-bar-track { flex: 1; height: 5px; background: var(--hair); border-radius: 3px; overflow: hidden; }
+.act-card-bar-fill { height: 100%; background: var(--petrol); border-radius: 3px; }
+.act-card-money { font-size: var(--fs-xs); font-weight: 600; color: var(--petrol); white-space: nowrap; }
+/* щит для margin_guard — монохромный, цвет через var(--petrol) */
+.act-card-shield { display: flex; align-items: center; gap: 5px;
+  font-size: var(--fs-xs); color: var(--petrol); font-weight: 600; }
+.act-card-shield-mark { font-size: 10px; }
+/* мета-строка action-level: Стоимость + Надёжность (нейтральная) */
+.act-card-meta { display: flex; flex-wrap: wrap; gap: 14px;
+  font-size: var(--fs-xs); color: var(--muted); }
+.act-card-meta b { font-weight: 500; color: var(--ink-soft); }
+/* «почему» */
+.act-card-why { font-size: var(--fs-xs); color: var(--ink-soft); line-height: 1.45;
+  padding-top: 6px; border-top: 0.5px solid var(--hair); }
+/* пустое состояние */
+.act-cards-empty { font-size: var(--fs-sm); color: var(--muted); padding: 8px 0; }
+/* подпись-рамка блока действий */
+.act-block-note { margin: 2px 0 10px; font-size: 12px; color: var(--muted); font-style: italic; }
+
+/* ===== чип-раскладка карточек действий ===== */
+/* шапка блока «Приоритетные действия» */
+.act-block-hdr { display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap; margin: 24px 0 4px; }
+.act-block-hdr .grp-l { margin: 0; }
+/* одноколоночный контейнер чип-режима */
+.act-chips-col { display: flex; flex-direction: column; gap: 12px; margin-top: 4px; }
+/* карточка группы в чип-режиме: override сетки, одна колонка */
+.act-card-chips { grid-column: auto; }
+/* полоса чипов SKU */
+.act-chips-strip { display: flex; flex-wrap: wrap; gap: 3px 6px; margin: 8px 0; }
+/* чипы SKU — тихие, как .counts .chip (без заливки, точка-индикатор) */
+.act-chip { font-family: inherit; font-size: var(--fs-xs); color: var(--ink-soft);
+  display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px;
+  border-radius: var(--r); border: 1px solid transparent; background: none;
+  cursor: pointer; transition: .15s; white-space: nowrap; }
+.act-chip:hover { background: #F6F4EF; }
+.act-chip-active { background: #F6F4EF; border-color: var(--hair); }
+/* точка-индикатор статуса (общая для чипа и строки «Рычаг») */
+.act-dot { width: 8px; height: 8px; border-radius: 2px; flex: none; }
+.act-dot.ok { background: var(--sev-ok); }
+.act-dot.weak { background: var(--sev-warn); }
+.act-dot.futile { background: var(--muted); }
+/* кнопка «ещё N» — тихая */
+.act-chip-more { font-family: inherit; font-size: var(--fs-xs); color: var(--muted);
+  padding: 3px 9px; border-radius: var(--r); border: 1px solid transparent;
+  background: none; cursor: pointer; transition: .15s; }
+.act-chip-more:hover { background: #F6F4EF; color: var(--petrol); }
+/* панель выбранного SKU (свопается по клику) — плоско на белом (вариант B), без серой коробки */
+.act-card-panel { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+
+/* ===== блок диаграмм · провенанс + оверлеи ===== */
+
+/* оверлеи-сегменты (кнопки на главном графике) */
+.ov-ctrl{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.ov-seg{font-size:var(--fs-xs);font-weight:600;padding:5px 11px;border-radius:7px;
+  border:1px solid var(--hair-strong);background:var(--sheet);color:var(--muted);
+  cursor:pointer;font-family:inherit;transition:.15s}
+.ov-seg:hover{border-color:var(--petrol);color:var(--petrol)}
+.ov-seg.on{background:var(--petrol-tint);border-color:var(--petrol);color:var(--petrol)}
+
+/* Заглушка пустой канон-главы (unify: код один — данные разные). */
+.empty-slot {
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  padding: 4px 0 2px;
+}
+
+/* ===== Директивная форма (task-main-20, universal engine, любой class-C конфиг) ===== */
+.dform-help { font-size: var(--fs-sm); color: var(--ink-soft); margin-bottom: 12px; max-width: 60ch; }
+.dform-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.dform-btn {
+  font-family: inherit; font-size: var(--fs-sm); font-weight: 600;
+  padding: 8px 16px; border-radius: var(--r); border: 1px solid var(--hair-strong);
+  background: var(--sheet); color: var(--petrol); cursor: pointer;
+  text-decoration: none; display: inline-block; transition: .15s;
+}
+.dform-btn:hover { border-color: var(--petrol); background: var(--petrol-tint); }
+.dform-upload { border-color: var(--petrol); background: var(--petrol-tint); }
+.dform-upload:disabled { cursor: not-allowed; opacity: .6; }
+.dform-status { font-size: var(--fs-sm); color: var(--ink-soft); }
+
+/* ===== Ценовой калькулятор what-if (task-main-49, calculator-engine.js) =====
+   Вставляется сиблингом сразу после #charts-host — на месте снятого графика
+   «Здоровье каталога», внутри главы «Динамика» (AC3: не новый интерфейс). */
+.calc{margin-top:24px;border:1px solid var(--hair);border-radius:var(--r);padding:18px 20px}
+.calc-head h3{font-size:var(--fs-base);font-weight:600;margin-bottom:4px;color:var(--ink)}
+.calc-cap{font-size:var(--fs-sm);color:var(--muted);margin-bottom:16px;line-height:1.45;max-width:70ch}
+.calc-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.calc-row label{font-size:var(--fs-xs);color:var(--muted);min-width:34px}
+.calc-sku-select{flex:1;max-width:420px;padding:6px 8px;border:1px solid var(--hair-strong);
+  border-radius:var(--r);font-family:var(--font);font-size:var(--fs-sm);background:var(--sheet)}
+.calc-tabs{display:flex;gap:8px;margin-bottom:14px}
+.calc-tab{padding:6px 14px;border:1px solid var(--hair-strong);border-radius:999px;
+  background:var(--sheet);font-family:var(--font);font-size:var(--fs-xs);font-weight:600;
+  color:var(--muted);cursor:pointer;transition:border-color .15s,color .15s,background .15s}
+.calc-tab:hover{border-color:var(--petrol)}
+.calc-tab-active{border-color:var(--petrol);background:var(--petrol-tint);color:var(--petrol)}
+.calc-input-row{display:flex;gap:20px;margin-bottom:16px;flex-wrap:wrap}
+.calc-field-hidden{display:none}
+.calc-field label{display:block;font-size:var(--fs-xs);color:var(--muted);margin-bottom:5px}
+.calc-field input{width:180px;padding:7px 9px;border:1px solid var(--hair-strong);
+  border-radius:var(--r);font-family:var(--font);font-size:var(--fs-sm)}
+.calc-field input:focus{outline:2px solid var(--petrol);outline-offset:1px;border-color:var(--petrol)}
+.calc-result{border-top:1px solid var(--hair);padding-top:14px}
+.calc-state-idle,.calc-state-loading{color:var(--muted);font-size:var(--fs-sm)}
+.calc-state-error{color:var(--terra);font-size:var(--fs-sm)}
+.calc-nodata-title{font-weight:600;color:var(--ochre);font-size:var(--fs-sm);margin-bottom:6px}
+.calc-missing-list{list-style:disc;margin-left:20px;font-size:var(--fs-sm);color:var(--ink-soft)}
+.calc-state-unreachable{color:var(--ochre);font-size:var(--fs-sm);font-weight:600}
+.calc-result-price{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.calc-result-price-lbl{font-size:var(--fs-sm);color:var(--muted)}
+.calc-result-price-val{font-size:var(--fs-xl);font-weight:600;color:var(--ink)}
+.calc-result-margin{display:flex;justify-content:space-between;font-size:var(--fs-base);
+  color:var(--ink-soft);margin-bottom:10px}
+.calc-floor{margin-bottom:10px}
+.calc-floor-row{display:flex;justify-content:space-between;align-items:baseline;
+  font-size:var(--fs-base);color:var(--ink-soft);flex-wrap:wrap;gap:8px}
+/* Ярлык слева, а число пола и скобка «по плановой ставке» — рядом справа: при
+   трёх flex-детях space-between иначе разносит значение в середину строки, и
+   главное число теряет привязку к правому краю панели (где стоят цена/маржа). */
+.calc-floor-label{margin-right:auto}
+.calc-floor-config{font-size:var(--fs-xs);color:var(--muted)}
+.calc-floor-unreliable{font-size:var(--fs-2xs);color:var(--ochre);margin-top:3px}
+.calc-warn{font-size:var(--fs-xs);color:var(--ochre);margin-bottom:8px}
+.calc-crossed-note{font-size:var(--fs-xs);color:var(--petrol);background:var(--petrol-tint);
+  border-radius:var(--r);padding:8px 10px;margin-bottom:12px}
+.calc-cost-stack{display:flex;flex-direction:column;gap:4px;margin-bottom:14px}
+.calc-cost-row{display:flex;justify-content:space-between;font-size:var(--fs-sm);
+  padding:3px 0;border-bottom:1px dashed var(--hair)}
+.calc-cost-label{color:var(--ink-soft)}
+.calc-cost-value{color:var(--ink);font-weight:500}
+.calc-band-ladder{display:flex;flex-wrap:wrap;gap:6px}
+.calc-band{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 8px;
+  border:1px solid var(--hair);border-radius:var(--r);font-size:var(--fs-2xs);
+  color:var(--muted);min-width:74px;text-align:center}
+.calc-band-label{line-height:1.25}
+.calc-band-rate{font-weight:600;color:var(--ink-soft)}
+.calc-band-current{border-color:var(--petrol);background:var(--petrol-tint);color:var(--petrol)}
+.calc-band-current .calc-band-rate{color:var(--petrol)}
+.calc-band-prev{border-color:var(--ochre);border-style:dashed}
+.calc-source-note{font-size:var(--fs-2xs);color:var(--muted);margin-top:12px;
+  padding-top:8px;border-top:1px dashed var(--hair);line-height:1.45;max-width:60ch}
+/* Вилка схем доставки (debt-main-68): схема товара платформе неизвестна, а
+   комиссия FBO/FBS различается — показываем оба расчёта рядом. */
+.calc-fork-note{font-size:var(--fs-xs);color:var(--ochre);background:#FBF1E1;
+  border-radius:var(--r);padding:8px 10px;margin-bottom:14px;line-height:1.45;max-width:70ch}
+.calc-fork{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+.calc-fork-col{min-width:0}
+.calc-fork-head{font-size:var(--fs-sm);font-weight:600;color:var(--ink);margin-bottom:8px;
+  padding-bottom:6px;border-bottom:1px solid var(--hair)}
+/* Первый .calc-result внутри колонки уже отделён заголовком — второй бордер лишний. */
+.calc-fork-col .calc-result{border-top:none;padding-top:0}
+@media(max-width:640px){.calc-input-row{gap:12px}.calc-field input{width:140px}
+  /* Две колонки на узком экране сжались бы в нечитаемые полосы — кладём в стек. */
+  .calc-fork{grid-template-columns:1fr;gap:20px}}
+
+.category-trigger{display:block;width:100%;padding:0;border:0;background:transparent;text-align:left;cursor:pointer}
+/* max-height/overflow/overscroll-behavior — правило .tblpick, ОБЩЕЕ с меню
+   фильтра "values" колонки (task-main-197): числа не задвоены, см. .tblpick
+   выше в этом файле. .category-picker-option/.category-picker-apply тоже
+   переведены на общий вид — .tblpick-option (там же) и .tblpick-apply ниже. */
+.category-picker{position:fixed;z-index:1000;width:min(360px,calc(100vw - 32px));padding:12px;border:1px solid var(--hair);border-radius:var(--r);background:#fff;box-shadow:0 10px 28px rgba(0,0,0,.15)}
+.category-inactive-toggle{width:100%;margin:8px 0 0;padding:6px 2px;border:0;background:transparent;text-align:left;color:var(--muted);cursor:pointer}
+.category-inactive-list{padding:3px 0 6px}.category-inactive-item{padding:4px 2px;color:var(--muted);font-size:var(--fs-sm)}
+.tblpick-apply{width:100%;margin-top:10px;padding:8px;border:0;border-radius:var(--r);background:var(--petrol);color:#fff;font-weight:600;cursor:pointer}

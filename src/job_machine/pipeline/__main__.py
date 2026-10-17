@@ -94,6 +94,8 @@ def main(argv: list[str] | None = None) -> int:
             conn_factory=connect,
             fit_client=fit_client,
             fit_api_key=os.environ.get("TYPESAFE_API_KEY", ""),
+            readiness_client=fit_client,
+            readiness_api_key=os.environ.get("TYPESAFE_API_KEY", ""),
             fit_answer_allowlist=_answer_allowlist(os.environ.get("FIT_ANSWER_ALLOWLIST", "")),
         )
 

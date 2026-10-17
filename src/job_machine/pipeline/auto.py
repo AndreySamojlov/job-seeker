@@ -26,6 +26,11 @@ from job_machine.fit import worker as fit_worker
 from job_machine.mcp import store as mcp_store
 from job_machine.package import service as package_service
 from job_machine.resume import selector, service as resume_service, store as resume_store
+from job_machine.remote_readiness import intake_store as readiness_intake_store
+from job_machine.remote_readiness import preparation as readiness_preparation
+from job_machine.remote_readiness import worker as readiness_worker
+from job_machine.remote_readiness import control_store as readiness_control_store
+from job_machine.remote_readiness.settings import ReadinessSettings
 from job_machine.triage import service as triage_service
 
 log = logging.getLogger(__name__)
@@ -52,6 +57,16 @@ class AutoCycleSummary:
     fit_completed: int = 0
     fit_retry: int = 0
     fit_blocked: int = 0
+    readiness_enqueued: int = 0
+    readiness_existing: int = 0
+    readiness_prepared: int = 0
+    readiness_prepare_retry: int = 0
+    readiness_prepare_blocked: int = 0
+    readiness_gone: int = 0
+    readiness_completed: int = 0
+    readiness_retry: int = 0
+    readiness_blocked: int = 0
+    readiness_enabled: bool = False
     errors: list[str] = field(default_factory=list)
 
 
@@ -65,6 +80,10 @@ def _pull_needs_resume(conn, limit: int) -> list[dict]:
 
 def _apply_one_resume(conn, pdf_client, base_dir: str, phrasing) -> Any:
     return resume_service.apply_phrasing(conn, pdf_client, base_dir, phrasing)
+
+
+def _readiness_settings_from_env():
+    return ReadinessSettings.from_env()
 
 
 # ---------------------------------------------------------------------------
@@ -165,10 +184,14 @@ def run_auto_cycle(
     fit_api_key: str = "",
     fit_client_factory=None,
     fit_answer_allowlist=(),
+    readiness_client=None,
+    readiness_api_key: str | None = None,
+    readiness_client_factory=None,
 ) -> AutoCycleSummary:
     """Прогнать полный автономный конвейер с LLM-стадиями triage и resume.
 
-    Порядок стадий: discovery → verify → preparation → Jev → triage → resume → package → fill.
+    Порядок стадий: discovery → verify → RWR intake/preparation/Jev → fit preparation/Jev
+    → triage → resume → package → fill.
     Детерминированные стадии делегируются соответствующим сервисам.
     LLM-стадии выполняются per-item с изоляцией падения и rollback.
 
@@ -199,6 +222,130 @@ def run_auto_cycle(
         summary.verified = getattr(result, "verified", 0)
 
     _stage(summary, "verify", _ver)
+
+    readiness_settings = None
+    readiness_intake_limit = readiness_jev_limit = 0
+    readiness_enabled = False
+    if limit > 0:
+        try:
+            readiness_settings = _readiness_settings_from_env()
+            readiness_intake_limit = min(limit, readiness_settings.intake_batch_limit)
+            readiness_jev_limit = min(limit, readiness_settings.jev_batch_limit)
+            if readiness_settings.enabled:
+                if conn_factory is None:
+                    raise ValueError("readiness control requires conn_factory")
+                with conn_factory() as control_conn:
+                    readiness_enabled = readiness_control_store.is_enabled(control_conn)
+        except Exception:
+            # Fail closed. Never expose settings exceptions, which could include env data.
+            summary.errors.append("readiness_control: operation_failed")
+            readiness_enabled = False
+    summary.readiness_enabled = readiness_enabled
+
+    def _readiness_still_enabled() -> bool:
+        """Re-read the persistent circuit breaker at every RWR boundary.
+
+        The initial read is only a cycle-level snapshot. An operator may
+        disable RWR while discovery or another bounded item is running.
+        """
+        nonlocal readiness_enabled
+        if not readiness_enabled or readiness_settings is None or not readiness_settings.enabled:
+            return False
+        if conn_factory is None:
+            readiness_enabled = False
+            summary.readiness_enabled = False
+            return False
+        try:
+            with conn_factory() as control_conn:
+                enabled_now = readiness_control_store.is_enabled(control_conn)
+        except Exception:
+            # Fail closed on a lost/unknown control state.
+            summary.errors.append("readiness_control: operation_failed")
+            enabled_now = False
+        if not enabled_now:
+            readiness_enabled = False
+            summary.readiness_enabled = False
+        return enabled_now
+
+    # Readiness assignment has its own bounded intake queue. Existing verified
+    # rows receive a fresh ATS check in preparation before any snapshot exists.
+    def _readiness_enqueue():
+        if readiness_intake_limit <= 0 or not _readiness_still_enabled():
+            return
+        summary.readiness_enqueued = readiness_intake_store.enqueue_verified(
+            conn, limit=readiness_intake_limit)
+        conn.commit()
+
+    _safe_stage(summary, "readiness_enqueue", _readiness_enqueue)
+
+    def _readiness_prepare():
+        if readiness_intake_limit <= 0 or not _readiness_still_enabled():
+            return
+        if conn_factory is None:
+            raise ValueError("readiness preparation requires conn_factory")
+        for _ in range(readiness_intake_limit):
+            # Recheck before each claim/ATS unit. A disable observed after one
+            # item prevents claiming the next one in this cycle.
+            if not _readiness_still_enabled():
+                break
+            outcome = readiness_preparation.run_once(
+                conn_factory,
+                client_factory=readiness_client_factory or readiness_preparation.default_client_factory,
+                max_attempts=readiness_settings.max_attempts,
+                clock=lambda: datetime.now(timezone.utc),
+            )
+            if outcome == "idle":
+                break
+            if outcome == "prepared":
+                summary.readiness_prepared += 1
+            elif outcome == "existing":
+                summary.readiness_existing += 1
+            elif outcome == "retry_wait":
+                summary.readiness_prepare_retry += 1
+            elif outcome == "blocked":
+                summary.readiness_prepare_blocked += 1
+            elif outcome == "gone":
+                summary.readiness_gone += 1
+            elif outcome == "lease_lost":
+                continue
+            else:
+                raise ValueError("invalid readiness preparation outcome")
+
+    _safe_stage(summary, "readiness_prepare", _readiness_prepare)
+
+    def _readiness_evaluate():
+        if readiness_jev_limit <= 0 or not _readiness_still_enabled():
+            return
+        client = readiness_client if readiness_client is not None else fit_client
+        api_key = fit_api_key if readiness_api_key is None else readiness_api_key
+        if conn_factory is None:
+            raise ValueError("readiness evaluation requires conn_factory")
+        if client is None:
+            raise ValueError("readiness evaluation requires readiness_client")
+        for _ in range(readiness_jev_limit):
+            # Recheck before every claim/Jev unit, not only once per cycle.
+            if not _readiness_still_enabled():
+                break
+            outcome = readiness_worker.run_once(
+                conn_factory, client=client, api_key=api_key,
+                max_attempts=readiness_settings.max_attempts,
+                timeout_seconds=readiness_settings.request_timeout_seconds,
+                clock=lambda: datetime.now(timezone.utc),
+            )
+            if outcome == "idle":
+                break
+            if outcome == "completed":
+                summary.readiness_completed += 1
+            elif outcome == "retry_wait":
+                summary.readiness_retry += 1
+            elif outcome == "blocked":
+                summary.readiness_blocked += 1
+            elif outcome == "lease_lost":
+                continue
+            else:
+                raise ValueError("invalid readiness Jev outcome")
+
+    _safe_stage(summary, "readiness_jev", _readiness_evaluate)
 
     # Durable queues are drained every cycle, including work left by earlier
     # cycles. Each queue has an independent batch bound and stage isolation.

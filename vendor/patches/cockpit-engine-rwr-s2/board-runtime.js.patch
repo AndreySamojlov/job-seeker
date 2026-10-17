@@ -1,0 +1,68 @@
+--- a/cockpit_engine/web/static/board-runtime.js
++++ b/cockpit_engine/web/static/board-runtime.js
+@@ -26,7 +26,7 @@
+   if (!array(p.filters) || !array(p.kpis) || !record(p.charts) || !array(p.charts.specs) || !array(p.charts.chart_series)) fail();
+   if (!record(p.table) || !array(p.table.columns) || !array(p.table.rows)) fail();
+   const t = p.table;
+-  if (![t.total_rows,t.page,t.page_size].every(Number.isSafeInteger) || t.total_rows<0 || t.page<0 || t.page_size<1 || (!t.client_sort && t.rows.length>t.page_size) || t.rows.length>t.total_rows || (t.client_sort===true && t.rows.length!==t.total_rows) || (t.client_sort!=null && typeof t.client_sort!=="boolean")) fail();
++  if (![t.total_rows,t.page,t.page_size].every(Number.isSafeInteger) || t.total_rows<0 || t.page<0 || t.page_size<1 || t.rows.length>t.page_size || t.rows.length>t.total_rows) fail();
+   if(refreshEnabled){
+     const m=p.meta;
+     if(!record(m.context)||!Object.keys(m.context).length||typeof m.read_id!=="string"||!m.read_id||
+@@ -59,6 +59,8 @@
+   const keys = new Set();
+   for (const c of t.columns) {
+     if (!record(c) || typeof c.key !== "string" || !c.key || keys.has(c.key) || typeof c.label !== "string" || !["text","number","link","datetime"].includes(c.kind)) fail();
++    if (c.format !== undefined && (c.format !== "percent" || c.kind !== "number")) fail();
++    if (c.sortable !== undefined && typeof c.sortable !== "boolean") fail();
+     keys.add(c.key);
+   }
+   for (const row of t.rows) {
+@@ -104,7 +106,6 @@
+ function mountBoard(root, config, runtime={}) {
+   let controller=null,tableView=null,committedRead=null,lastInvalidation=-1,epoch=0,destroyed=false;
+   let chartViewState=null,tableViewState=null;
+-  let clientView={page:0,sortKey:null,sortDirection:null};
+   let chartStage = null, disposeTable = null, tableState = tblColState();
+   let params = {domain:config.domains[0].key, page:"0"};
+   root.classList.add("page-shell");
+@@ -169,7 +170,7 @@
+           field=el("label",{class:"rail-field"+(f.kind==="date"?" ce-board-date":""),"data-key":f.key},[
+             el("span",{class:"rail-field-lbl"},f.label),
+             ...(f.kind==="select"?[el("span",{class:"rail-field-val"}),el("span",{class:"rail-field-arr","aria-hidden":"true"},"⌄")]:[]),input]);
+-          input.addEventListener("change",()=>{params[f.key]=input.value;params.page="0";clientView.page=0;refresh();});
++          input.addEventListener("change",()=>{params[f.key]=input.value;params.page="0";refresh();});
+           filters.append(field);
+         }
+         const input=field.querySelector("input,select");
+@@ -186,15 +187,14 @@
+       if(chartStage?.update)chartStage.update(payload.charts.specs,chartPayload);
+       else {if(chartStage)chartStage.destroy();chartStage=mountStage(charts,payload.charts.specs,chartPayload);if(chartViewState&&chartStage?.restoreViewState)chartStage.restoreViewState(chartViewState);}
+       const t=payload.table;
+-      if(t.client_sort)clientView.page=Math.min(clientView.page,Math.max(0,Math.ceil(t.total_rows/t.page_size)-1));
+       if(t.filter_param){params[t.filter_param]=payload.meta.context[t.filter_context_key];tableState.filters=JSON.parse(JSON.stringify(t.filters));}
+       const scope=++epoch;
+-      const options={onFilters:t.filter_param ? state=>{params[t.filter_param]=serializeBoardColumnFilters(state);params.page="0";clientView.page=0;refresh();}:undefined,
+-        clientSort:t.client_sort===true,rowKey:t.row_key,canRead:()=>!controller||controller.getState().readId===payload.meta.read_id,
+-        onInteraction:({token,active})=>{if((scope===epoch||!active)&&controller)controller.setInteraction("table:"+token,active);},columnState:tableState,totalRows:t.total_rows,page:t.client_sort?clientView.page:t.page,pageSize:t.page_size,timezone:payload.meta.timezone,
+-        sortKey:t.client_sort?(clientView.sortKey||payload.meta.context?.sort_key):params.sort_key,sortDirection:t.client_sort?(clientView.sortDirection||payload.meta.context?.sort_direction):params.sort_direction,
+-        onPage:page=>{if(t.client_sort){clientView.page=page;renderPayload(payload);return;}params.page=String(page);refresh();},
+-        onSort:(key,direction)=>{if(t.client_sort){clientView={page:0,sortKey:key,sortDirection:direction};renderPayload(payload);return;}if(key){params.sort_key=key;params.sort_direction=direction;}else{delete params.sort_key;delete params.sort_direction;}params.page="0";refresh();}};
++      const options={onFilters:t.filter_param ? state=>{params[t.filter_param]=serializeBoardColumnFilters(state);params.page="0";refresh();}:undefined,
++        rowKey:t.row_key,canRead:()=>!controller||controller.getState().readId===payload.meta.read_id,
++        onInteraction:({token,active})=>{if(scope===epoch&&controller)controller.setInteraction("table:"+token,active);},columnState:tableState,totalRows:t.total_rows,page:t.page,pageSize:t.page_size,timezone:payload.meta.timezone,
++        sortKey:params.sort_key,sortDirection:params.sort_direction,
++        onPage:page=>{params.page=String(page);refresh();},
++        onSort:(key,direction)=>{if(key){params.sort_key=key;params.sort_direction=direction;}else{delete params.sort_key;delete params.sort_direction;}params.page="0";refresh();}};
+       if(controller){if(tableView)tableView.update(t.columns,t.rows,options);else {tableView=mountBoardTable(table,t.columns,t.rows,options);if(tableViewState)tableView.restoreViewState(tableViewState);}}
+       else disposeTable=renderBoardTable(table,t.columns,t.rows,options);
+       committedRead=payload.meta.read_id;
+@@ -231,7 +231,7 @@
+   if(controller){document.addEventListener("visibilitychange",visibility);window.addEventListener("pagehide",pageHide);window.addEventListener("pageshow",pageShow);}
+   config.domains.forEach(d=>{
+     const button=el("button",{class:"dtab"+(d.key===params.domain ? " on" : ""),type:"button","data-domain":d.key,"aria-pressed":String(d.key===params.domain)},d.label);
+-    button.addEventListener("click",()=>{params={domain:d.key,page:"0"};tableState=tblColState();clientView={page:0,sortKey:null,sortDirection:null};refresh();});
++    button.addEventListener("click",()=>{params={domain:d.key,page:"0"};tableState=tblColState();refresh();});
+     domains.append(button);
+   });
+   filters.addEventListener("submit",event=>event.preventDefault());

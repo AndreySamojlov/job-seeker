@@ -1,0 +1,24 @@
+# Keep this image context limited to the exact Dockerfile COPY inputs.
+**
+
+!deploy/
+deploy/*
+!deploy/board/
+deploy/board/*
+!deploy/board/Dockerfile
+
+!vendor/
+vendor/*
+!vendor/cockpit_engine-0.2.0a9-py3-none-any.whl
+
+!src/
+src/*
+!src/job_machine/
+src/job_machine/*
+!src/job_machine/board/
+src/job_machine/board/*
+!src/job_machine/board/*.py
+
+!config/
+config/*
+!config/sources.json

@@ -10,23 +10,23 @@ def snapshot(**changes):
     values = dict(candidate_id='alpha', candidates=[{'candidate_id': 'alpha', 'name': 'Alpha'}],
                   board_options=['acme'], total_rows=3, unknown_board=1, unscored=1,
                   daily=[{'day': date(2026, 10, 13), 'count': 1}, {'day': date(2026, 10, 15), 'count': 2}],
-                  bands=[{'label': 'low · v1', 'count': 1}, {'label': 'high · v2', 'count': 1}, {'label': 'Не оценено', 'count': 1}],
+                  bands=[{'label': '0', 'count': 1}, {'label': '90', 'count': 1}],
                   boards=[{'token': 'acme', 'count': 2}, {'token': None, 'count': 1}],
                   points=[{'discovered_at': datetime(2026, 10, 13, tzinfo=timezone.utc), 'fit_score': 0},
                           {'discovered_at': datetime(2026, 10, 15, tzinfo=timezone.utc), 'fit_score': 90}],
-                  rows=[{'vacancy_id': 'synthetic', 'title': '<img src=x>', 'url': 'javascript:alert(1)', 'fit_score': 0, 'board_token': None}],
+                  rows=[{'vacancy_id': 'synthetic', 'title': '<img src=x>', 'url': 'javascript:alert(1)', 'fit_score': 0, 'remote_work_readiness': None, 'board_token': None}],
                   fetched_at=datetime(2026, 10, 15, tzinfo=timezone.utc))
     values.update(changes)
     return GreenhouseSnapshot(**values)
 
 
-def test_report_preserves_zero_unknowns_versions_and_calendar_days():
+def test_report_preserves_zero_unknowns_and_calendar_days():
     report = build_greenhouse_report(snapshot(), BoardFilters('alpha', date(2026, 10, 13), date(2026, 10, 15)))
     assert [k['value'] for k in report['kpis']] == ['1', 'Нет данных', '1', 'Нет данных']
     assert report['charts']['chart_series'][0]['series'][0]['y'] == [1, 0, 2]
-    assert report['charts']['chart_series'][1]['x'] == ['0']
+    assert report['charts']['chart_series'][1]['x'] == ['0', '90']
     assert report['charts']['chart_series'][3]['series'][0]['data'][0]['y'] == 0
-    assert '1' in report['charts']['specs'][3]['caption']
+    assert report['charts']['specs'][3]['caption'] == 'Не оценено: 1'
     assert report['table']['total_rows'] == 3
     assert report['table']['rows'][0]['fit_score'] == 0
     assert report['table']['rows'][0]['url'] is None
@@ -66,25 +66,62 @@ def test_page_does_not_bound_aggregates():
     assert report['charts']['chart_series'][0]['series'][0]['y'] == [1, 0, 2]
 
 
-def test_jev_report_numeric_scores_and_full_client_table():
-    rows = [dict(vacancy_id=str(i), fit_score=score, board_token='acme')
+def test_scatter_uses_deployed_jev_contract_without_rubric_series():
+    stamp = datetime(2026, 10, 15, tzinfo=timezone.utc)
+    report = build_greenhouse_report(snapshot(points=[
+        dict(discovered_at=stamp, fit_score=50, fit_score_version='v1'),
+        dict(discovered_at=stamp, fit_score=50, fit_score_version='v2'),
+        dict(discovered_at=stamp, fit_score=0, fit_score_version=None)]),
+        BoardFilters('alpha', date(2026, 10, 13), date(2026, 10, 15)))
+    series = report['charts']['chart_series'][3]['series']
+    assert [s['name'] for s in series] == ['Jev']
+    assert len(series[0]['data']) == 3
+
+
+def test_jev_report_uses_numeric_scores_and_client_sorts_complete_rows():
+    rows = [dict(vacancy_id=str(i), fit_score=score, remote_work_readiness=None, board_token='acme')
             for i, score in enumerate([0, 1, 100, None])]
     report = build_greenhouse_report(snapshot(rows=rows, total_rows=4),
         BoardFilters('alpha', date(2026, 10, 13), date(2026, 10, 15)))
     fit = report['charts']['chart_series'][1]
-    assert fit['x'] == ['0', '1', '100']
-    assert fit['series'][0]['y'] == [1, 1, 1]
-    assert report['charts']['specs'][1]['encoding'] == 'bar'
-    assert report['charts']['specs'][1]['caption'] == 'Не оценено: 1'
+    assert fit['x'] == ['0', '90']
     assert report['table']['client_sort'] is True
-    assert report['table']['columns'][-1]['label'] == 'Jev'
-    assert [r['fit_score'] for r in report['table']['rows']] == [0, 1, 100, None]
-    assert [s['name'] for s in report['charts']['chart_series'][3]['series']] == ['Jev']
+    assert len(report['table']['rows']) == 4
+    assert [row['fit_score'] for row in report['table']['rows']] == [0, 1, 100, None]
+    assert report['table']['columns'][-2]['key'] == 'fit_score'
+    assert report['table']['columns'][-1]['key'] == 'remote_work_readiness'
 
 
 def test_table_keeps_only_requested_columns():
     report = build_greenhouse_report(snapshot(), BoardFilters('alpha', date(2026, 10, 13), date(2026, 10, 15)))
-    assert [c['key'] for c in report['table']['columns']] == ['title', 'company', 'location', 'work_mode', 'fit_score']
+    columns = report['table']['columns']
+    assert [c['key'] for c in columns] == ['title', 'company', 'location', 'work_mode', 'fit_score', 'remote_work_readiness']
+    readiness = columns[-1]
+    assert readiness == {'key': 'remote_work_readiness', 'label': 'Международная удалёнка', 'kind': 'number',
+                         'format': 'percent', 'sortable': False, 'filter': None}
+    assert report['table']['rows'][0]['remote_work_readiness'] is None
+    assert report['table']['rows'][0]['fit_score'] == 0
+
+
+def test_score_distribution_uses_aggregate_for_entire_selection_not_current_page():
+    report = build_greenhouse_report(snapshot(rows=[{'vacancy_id': 'page-row', 'fit_score': 0,
+        'remote_work_readiness': None, 'board_token': None}], bands=[
+            {'label': '0', 'count': 17}, {'label': '90', 'count': 6}]),
+        BoardFilters('alpha', date(2026, 10, 13), date(2026, 10, 15)), TablePage(page=1))
+    assert report['charts']['chart_series'][1]['x'] == ['0', '90']
+    assert report['charts']['chart_series'][1]['series'][0]['y'] == [17, 6]
+    assert report['table']['page'] == 1
+    assert [row['vacancy_id'] for row in report['table']['rows']] == ['page-row']
+
+
+def test_readiness_row_value_is_preserved_raw_in_report():
+    fraction = 0.3141592653589793
+    report = build_greenhouse_report(snapshot(rows=[dict(vacancy_id='ready', title='Remote',
+        url='https://example.test/job', fit_score=None, remote_work_readiness=fraction, board_token=None)]),
+        BoardFilters('alpha', date(2026, 10, 13), date(2026, 10, 15)))
+    assert report['table']['rows'][0]['remote_work_readiness'] == fraction
+    assert 'model' not in report['table']['rows'][0]
+    assert 'rubric' not in report['table']['rows'][0]
 
 
 def test_boards_horizontal_top_twenty_company_labels_and_other(monkeypatch):
